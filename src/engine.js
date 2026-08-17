@@ -349,6 +349,15 @@ function detectarVariables(lower) {
   if (hasAny(["pluralismo", "diversidad cultural", "minoría religiosa", "minoria religiosa", "minorías religiosas", "minorias religiosas"])) {
     addVi("el contexto migratorio y la pertenencia a minorías religiosas");
   }
+  // Grupo étnico o cultural nombrado explícitamente (gitano/a, romaní, indígena,
+  // afrodescendiente, o "etnia"/"tribu étnica"/"grupo cultural" en general): se
+  // trata como un factor explicativo real, no una candidata genérica, porque el
+  // problema lo nombra directamente. Toca sociología de la cultura de forma
+  // transversal (ver detectarAreaSociologica) y, si además hay indicios de
+  // migración, también sociología de las migraciones (bloque ya existente).
+  if (hasAny(["etnia", "étnica", "etnica", "gitano", "gitana", "gitanos", "gitanas", "romaní", "romani", "pueblo gitano", "minoría étnica", "minoria etnica", "grupo étnico", "grupo etnico", "tribu étnica", "tribu etnica", "indígena", "indigena", "afrodescendiente", "racializad", "grupo cultural particular", "minoría cultural", "minoria cultural"])) {
+    addVi("la discriminación étnica o cultural percibida");
+  }
   if (hasAny(["bajo nivel de instrucción", "bajo nivel de instruccion"])) {
     addVi("el bajo nivel de instrucción");
   } else if (hasAny(["nivel de instrucción", "nivel de instruccion"])) {
@@ -571,7 +580,7 @@ function detectarAreaSociologica(lower, vi, vd) {
   if (skContieneAlguno(l, ["trabajo", "empleo", "laboral", "paro", "desempleo", "salario", "oportunidades laborales", "precariedad laboral"])) add("Sociología del trabajo");
   if (skContieneAlguno(l, ["salud", "enfermedad", "ansiedad", "depresión", "depresion", "malestar emocional"])) add("Sociología de la salud");
   if (skContieneAlguno(l, ["emociones", "afectos", "miedo", "ira", "soledad"])) add("Sociología de las emociones");
-  if (skContieneAlguno(l, ["cultura", "identidad", "representaciones", "valores"])) add("Sociología de la cultura");
+  if (skContieneAlguno(l, ["cultura", "identidad", "representaciones", "valores", "etnia", "étnica", "etnica", "gitano", "gitana", "gitanos", "gitanas", "romaní", "romani", "minoría étnica", "minoria etnica", "grupo étnico", "grupo etnico", "tribu étnica", "tribu etnica", "indígena", "indigena", "afrodescendiente", "racializad", "grupo cultural"])) add("Sociología de la cultura");
   if (skContieneAlguno(l, ["política", "politica", "voto", "partido", "hegemonía", "hegemonia", "radicalización", "radicalizacion"])) add("Sociología política");
   if (skContieneAlguno(l, ["conocimiento", "normalidad", "sentido común", "sentido comun", "cognitivo"])) add("Sociología del conocimiento");
   if (["barrio", "barrios", "vecindario", "segregación territorial", "segregacion territorial", "segregación urbana", "segregacion urbana", "gentrificación", "gentrificacion", "desigualdad urbana", "estigma territorial", "periferia", "periférico", "periferico", "periféricos", "perifericos"].some(x => l0.includes(x))) add("Sociología urbana");
@@ -808,6 +817,9 @@ function indicadoresParaVariable(nombre, tipo) {
   if (lower.includes("religiosidad") || lower.includes("secularización") || lower.includes("secularizacion")) {
     return { variable: nombre, tipo, indicador: "Frecuencia de práctica religiosa y autoidentificación como creyente/practicante", unidad: "Escala de frecuencia (nunca–diariamente) / categoría de autoidentificación", nivel: "Ordinal", fuente: "Barómetro CIS, ISSP (International Social Survey Programme), Pew Research" };
   }
+  if (lower.includes("discriminación étnica") || lower.includes("discriminacion etnica")) {
+    return { variable: nombre, tipo, indicador: "Experiencias percibidas de discriminación por origen étnico o cultural (en la escuela, el empleo, la vivienda)", unidad: "Escala de frecuencia / índice de discriminación percibida", nivel: "Ordinal", fuente: "Encuesta a la población afectada, informes de discriminación (OBERAXE, Fundación Secretariado Gitano)" };
+  }
 
   if (tipo === "VI") {
     return { variable: nombre, tipo, indicador: `Escala / índice que mida «${nombre}» en la población de estudio`, unidad: "Puntuación en escala (1–5 / 1–10)", nivel: "Ordinal (escala tipo Likert)", fuente: "Cuestionario a población objetivo u observaciones estructuradas" };
@@ -993,6 +1005,10 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
   if (skContieneAlguno(total, ["migración", "migracion", "inmigración", "inmigracion", "migrante", "refugiados", "asilo"])) {
     add("Portes: capital social y asimilación segmentada");
     add("Sayad: la doble ausencia del inmigrante");
+  }
+  if (skContieneAlguno(total, ["etnia", "étnica", "etnica", "gitano", "gitana", "gitanos", "gitanas", "romaní", "romani", "minoría étnica", "minoria etnica", "grupo étnico", "grupo etnico", "tribu étnica", "tribu etnica", "indígena", "indigena", "afrodescendiente", "racializad"])) {
+    add("San Román: antropología y sociología del pueblo gitano en España");
+    add("Wieviorka: racismo, diferencialismo cultural y minorías étnicas");
   }
   if (skContieneAlguno(total, ["discapacidad", "diversidad funcional", "accesibilidad", "dependencia funcional"])) {
     add("Oliver: modelo social de la discapacidad");

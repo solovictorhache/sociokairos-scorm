@@ -1,5 +1,13 @@
 # CHANGELOG — SOCIOKAIROS SCORM Plugin
 
+## Sociología de la etnicidad y grupos culturales, transversal 2026-08-17
+
+Cuando el problema nombra un grupo étnico o cultural particular (gitano/a, romaní, indígena, afrodescendiente, o "etnia"/"tribu étnica"/"grupo cultural" en general), el motor ahora lo trata como un factor explicativo real, no como texto ignorado:
+
+- **VI detectada**: "la discriminación étnica o cultural percibida", con su propio indicador de operacionalización (experiencias percibidas de discriminación, con fuentes como OBERAXE y la Fundación Secretariado Gitano).
+- **Sociología de la cultura, transversal**: se añade a las áreas ya detectadas (educación, familia, migraciones...) en vez de sustituirlas — igual que sociología de las migraciones ya se activaba de forma independiente, ambas pueden coexistir cuando el problema habla de un grupo étnico migrante.
+- **Marcos teóricos**: San Román (antropología y sociología del pueblo gitano en España) y Wieviorka (racismo y diferencialismo cultural).
+
 ## Integración continua 2026-08-17
 
 `.github/workflows/test.yml` corre en cada push y pull request: los tests del motor (`npm test`) y una prueba end-to-end con Playwright (`tests/e2e/scorm.e2e.js`) que construye el paquete, simula un LMS SCORM 1.2, reformula un problema, comprueba la interfaz y el seguimiento SCORM, exporta a Word y CSV, y valida con `python-docx` (`tests/e2e/validate_docx.py`) que el informe tiene al menos 15 secciones numeradas y 2 tablas. Los archivos generados quedan disponibles como artefacto del workflow.

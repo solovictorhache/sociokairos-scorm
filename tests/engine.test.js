@@ -137,6 +137,26 @@ describe("dominios sociológicos ampliados", () => {
   }
 });
 
+describe("etnicidad y grupos culturales (transversal)", () => {
+  test("nombrar un grupo étnico activa sociología de la cultura junto a las áreas propias del problema", () => {
+    const r = eng.analizarProblema(
+      "¿Cuáles son las causas familiares del alto índice de deserción escolar de los niños de la etnia gitana en Zaragoza en el 2025?"
+    );
+    assert.ok(r.area.includes("Sociología de la educación"));
+    assert.ok(r.area.includes("Sociología de la cultura"));
+    assert.ok(r.vi.some((v) => v.includes("discriminación étnica")));
+    assert.ok(r.marcos.some((m) => m.includes("San Román") || m.includes("Wieviorka")));
+  });
+
+  test("etnicidad + migración activan ambas áreas a la vez", () => {
+    const r = eng.analizarProblema(
+      "¿Cómo influye la discriminación étnica en la integración social de la población gitana inmigrante en Zaragoza en 2025?"
+    );
+    assert.ok(r.area.includes("Sociología de la cultura"));
+    assert.ok(r.area.includes("Sociología de las migraciones"));
+  });
+});
+
 describe("clasificarEnfoqueMetodologico", () => {
   test("clasifica cualitativo por vocabulario de sentido/experiencia", () => {
     const c = eng.clasificarEnfoqueMetodologico("quiero entender los significados y vivencias subjetivas");
