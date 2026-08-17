@@ -935,8 +935,7 @@ function skJoin(items, fallback) {
 }
 
 function skHas(texto, palabras) {
-  const t = (texto || "").toLowerCase();
-  return palabras.some(p => t.includes(p));
+  return skContieneAlguno(texto, palabras);
 }
 
 function uniq(xs) {
@@ -1065,24 +1064,47 @@ function geoFuentes(ciudad, pais, area, lower) {
   }
 
   const topic = (lower || "") + " " + (area || "").toLowerCase();
-  if (["salud mental", "salud", "enfermedad", "ansiedad", "depresión", "depresion"].some(k => topic.includes(k))) {
+  if (skContieneAlguno(topic, ["salud mental", "salud", "enfermedad", "ansiedad", "depresión", "depresion"])) {
     if (pais === "Francia") add("Santé publique France – Santé mentale", "https://www.santepubliquefrance.fr/maladies-et-traumatismes/sante-mentale");
     else if (pais === "España") add("Ministerio de Sanidad – Estadísticas sanitarias", "https://www.sanidad.gob.es/estadEstudios/estadisticas/");
     else if (pais === "Estados Unidos") add("CDC – Mental Health Data", "https://www.cdc.gov/mentalhealth/data_stats/");
     else if (pais === "Cuba") add("MINSAP Cuba", "https://salud.msp.gob.cu/");
   }
-  if (["trabajo", "empleo", "paro", "laboral"].some(k => topic.includes(k))) {
+  if (skContieneAlguno(topic, ["trabajo", "empleo", "paro", "laboral"])) {
     if (pais === "Francia") add("DARES – Statistiques du travail", "https://dares.travail-emploi.gouv.fr/");
     else if (pais === "España") add("SEPE – Estadísticas", "https://www.sepe.es/HomeSepe/que-es-el-sepe/estadisticas.html");
     else if (pais === "Estados Unidos") add("Bureau of Labor Statistics", "https://www.bls.gov");
   }
-  if (["educación", "educacion", "abandono escolar", "deserción", "desercion"].some(k => topic.includes(k))) {
+  if (skContieneAlguno(topic, ["educación", "educacion", "abandono escolar", "deserción", "desercion"])) {
     if (pais === "Francia") add("Ministère de l'Éducation nationale – statistiques", "https://www.education.gouv.fr/etudes-et-statistiques");
     else if (pais === "España") add("Ministerio de Educación – Estadísticas", "https://www.educacionfpydeportes.gob.es/servicios-al-ciudadano/estadisticas.html");
   }
-  if (["violencia de género", "violencia de genero", "maltrato"].some(k => topic.includes(k))) {
+  if (skContieneAlguno(topic, ["violencia de género", "violencia de genero", "maltrato"])) {
     if (pais === "España") add("Delegación del Gobierno contra la Violencia de Género", "https://violenciagenero.igualdad.gob.es/violenciaEnCifras/");
     else if (pais === "Francia") add("Ministère de l'Intérieur – statistiques sécurité", "https://www.interieur.gouv.fr/Interstats");
+  }
+  if (skContieneAlguno(topic, ["migración", "migracion", "inmigración", "inmigracion", "migrante", "refugiados", "asilo"])) {
+    add("ACNUR (UNHCR) – Refugee Data Finder", "https://www.unhcr.org/refugee-statistics/");
+    add("OIM (IOM) – Migration Data Portal", "https://www.migrationdataportal.org/");
+    if (pais === "España") add("INE – Estadística de Migraciones", "https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177000&menu=ultiDatos&idp=1254735572981");
+  }
+  if (skContieneAlguno(topic, ["discapacidad", "diversidad funcional", "accesibilidad"])) {
+    add("OMS – Disability Data", "https://www.who.int/data/gho/data/themes/topic-details/GHO/disability");
+    if (pais === "España") add("INE – Encuesta de Discapacidad, Autonomía Personal y Dependencia (EDAD)", "https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736176782");
+  }
+  if (skContieneAlguno(topic, ["cambio climático", "cambio climatico", "medio ambiente", "sostenibilidad", "crisis climática", "crisis climatica"])) {
+    add("Copernicus Climate Data Store", "https://cds.climate.copernicus.eu/");
+    if (pais === "España") add("Ministerio para la Transición Ecológica – Estadísticas ambientales", "https://www.miteco.gob.es/es/calidad-y-evaluacion-ambiental/temas/informacion-ambiental-indicadores-ambientales/");
+    else add("Eurostat – Environment", "https://ec.europa.eu/eurostat/web/environment");
+  }
+  if (skContieneAlguno(topic, ["rural", "ruralidad", "despoblación", "despoblacion", "éxodo rural", "exodo rural"])) {
+    if (pais === "España") add("Ministerio para el Reto Demográfico", "https://www.mites.gob.es/retodemografico/");
+    add("INE – Padrón continuo (cifras de población por municipio)", "https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177011");
+  }
+  if (skContieneAlguno(topic, ["religión", "religion", "religiosidad", "secularización", "secularizacion"])) {
+    if (pais === "España") add("CIS – Barómetros de religiosidad", "https://www.cis.es/");
+    add("Pew Research Center – Religion Data", "https://www.pewresearch.org/religion/");
+    add("ISSP – International Social Survey Programme", "https://issp.org/");
   }
   add("World Bank Data", "https://data.worldbank.org/");
   add("UNData – Naciones Unidas", "https://data.un.org/");
@@ -1190,8 +1212,62 @@ function detectarVariables(lower) {
   if (hasAny(["integración", "integracion", "percepción de integración", "percepcion de integracion"])) {
     addVd("la integración social percibida");
   }
+  if (hasAny(["migración", "migracion", "inmigración", "inmigracion", "personas migrantes", "población migrante", "poblacion migrante", "refugiados", "refugiadas", "solicitantes de asilo"])) {
+    if (hasAny(["discriminación", "discriminacion", "xenofobia", "racismo"])) addVd("la discriminación hacia la población migrante");
+    else if (hasAny(["integración", "integracion"])) addVd("la integración social de la población migrante");
+    else addVd("las condiciones de vida de la población migrante");
+  }
+  if (hasAny(["discapacidad", "diversidad funcional", "personas con discapacidad"])) {
+    if (hasAny(["exclusión", "exclusion", "discriminación", "discriminacion"])) addVd("la exclusión social de las personas con discapacidad");
+    else addVd("la participación social de las personas con discapacidad");
+  }
+  if (hasAny(["cambio climático", "cambio climatico", "crisis climática", "crisis climatica", "calentamiento global", "emergencia climática", "emergencia climatica"])) {
+    addVd("la vulnerabilidad social frente al cambio climático");
+  } else if (hasAny(["medio ambiente", "sostenibilidad", "contaminación", "contaminacion", "huella ecológica", "huella ecologica"])) {
+    addVd("la vulnerabilidad ambiental");
+  }
+  if (hasAny(["despoblación", "despoblacion", "éxodo rural", "exodo rural", "españa vaciada", "espana vaciada", "reto demográfico", "reto demografico"])) {
+    addVd("la despoblación rural");
+  } else if (hasAny(["ruralidad", "mundo rural", "zonas rurales"])) {
+    addVd("las condiciones de vida en el mundo rural");
+  }
+  if (hasAny(["secularización", "secularizacion"])) {
+    addVd("la secularización");
+  } else if (hasAny(["religión", "religion", "religiosidad", "creencias religiosas", "prácticas religiosas", "practicas religiosas"])) {
+    addVd("la religiosidad");
+  }
 
   // 2) VI concretas asociadas al dominio del problema
+  if (hasAny(["estatus administrativo", "situación administrativa", "situacion administrativa", "regularización", "regularizacion", "permiso de residencia"])) {
+    addVi("el estatus administrativo y el acceso a la regularización");
+  }
+  if (hasAny(["barreras lingüísticas", "barreras linguisticas", "idioma", "reconocimiento de titulaciones", "homologación", "homologacion"])) {
+    addVi("las barreras lingüísticas y de reconocimiento de titulaciones");
+  }
+  if (hasAny(["accesibilidad", "barreras arquitectónicas", "barreras arquitectonicas", "entorno accesible"])) {
+    addVi("las barreras de accesibilidad del entorno");
+  }
+  if (hasAny(["dependencia funcional", "grado de discapacidad", "autonomía personal", "autonomia personal"])) {
+    addVi("el nivel de dependencia funcional");
+  }
+  if (hasAny(["riesgo climático", "riesgo climatico", "exposición ambiental", "exposicion ambiental", "vulnerabilidad territorial"])) {
+    addVi("la exposición territorial a riesgos ambientales");
+  }
+  if (hasAny(["educación ambiental", "educacion ambiental", "conciencia ambiental", "cultura ambiental"])) {
+    addVi("el acceso a la información y la educación ambiental");
+  }
+  if (hasAny(["envejecimiento poblacional", "envejecimiento de la población", "relevo generacional", "reemplazo generacional"])) {
+    addVi("el envejecimiento poblacional y el reemplazo generacional");
+  }
+  if (hasAny(["conectividad", "banda ancha", "transporte público", "transporte publico", "servicios básicos", "servicios basicos"])) {
+    addVi("la conectividad digital y de transporte");
+  }
+  if (hasAny(["socialización religiosa", "socializacion religiosa", "educación religiosa", "educacion religiosa", "tradición familiar", "tradicion familiar"])) {
+    addVi("la socialización familiar y comunitaria en la fe");
+  }
+  if (hasAny(["pluralismo", "diversidad cultural", "minoría religiosa", "minoria religiosa", "minorías religiosas", "minorias religiosas"])) {
+    addVi("el contexto migratorio y la pertenencia a minorías religiosas");
+  }
   if (hasAny(["bajo nivel de instrucción", "bajo nivel de instruccion"])) {
     addVi("el bajo nivel de instrucción");
   } else if (hasAny(["nivel de instrucción", "nivel de instruccion"])) {
@@ -1376,6 +1452,24 @@ function candidatosViPorDominio(vd0) {
   if (v.includes("construcción identitaria") || v.includes("construccion identitaria")) {
     return ["el contexto familiar y comunitario de socialización", "la exposición a referentes culturales y mediáticos", "la pertenencia a grupos de pares"];
   }
+  if (v.includes("discriminación hacia la población migrante") || v.includes("discriminacion hacia la poblacion migrante")) {
+    return ["el estatus administrativo y el acceso a la regularización", "el país o región de origen y su carga simbólica en el contexto receptor", "el tiempo de residencia y el dominio del idioma"];
+  }
+  if (v.includes("población migrante") || v.includes("poblacion migrante")) {
+    return ["el estatus administrativo y el acceso a la regularización", "las redes sociales de apoyo en el país de destino", "las barreras lingüísticas y de reconocimiento de titulaciones"];
+  }
+  if (v.includes("personas con discapacidad")) {
+    return ["las barreras de accesibilidad del entorno", "el acceso a recursos de apoyo y adaptación", "las actitudes sociales e institucionales hacia la discapacidad"];
+  }
+  if (v.includes("vulnerabilidad social frente al cambio climático") || v.includes("vulnerabilidad social frente al cambio climatico") || v.includes("vulnerabilidad ambiental")) {
+    return ["el nivel socioeconómico y el acceso a recursos de adaptación", "la exposición territorial a riesgos ambientales", "el acceso a la información y la educación ambiental"];
+  }
+  if (v.includes("despoblación rural") || v.includes("despoblacion rural") || v.includes("mundo rural")) {
+    return ["la falta de oportunidades laborales y servicios básicos", "el envejecimiento poblacional y el reemplazo generacional", "la conectividad digital y de transporte"];
+  }
+  if (v.includes("secularización") || v.includes("secularizacion") || v.includes("religiosidad")) {
+    return ["la socialización familiar y comunitaria en la fe", "el nivel educativo y la exposición a pluralismo cultural", "la pertenencia generacional"];
+  }
   return ["variables sociodemográficas básicas (edad, sexo, nivel educativo, situación laboral)", "el contexto territorial e institucional del problema"];
 }
 
@@ -1401,6 +1495,11 @@ function detectarAreaSociologica(lower, vi, vd) {
   if (skContieneAlguno(l, ["conocimiento", "normalidad", "sentido común", "sentido comun", "cognitivo"])) add("Sociología del conocimiento");
   if (["barrio", "barrios", "vecindario", "segregación territorial", "segregacion territorial", "segregación urbana", "segregacion urbana", "gentrificación", "gentrificacion", "desigualdad urbana", "estigma territorial", "periferia", "periférico", "periferico", "periféricos", "perifericos"].some(x => l0.includes(x))) add("Sociología urbana");
   if (skContieneAlguno(l, ["digital", "internet", "algoritmo", "redes sociales", "brecha digital", "tiktok"])) add("Sociología digital y algorítmica");
+  if (skContieneAlguno(l, ["migración", "migracion", "inmigración", "inmigracion", "migrante", "migrantes", "refugiados", "refugiadas", "asilo"])) add("Sociología de las migraciones");
+  if (skContieneAlguno(l, ["discapacidad", "diversidad funcional", "accesibilidad", "dependencia funcional"])) add("Sociología de la discapacidad");
+  if (skContieneAlguno(l, ["cambio climático", "cambio climatico", "medio ambiente", "sostenibilidad", "contaminación", "contaminacion", "crisis climática", "crisis climatica"])) add("Sociología ambiental");
+  if (skContieneAlguno(l, ["rural", "ruralidad", "despoblación", "despoblacion", "éxodo rural", "exodo rural"])) add("Sociología rural");
+  if (skContieneAlguno(l, ["religión", "religion", "religiosidad", "secularización", "secularizacion", "creencias religiosas"])) add("Sociología de la religión");
 
   if (areas.length === 0) add("Sociología general / del cambio social");
   return areas.slice(0, 5);
@@ -1414,10 +1513,10 @@ function detectarSubdominios(areas, vi, vd, lower) {
   if (areas.some(a => a.toLowerCase().includes("familia"))) {
     subs = subs.concat(["microinteracciones del hogar", "soporte parental", "tensiones afectivas", "roles de género en la crianza"]);
   }
-  if (areas.some(a => a.toLowerCase().includes("urbana")) || ["barrio", "vecindario", "segregación", "gentrificación"].some(k => lower.includes(k))) {
+  if (areas.some(a => a.toLowerCase().includes("urbana")) || skContieneAlguno(lower, ["barrio", "vecindario", "segregación", "gentrificación"])) {
     subs = subs.concat(["estigma territorial", "gentrificación", "segregación espacial y escolar"]);
   }
-  if (areas.some(a => a.toLowerCase().includes("género")) || ["masculinidad", "masculinidades", "feminidad", "feminidades"].some(k => lower.includes(k))) {
+  if (areas.some(a => a.toLowerCase().includes("género")) || skContieneAlguno(lower, ["masculinidad", "masculinidades", "feminidad", "feminidades"])) {
     subs = subs.concat(["habitus viril", "performatividad de género", "socialización emocional"]);
   }
   return uniq(subs);
@@ -1601,6 +1700,34 @@ function indicadoresParaVariable(nombre, tipo) {
     return { variable: nombre, tipo, indicador: "Tasa de delitos registrados por 10.000 habitantes", unidad: "Número de delitos / 10.000 hab.", nivel: "De razón", fuente: "Estadísticas policiales / registros administrativos" };
   }
 
+  if (lower.includes("población migrante") || lower.includes("poblacion migrante") || lower.includes("discriminación hacia la población migrante") || lower.includes("discriminacion hacia la poblacion migrante")) {
+    return { variable: nombre, tipo, indicador: "Situación administrativa, tiempo de residencia y experiencias de discriminación percibida", unidad: "Categórica (situación administrativa) / puntuación en escala (discriminación percibida)", nivel: "Nominal u ordinal según el indicador concreto", fuente: "Encuesta a población migrante, registros de extranjería, ACNUR/OIM" };
+  }
+  if (lower.includes("estatus administrativo") || lower.includes("regularización") || lower.includes("regularizacion")) {
+    return { variable: nombre, tipo, indicador: "Situación administrativa (regular/irregular, tipo de permiso, tiempo hasta la regularización)", unidad: "Categórica", nivel: "Nominal", fuente: "Registros de extranjería, encuesta a población migrante" };
+  }
+  if (lower.includes("personas con discapacidad") || lower.includes("dependencia funcional")) {
+    return { variable: nombre, tipo, indicador: "Grado de discapacidad reconocido y nivel de dependencia funcional", unidad: "Porcentaje de discapacidad reconocida / grado de dependencia", nivel: "Ordinal (grados) o de razón (porcentaje)", fuente: "Encuesta de Discapacidad (EDAD-INE), certificados de discapacidad, servicios sociales" };
+  }
+  if (lower.includes("barreras de accesibilidad")) {
+    return { variable: nombre, tipo, indicador: "Índice de accesibilidad del entorno físico y digital (vivienda, transporte, espacios públicos)", unidad: "Índice / escala compuesta", nivel: "Ordinal", fuente: "Auditorías de accesibilidad, observación estructurada, encuesta a personas usuarias" };
+  }
+  if (lower.includes("vulnerabilidad social frente al cambio climático") || lower.includes("vulnerabilidad social frente al cambio climatico") || lower.includes("vulnerabilidad ambiental")) {
+    return { variable: nombre, tipo, indicador: "Índice de vulnerabilidad climática (exposición, sensibilidad y capacidad de adaptación del hogar/territorio)", unidad: "Índice compuesto / escala", nivel: "Ordinal (índice) o de razón según componente", fuente: "Indicadores ambientales oficiales (Copernicus, IPCC), encuesta a hogares, atlas de vulnerabilidad" };
+  }
+  if (lower.includes("exposición territorial a riesgos ambientales") || lower.includes("exposicion territorial a riesgos ambientales")) {
+    return { variable: nombre, tipo, indicador: "Nivel de exposición territorial a riesgos ambientales (inundación, ola de calor, sequía)", unidad: "Índice de exposición / categoría de riesgo", nivel: "Ordinal", fuente: "Cartografía de riesgos, Copernicus Climate Data Store, protección civil" };
+  }
+  if (lower.includes("despoblación rural") || lower.includes("despoblacion rural") || lower.includes("mundo rural")) {
+    return { variable: nombre, tipo, indicador: "Tasa de variación poblacional y densidad de población del municipio/comarca", unidad: "% de variación anual / habitantes por km²", nivel: "De razón", fuente: "Padrón continuo (INE), Ministerio para el Reto Demográfico" };
+  }
+  if (lower.includes("envejecimiento poblacional") || lower.includes("reemplazo generacional")) {
+    return { variable: nombre, tipo, indicador: "Índice de envejecimiento y tasa de reemplazo generacional del municipio", unidad: "Personas de 65+ por cada 100 menores de 15 / tasa de reemplazo", nivel: "De razón", fuente: "Padrón continuo (INE), estadísticas municipales" };
+  }
+  if (lower.includes("religiosidad") || lower.includes("secularización") || lower.includes("secularizacion")) {
+    return { variable: nombre, tipo, indicador: "Frecuencia de práctica religiosa y autoidentificación como creyente/practicante", unidad: "Escala de frecuencia (nunca–diariamente) / categoría de autoidentificación", nivel: "Ordinal", fuente: "Barómetro CIS, ISSP (International Social Survey Programme), Pew Research" };
+  }
+
   if (tipo === "VI") {
     return { variable: nombre, tipo, indicador: `Escala / índice que mida «${nombre}» en la población de estudio`, unidad: "Puntuación en escala (1–5 / 1–10)", nivel: "Ordinal (escala tipo Likert)", fuente: "Cuestionario a población objetivo u observaciones estructuradas" };
   }
@@ -1648,11 +1775,11 @@ function clasificarEnfoqueMetodologico(lower) {
     "secuencial explicativo", "secuencial exploratorio", "métodos mixtos", "metodos mixtos"
   ];
 
-  const scoreCuali = marcadoresCuali.filter(w => lower.includes(w)).length;
-  const scoreCuanti = marcadoresCuanti.filter(w => lower.includes(w)).length;
+  const scoreCuali = marcadoresCuali.filter(w => skContienePatron(lower, w)).length;
+  const scoreCuanti = marcadoresCuanti.filter(w => skContienePatron(lower, w)).length;
   const esMixtoExplicito = marcadoresMixtoExplicito.some(w => lower.includes(w));
-  const esEtnografico = ["etnografía", "etnografia", "observación participante", "observacion participante"].some(w => lower.includes(w));
-  const esExperimental = ["experimento", "experimental", "ensayo controlado"].some(w => lower.includes(w));
+  const esEtnografico = skContieneAlguno(lower, ["etnografía", "etnografia", "observación participante", "observacion participante"]);
+  const esExperimental = skContieneAlguno(lower, ["experimento", "experimental", "ensayo controlado"]);
 
   if (esMixtoExplicito || (scoreCuali > 0 && scoreCuanti > 0)) {
     return { enfoque: "mixto", motivo: "el problema combina vocabulario propio de ambas tradiciones (o pide explícitamente un diseño mixto)." };
@@ -1677,21 +1804,21 @@ function sugerirDisenoEstudio(lower) {
 
   const { enfoque, motivo } = clasificarEnfoqueMetodologico(lower);
 
-  if (["longitudinal", "seguimiento", "evolución", "evolucion"].some(w => lower.includes(w))) {
+  if (skContieneAlguno(lower, ["longitudinal", "seguimiento", "evolución", "evolucion"])) {
     tipo = "un estudio longitudinal (panel o cohorte)";
     esTransversalPorDefecto = false;
   }
-  if (["etnografía", "etnografia", "observación participante", "observacion participante"].some(w => lower.includes(w))) {
+  if (skContieneAlguno(lower, ["etnografía", "etnografia", "observación participante", "observacion participante"])) {
     tipo = "un estudio cualitativo de inspiración etnográfica";
     tecnicas = ["Observación participante", "Entrevistas en profundidad", "Sociogramas / mapas de actores"];
     esTransversalPorDefecto = false;
   }
-  if (["experimento", "experimental", "ensayo controlado"].some(w => lower.includes(w))) {
+  if (skContieneAlguno(lower, ["experimento", "experimental", "ensayo controlado"])) {
     tipo = "un diseño cuasi-experimental o experimental (según viabilidad ética)";
     tecnicas = ["Diseño de intervención", "Grupo control / grupo experimental", "Mediciones pre y post"];
     esTransversalPorDefecto = false;
   }
-  if (["barrios", "barrio", "territorio", "comunidad", "participativo"].some(w => lower.includes(w))) {
+  if (skContieneAlguno(lower, ["barrios", "barrio", "territorio", "comunidad", "participativo"])) {
     unidad = "unidades territoriales (barrios / comunidades) y actores comunitarios relevantes";
   }
 
@@ -1739,7 +1866,7 @@ function sugerirDisenoEstudio(lower) {
   resumen.push("");
   resumen.push("Notas: Ajustar el diseño al acceso real al campo, recursos disponibles y criterios éticos; combinar, cuando sea posible, al menos una técnica cuantitativa y una cualitativa.");
 
-  if (["violencia", "maltrato", "feminicidio", "salud mental", "ansiedad", "depresión", "depresion", "menor", "menores", "niño", "niños", "niña", "niñas", "infancia", "adolescente"].some(w => lower.includes(w))) {
+  if (skContieneAlguno(lower, ["violencia", "maltrato", "feminicidio", "salud mental", "ansiedad", "depresión", "depresion", "menor", "menores", "niño", "niños", "niña", "niñas", "infancia", "adolescente"])) {
     resumen.push("Este problema toca un tema sensible (violencia, salud mental y/o menores de edad): prevé consentimiento informado explícito, protocolos de derivación ante revelación de riesgo, anonimización estricta de los datos y aprobación de un comité de ética antes de recoger cualquier dato.");
   }
 
@@ -1781,6 +1908,26 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
   if (skContieneAlguno(total, ["barrio", "territorio", "urbano", "zaragoza"])) {
     add("Lefebvre: producción social del espacio");
     add("Wacquant: marginalidad urbana y estigma territorial");
+  }
+  if (skContieneAlguno(total, ["migración", "migracion", "inmigración", "inmigracion", "migrante", "refugiados", "asilo"])) {
+    add("Portes: capital social y asimilación segmentada");
+    add("Sayad: la doble ausencia del inmigrante");
+  }
+  if (skContieneAlguno(total, ["discapacidad", "diversidad funcional", "accesibilidad", "dependencia funcional"])) {
+    add("Oliver: modelo social de la discapacidad");
+    add("Goffman: estigma e identidad deteriorada");
+  }
+  if (skContieneAlguno(total, ["cambio climático", "cambio climatico", "medio ambiente", "sostenibilidad", "crisis climática", "crisis climatica"])) {
+    add("Beck: sociedad del riesgo");
+    add("Norgaard: negación social del cambio climático");
+  }
+  if (skContieneAlguno(total, ["rural", "ruralidad", "despoblación", "despoblacion", "éxodo rural", "exodo rural"])) {
+    add("Tönnies: comunidad y sociedad");
+    add("Camarero: ruralidad, género y despoblación en España");
+  }
+  if (skContieneAlguno(total, ["religión", "religion", "religiosidad", "secularización", "secularizacion"])) {
+    add("Durkheim: formas elementales de la vida religiosa");
+    add("Berger: el dosel sagrado y la secularización");
   }
 
   if (marcos.length === 0) {
@@ -2010,7 +2157,16 @@ function validarProblemaEdu(texto) {
     "aumenta", "aumentan", "reduce", "reducen", "incrementa", "incrementan", "disminuye", "disminuyen",
     "favorece", "favorecen", "predice", "predicen", "por qué razón", "que factor"
   ];
-  const tieneRelacion = contieneAlguno(t, marcadoresRelacion);
+  // Coincidencia EXACTA aquí a propósito (no skContieneAlguno/tolerante):
+  // son palabras cortas y muy frecuentes ("genera", "como", "causa"...), y
+  // con tolerancia a erratas alguna de ellas coincide por accidente con
+  // vocabulario de dominio no relacionado a distancia de edición 1 (p. ej.
+  // "genera" con "género" — se detectó exactamente ese falso positivo al
+  // escribir los tests). El coste de una errata real en un marcador de
+  // relación es bajo (hay muchos marcadores, casi siempre alguno se escribe
+  // bien); el coste de una falsa coincidencia aquí es alto porque este es
+  // el primer requisito que decide si el problema pasa la validación.
+  const tieneRelacion = marcadoresRelacion.some(p => t.includes(p));
 
   let tieneFecha = /\b(19|20)\d{2}\b/.test(t) || /\b\d{4}[-/]\d{4}\b/.test(t);
   const periodos = ["últimos años", "ultimos años", "últimos 5 años", "ultimos 5 años", "curso académico", "curso academico", "actualidad", "pospandemia", "durante"];
@@ -2062,7 +2218,7 @@ function validarProblemaEdu(texto) {
 
   const nombresComunes = ["paco", "juan", "pedro", "maría", "maria", "luis", "ana", "carlos", "pepe", "manolo"];
   const marcadoresIndividuales = ["mi amigo", "mi vecina", "mi vecino", "una persona", "un alumno", "una alumna"].concat(nombresComunes);
-  const preguntaCotidiana = ["cuánto dinero", "cuanto dinero", "qué dinero", "que dinero", "tiene dinero", "gana dinero"].some(x => t.includes(x));
+  const preguntaCotidiana = skContieneAlguno(t, ["cuánto dinero", "cuanto dinero", "qué dinero", "que dinero", "tiene dinero", "gana dinero"]);
 
   if (preguntaCotidiana || contieneAlguno(t, marcadoresIndividuales)) {
     fallos.push("La pregunta está formulada en clave individual o cotidiana. SOCIOKAIROS EDU requiere un fenómeno social y una unidad de análisis colectiva, no el caso aislado de una persona.");

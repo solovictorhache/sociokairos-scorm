@@ -1,0 +1,11 @@
+{
+  "name": "sociokairos-scorm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SOCIOKAIROS EDU — motor heurístico determinista para reformular problemas de investigación sociológica, empaquetado como SCORM.",
+  "scripts": {
+    "build": "python3 src/build.py",
+    "test": "node --test"
+  },
+  "license": "SEE LICENSE IN scorm_plugin/LICENCIA.txt"
+}

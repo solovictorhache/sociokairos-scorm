@@ -1,0 +1,209 @@
+"use strict";
+const { describe, test } = require("node:test");
+const assert = require("node:assert/strict");
+const { cargarMotor } = require("./helpers/load-engine.js");
+
+const eng = cargarMotor();
+
+describe("coincidencia tolerante a erratas", () => {
+  test("una errata típica de una letra sigue coincidiendo", () => {
+    assert.equal(eng.skDistanciaEdicion("hombres", "hombrs"), 1);
+    assert.equal(eng.skContienePatron("los hombrs con bajo nivel", "hombres"), true);
+    assert.equal(eng.skContienePatron("bajo nivel de instrucion", "bajo nivel de instrucción"), true);
+  });
+
+  test("no confunde palabras españolas distintas que comparten raíz", () => {
+    // "instrucción" e "institución" están a distancia de edición 2: deben
+    // seguir siendo palabras distintas para el motor, no la misma errata.
+    assert.equal(eng.skDistanciaEdicion("institucion", "instrucion"), 2);
+    assert.equal(eng.skContienePatron("hay una institucion cerca", "instrucción"), false);
+  });
+
+  test("los marcadores de relación del validador usan coincidencia exacta, no tolerante", () => {
+    // Regresión: "genera" (marcador de relación) está a distancia de
+    // edición 1 de "género", así que con coincidencia tolerante cualquier
+    // problema sobre género quedaba validado aunque no hubiera ningún
+    // marcador de relación real. Los marcadores de relación deben seguir
+    // exigiendo coincidencia exacta precisamente por esto.
+    const v = eng.validarProblemaEdu("La violencia de género entre hombres en Zaragoza en 2025");
+    assert.equal(v.valido, false);
+    assert.ok(v.fallos.some((f) => f.includes("Faltan al menos dos variables")));
+  });
+
+  test("respeta coincidencia exacta cuando no hay errata", () => {
+    assert.equal(eng.skContienePatron("violencia de género", "violencia de género"), true);
+    assert.equal(eng.skContienePatron("no aparece aquí", "inexistente"), false);
+  });
+});
+
+describe("validarProblemaEdu", () => {
+  test("acepta un problema bien formado", () => {
+    const v = eng.validarProblemaEdu(
+      "¿Cómo influye la precariedad laboral en la salud mental de los jóvenes en Zaragoza en 2024?"
+    );
+    assert.equal(v.valido, true);
+    assert.deepEqual(v.fallos, []);
+  });
+
+  test("acepta 'porque' y una errata en la unidad social (caso reportado)", () => {
+    const v = eng.validarProblemaEdu(
+      "¿Porque los hombrs con bajo nivel de instrucion ejercen mas violencia de genero en zaragoza en el 2025??"
+    );
+    assert.equal(v.valido, true, "debería validar pese a 'porque' y la errata en 'hombrs'");
+  });
+
+  test("rechaza una frase sin relación entre variables ni unidad social", () => {
+    const v = eng.validarProblemaEdu("La pobreza energética en Zaragoza en 2025");
+    assert.equal(v.valido, false);
+    assert.ok(v.fallos.length > 0);
+  });
+
+  test("acumula intentos fallidos y los resetea al validar", () => {
+    const antes = eng.validarProblemaEdu("texto claramente insuficiente").intentos;
+    const otraVezMalo = eng.validarProblemaEdu("otro texto también insuficiente y distinto");
+    assert.ok(otraVezMalo.intentos >= antes);
+  });
+});
+
+describe("detectarVariables / analizarProblema", () => {
+  test("detecta VI y VD reales cuando el texto nombra ambas explícitamente", () => {
+    const r = eng.analizarProblema(
+      "¿Cómo influye el bajo nivel de instrucción en la precariedad laboral de los jóvenes en Zaragoza en 2024?"
+    );
+    assert.ok(r.vi.some((v) => v.includes("instrucción")));
+    assert.ok(r.vd.some((v) => v.includes("precariedad laboral")));
+    assert.equal(r.viEsCandidato, false);
+  });
+
+  test("propone VI candidatas informadas por dominio cuando el texto no nombra ninguna", () => {
+    const r = eng.analizarProblema(
+      "¿Por qué se produce la violencia de género entre hombres en Zaragoza en 2025?"
+    );
+    assert.equal(r.viEsCandidato, true);
+    assert.ok(r.vi.length > 0);
+  });
+
+  test("reconoce una VI con errata en vez de caer en candidatas genéricas (caso reportado)", () => {
+    const r = eng.analizarProblema(
+      "¿Porque los hombrs con bajo nivel de instrucion ejercen mas violencia de genero en zaragoza en el 2025??"
+    );
+    assert.equal(r.viEsCandidato, false);
+    assert.ok(r.vi.some((v) => v.includes("instrucción")));
+    assert.ok(r.vd.some((v) => v.includes("violencia de género")));
+  });
+});
+
+describe("dominios sociológicos ampliados", () => {
+  const casos = [
+    {
+      texto: "¿Cómo influye el estatus administrativo en la discriminación hacia la población migrante en Madrid en 2025?",
+      area: "migraciones",
+      vd: "migrante",
+    },
+    {
+      texto: "¿De qué manera afectan las barreras de accesibilidad a la exclusión social de las personas con discapacidad en Barcelona en 2024?",
+      area: "discapacidad",
+      vd: "discapacidad",
+    },
+    {
+      texto: "¿Cómo influye el nivel socioeconómico en la vulnerabilidad social frente al cambio climático de las familias en Valencia en 2025?",
+      area: "ambiental",
+      vd: "cambio climático",
+    },
+    {
+      texto: "¿Por qué se produce la despoblación rural entre los jóvenes en Teruel en 2025?",
+      area: "rural",
+      vd: "despoblación",
+    },
+    {
+      texto: "¿Cómo influye la socialización familiar en la religiosidad de los jóvenes en Zaragoza en 2025?",
+      area: "religión",
+      vd: "religiosidad",
+    },
+  ];
+
+  for (const caso of casos) {
+    test(`valida y clasifica correctamente: ${caso.area}`, () => {
+      const v = eng.validarProblemaEdu(caso.texto);
+      assert.equal(v.valido, true, `no validó: ${JSON.stringify(v.fallos)}`);
+      const r = eng.analizarProblema(caso.texto);
+      assert.ok(r.area.toLowerCase().includes(caso.area), `área inesperada: ${r.area}`);
+      assert.ok(r.vd.some((x) => x.toLowerCase().includes(caso.vd)), `VD inesperada: ${JSON.stringify(r.vd)}`);
+      assert.ok(r.marcos.length > 0);
+      for (const fila of r.operacionalizacion) {
+        assert.ok(fila.variable && fila.tipo && fila.nivel);
+      }
+    });
+  }
+});
+
+describe("clasificarEnfoqueMetodologico", () => {
+  test("clasifica cualitativo por vocabulario de sentido/experiencia", () => {
+    const c = eng.clasificarEnfoqueMetodologico("quiero entender los significados y vivencias subjetivas");
+    assert.equal(c.enfoque, "cualitativo");
+  });
+
+  test("clasifica cuantitativo por vocabulario de medición/asociación", () => {
+    const c = eng.clasificarEnfoqueMetodologico("medir la correlacion estadistica entre variables con una encuesta");
+    assert.equal(c.enfoque, "cuantitativo");
+  });
+
+  test("clasifica mixto cuando no hay marcadores claros de una sola tradición", () => {
+    const c = eng.clasificarEnfoqueMetodologico("como influye x en y");
+    assert.equal(c.enfoque, "mixto");
+  });
+});
+
+describe("construirHipotesis escala con el número de variables", () => {
+  test("una VI produce una hipótesis específica más una de cierre", () => {
+    const h = eng.construirHipotesis(["el bajo nivel de instrucción"], ["la violencia de género"], "Zaragoza", "los hombres");
+    assert.equal(h.length, 2);
+    assert.match(h[0], /el bajo nivel de instrucción/);
+  });
+
+  test("cinco VI producen hasta 4 hipótesis específicas más una de combinación", () => {
+    const vi = ["factor A", "factor B", "factor C", "factor D", "factor E"];
+    const h = eng.construirHipotesis(vi, ["el fenómeno estudiado"], "Zaragoza", "la población de estudio");
+    assert.equal(h.length, 5);
+    assert.match(h[4], /combinación/);
+  });
+});
+
+describe("guía cualitativa y síntesis del problema", () => {
+  test("construirGuiaCualitativa devuelve códigos y preguntas no vacíos con VI/VD reales", () => {
+    const r = eng.analizarProblema(
+      "¿Cómo influye la precariedad laboral en la salud mental de los jóvenes en Zaragoza en 2024?"
+    );
+    assert.ok(r.guiaCualitativa.codigos.length > 0);
+    assert.ok(r.guiaCualitativa.preguntas.length > 0);
+  });
+
+  test("construirProblemaPerfecto produce un texto con tres párrafos", () => {
+    const r = eng.analizarProblema(
+      "¿Cómo influye la precariedad laboral en la salud mental de los jóvenes en Zaragoza en 2024?"
+    );
+    const texto = eng.construirProblemaPerfecto(r, "P2", r.p2);
+    assert.equal(texto.split("\n\n").length, 3);
+  });
+});
+
+describe("operacionalización y CSV", () => {
+  test("construirOperacionalizacion nunca deja una fila sin variable/tipo (regresión del bug de pobreza energética)", () => {
+    const r = eng.analizarProblema(
+      "¿Cómo se distribuye la pobreza energética entre los hogares monoparentales de Madrid en 2025?"
+    );
+    for (const fila of r.operacionalizacion) {
+      assert.ok(fila.variable, "fila sin 'variable'");
+      assert.ok(fila.tipo, "fila sin 'tipo'");
+      assert.ok(fila.nivel, "fila sin nivel de medición");
+    }
+  });
+
+  test("exportarCSV no lanza y produce cabecera esperada", () => {
+    const r = eng.analizarProblema(
+      "¿Cómo influye la precariedad laboral en la salud mental de los jóvenes en Zaragoza en 2024?"
+    );
+    const csv = eng.exportarCSV(r);
+    assert.match(csv.split("\n")[0], /Variable,Tipo,Indicador,Unidad,Nivel de medición,Fuente/);
+  });
+});

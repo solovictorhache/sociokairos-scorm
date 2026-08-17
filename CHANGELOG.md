@@ -1,5 +1,12 @@
 # CHANGELOG — SOCIOKAIROS SCORM Plugin
 
+## Robustez, cobertura de dominios y tests 2026-08-17
+
+- **Tolerancia a erratas extendida al resto del motor.** `skHas` (usado en `generarAlertasMetodologicas`, `generarTradiciones`, `generarMapaLogico`, `generarDisenos` y `generarMecanismos`) ahora delega en la comparación tolerante `skContieneAlguno`, igual que ya hacía la detección de variables. También se convirtieron `clasificarEnfoqueMetodologico`, `sugerirDisenoEstudio` y el diccionario de fuentes de `geoFuentes`. Deliberadamente **no** se tocó `geoDetectar` (alias geográficos) ni `indicadoresParaVariable` (opera sobre nombres de variable ya generados internamente, no sobre texto crudo): en ambos casos una errata de una letra puede confundir un nombre propio o una palabra con otra, y el riesgo de colisión pesa más que el beneficio.
+- **Regresión real encontrada al escribir los tests, y corregida.** El marcador de relación "genera" (añadido para reconocer verbos causales) está a distancia de edición 1 de "género": con coincidencia tolerante, cualquier problema que mencionara género quedaba validado aunque no tuviera ningún marcador de relación real. Los marcadores de relación del validador EDU volvieron a exigir coincidencia exacta — son palabras cortas y frecuentes, con más riesgo de colisión que beneficio al tolerar erratas.
+- **Suite de tests real.** `tests/engine.test.js` (Node's `node:test`, sin dependencias) sustituye a los scripts sueltos usados hasta ahora para verificar el motor: 25 casos en 8 grupos, incluida una regresión explícita para la colisión "genera"/"género". Se ejecuta con `npm test`.
+- **Cinco dominios sociológicos nuevos**: migración, discapacidad, medio ambiente/cambio climático, ruralidad y religión. Cada uno con detección de VD/VI, candidatas de VI por dominio, área sociológica, marcos teóricos (Portes y Sayad; Oliver y Goffman; Beck y Norgaard; Tönnies y Camarero; Durkheim y Berger), indicadores de operacionalización con nivel de medición, y fuentes de datos específicas (ACNUR/OIM, INE-EDAD/OMS, Copernicus/MITECO, Reto Demográfico, CIS/Pew/ISSP).
+
 ## Revisión técnica 2026-08-16
 
 Revisión de corrección técnica sobre el paquete original del 2025-11-27. No cambia el contenido pedagógico ni la lógica heurística (misma detección de VI/VD, áreas sociológicas, preguntas, hipótesis, operacionalización y fuentes), solo la implementación:
