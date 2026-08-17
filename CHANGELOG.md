@@ -1,5 +1,22 @@
 # CHANGELOG — SOCIOKAIROS SCORM Plugin
 
+## Seis dominios nuevos y motor de categorías explicativas 2026-08-17
+
+**Seis dominios sociológicos nuevos**, cada uno con detección de VD/VI, candidatas por dominio, área, operacionalización, y **6 marcos teóricos** (3 clásicos + 3 contemporáneos, con conceptos nombrados, no solo el nombre del autor):
+
+- Sociología de la sexualidad y la diversidad sexual: Foucault, Rubin, Rich · Butler, Sedgwick, Puar
+- Sociología del envejecimiento: Cumming y Henry, Erikson, Beauvoir · Butler R., Phillipson, Carstensen
+- Criminología y sociología de la desviación: Merton, Sutherland, Becker · Sampson, Wacquant, Garland
+- Sociología de la comunicación y los medios: Lippmann, Lazarsfeld, McLuhan · McCombs, Castells, Sunstein
+- Sociología del consumo: Veblen, Simmel, Bourdieu · Baudrillard, Bauman, Featherstone
+- Sociología de las organizaciones: Weber, Taylor, Mayo · Crozier, Kanter, Alvesson
+
+**Categorías explicativas aplicadas al problema concreto** (sección nueva, tanto en pantalla como en el Word): a diferencia de los marcos teóricos generales (una lista de autores por afinidad léxica), este motor responde a una pregunta más difícil — "¿qué concepto teórico concreto explica *esta* dinámica en particular?". Por ejemplo, ante "¿por qué la mujer violentada está de acuerdo con su agresor?", sugiere la violencia simbólica de Bourdieu y el ciclo de la violencia de Walker, con el razonamiento aplicado al caso, no solo el nombre del autor. Exige, además del tema, una marca textual de la dinámica a explicar (aceptación, silencio, autoexclusión, persistencia de una creencia pese a la evidencia...) — sin esa marca no sugiere nada, para no degenerar en una lista genérica. Cubre 15 dinámicas curadas (violencia, pobreza, precariedad laboral, abandono escolar, etnia, migración, salud mental, soledad, discapacidad, delincuencia, identidad LGTBIQ+, consumo, organizaciones, envejecimiento, desinformación, religión, ruralidad) más un mecanismo general de repuesto (disonancia cognitiva, Festinger).
+
+Al construir el caso de ejemplo se detectó y corrigió un hueco real: "violentada" y "abandonan la escuela" (formas verbales) no activaban ningún VD porque solo se reconocían las formas nominales ("violencia", "abandono escolar") — se ampliaron los disparadores con las formas verbales más habituales.
+
+Informe Word ampliado a 18 secciones (nueva sección 7). Probado con 6 dominios nuevos + 4 casos de categorías explicativas + regresión completa (36/36 tests en verde) y validado end-to-end con Playwright + python-docx.
+
 ## Sociología de la etnicidad y grupos culturales, transversal 2026-08-17
 
 Cuando el problema nombra un grupo étnico o cultural particular (gitano/a, romaní, indígena, afrodescendiente, o "etnia"/"tribu étnica"/"grupo cultural" en general), el motor ahora lo trata como un factor explicativo real, no como texto ignorado:

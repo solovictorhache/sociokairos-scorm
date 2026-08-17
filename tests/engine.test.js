@@ -157,6 +157,43 @@ describe("etnicidad y grupos culturales (transversal)", () => {
   });
 });
 
+describe("seis dominios nuevos (sexualidad, envejecimiento, criminología, medios, consumo, organizaciones)", () => {
+  const casos = [
+    { texto: "¿Cómo influye el rechazo familiar en la aceptación social de la diversidad sexual de los jóvenes LGTBI en Zaragoza en 2025?", marco: "Butler" },
+    { texto: "¿Cómo influye el estado de salud funcional en las condiciones de vida en la vejez de las personas mayores en Zaragoza en 2025?", marco: "Carstensen" },
+    { texto: "¿Cómo influye la asociación diferencial con pares desviados en la delincuencia juvenil en Zaragoza en 2025?", marco: "Becker" },
+    { texto: "¿Cómo influye la cámara de eco en la desinformación entre los jóvenes en Zaragoza en 2025?", marco: "Sunstein" },
+    { texto: "¿Cómo influye la búsqueda de distinción social en el consumo ostentoso de las familias en Zaragoza en 2025?", marco: "Veblen" },
+    { texto: "¿Cómo influye la jerarquía organizacional en el clima organizacional de las empresas en Zaragoza en 2025?", marco: "Crozier" },
+  ];
+  for (const caso of casos) {
+    test(`detecta marco teórico esperado: ${caso.marco}`, () => {
+      const v = eng.validarProblemaEdu(caso.texto);
+      assert.equal(v.valido, true, `no validó: ${JSON.stringify(v.fallos)}`);
+      const r = eng.analizarProblema(caso.texto);
+      assert.ok(r.marcos.some((m) => m.includes(caso.marco)), `marcos: ${JSON.stringify(r.marcos)}`);
+      assert.ok(r.marcos.length >= 6, `se esperaban al menos 6 marcos del dominio nuevo: ${r.marcos.length}`);
+    });
+  }
+});
+
+describe("categorías explicativas aplicadas al problema concreto", () => {
+  test("violencia + marcador de aceptación sugiere violencia simbólica (Bourdieu)", () => {
+    const r = eng.analizarProblema("¿Por qué la mujer violentada está de acuerdo con su agresor en Zaragoza en 2025?");
+    assert.ok(r.categoriasExplicativas.some((c) => c.includes("Violencia simbólica") && c.includes("Bourdieu")));
+  });
+
+  test("abandono escolar + autoexclusión sugiere habitus (Bourdieu)", () => {
+    const r = eng.analizarProblema("¿Por qué los alumnos de origen popular abandonan la escuela voluntariamente en Zaragoza en 2025?");
+    assert.ok(r.categoriasExplicativas.some((c) => c.includes("Habitus")));
+  });
+
+  test("sin marcador de dinámica específica, no sugiere nada (evita ser una lista genérica)", () => {
+    const r = eng.analizarProblema("¿Cómo influye la precariedad laboral en la salud mental de los jóvenes en Zaragoza en 2024?");
+    assert.equal(r.categoriasExplicativas.length, 0);
+  });
+});
+
 describe("clasificarEnfoqueMetodologico", () => {
   test("clasifica cualitativo por vocabulario de sentido/experiencia", () => {
     const c = eng.clasificarEnfoqueMetodologico("quiero entender los significados y vivencias subjetivas");

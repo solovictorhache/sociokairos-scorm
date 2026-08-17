@@ -65,13 +65,23 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal) 
   resultado.marcos.forEach(m => parts.push(paragraphXml(m, { bullet: true })));
   parts.push(paragraphXml(NOTA_JUSTIFICAR_MARCOS, { italic: true }));
 
-  parts.push(headingXml("7. Unidad de análisis, diseño de estudio y enfoque metodológico", 2));
+  parts.push(headingXml("7. Categorías explicativas para tu problema concreto", 2));
+  const categorias = resultado.categoriasExplicativas || [];
+  if (categorias.length) {
+    parts.push(paragraphXml("Más allá de los marcos teóricos generales de la sección anterior, estas categorías responden a una dinámica concreta identificada en tu problema (por ejemplo, por qué alguien permanece, calla o justifica una situación):", { italic: true }));
+    categorias.forEach(c => parts.push(paragraphXml(c, { bullet: true })));
+    parts.push(paragraphXml(NOTA_CATEGORIAS_EXPLICATIVAS, { italic: true }));
+  } else {
+    parts.push(paragraphXml("SOCIOKAIROS no ha detectado en el texto una dinámica concreta (por ejemplo, alguien que permanece, calla o justifica una situación) que active una categoría explicativa específica. Usa los marcos teóricos generales de la sección anterior, o describe con más detalle qué hace o cómo reacciona la persona o el grupo afectado."));
+  }
+
+  parts.push(headingXml("8. Unidad de análisis, diseño de estudio y enfoque metodológico", 2));
   parts.push(paragraphXml("Unidad de análisis sugerida:"));
   parts.push(paragraphXml(resultado.unidad));
   parts.push(paragraphXml("Diseño de estudio sugerido:"));
   resultado.diseno.split("\n").forEach(linea => parts.push(paragraphXml(linea)));
 
-  parts.push(headingXml("8. Operacionalización sugerida", 2));
+  parts.push(headingXml("9. Operacionalización sugerida", 2));
   parts.push(paragraphXml(`Observación metodológica: la operacionalización propuesta se ha construido a partir de la ${versionLabel} del problema seleccionada en SOCIOKAIROS.`, { italic: true }));
   const filas = resultado.operacionalizacion;
   if (filas.length) {
@@ -80,11 +90,11 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal) 
     parts.push(paragraphXml("Pendiente de definir variables, indicadores y fuentes de datos."));
   }
 
-  parts.push(headingXml("9. Fuentes de datos / bases recomendadas", 2));
+  parts.push(headingXml("10. Fuentes de datos / bases recomendadas", 2));
   if (resultado.fuentes.length) resultado.fuentes.forEach(f => parts.push(paragraphXml(f, { bullet: true })));
   else parts.push(paragraphXml("Pendiente de identificar bases de datos y fuentes administrativas específicas."));
 
-  parts.push(headingXml("10. Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)", 2));
+  parts.push(headingXml("11. Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)", 2));
   parts.push(paragraphXml(NOTA_GUIA_CUALITATIVA, { italic: true }));
   const guia = resultado.guiaCualitativa || { codigos: [], preguntas: [] };
   parts.push(paragraphXml("Libro de códigos preliminar:"));
@@ -98,27 +108,27 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal) 
   else parts.push(paragraphXml("Pendiente de construir.", { bullet: true }));
 
   const txtBase = textoOriginal || problema;
-  parts.push(headingXml("11. Alertas metodológicas", 2));
+  parts.push(headingXml("12. Alertas metodológicas", 2));
   generarAlertasMetodologicas(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
 
-  parts.push(headingXml("12. Tradiciones sociológicas compatibles", 2));
+  parts.push(headingXml("13. Tradiciones sociológicas compatibles", 2));
   generarTradiciones(resultado, txtBase).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
 
-  parts.push(headingXml("13. Mapa lógico del problema", 2));
+  parts.push(headingXml("14. Mapa lógico del problema", 2));
   parts.push(paragraphXml(generarMapaLogico(resultado)));
 
-  parts.push(headingXml("14. Diseños metodológicos sugeridos", 2));
+  parts.push(headingXml("15. Diseños metodológicos sugeridos", 2));
   generarDisenos(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
 
-  parts.push(headingXml("15. Nota para estudiantes de la Universidad de Zaragoza", 2));
+  parts.push(headingXml("16. Nota para estudiantes de la Universidad de Zaragoza", 2));
   parts.push(paragraphXml("Universidad de Zaragoza: consulta también los recursos de la Biblioteca de Ciencias Sociales y los convenios de acceso a bases de datos restringidas (estadísticas, encuestas, registros administrativos, etc.)."));
 
-  parts.push(headingXml("16. Nota APA para citar SOCIOKAIROS", 2));
+  parts.push(headingXml("17. Nota APA para citar SOCIOKAIROS", 2));
   parts.push(paragraphXml("Pérez Gallo, V. H. (2025). SOCIOKAIROS: A Heuristic Computational Assistant for the Reformulation of Scientific Problems in Sociology (Versión 15) [Software]. Zenodo. https://doi.org/10.5281/zenodo.17462816"));
   parts.push(paragraphXml("Pérez Gallo, V. H. (2025). SOCIOKAIROS Companion Paper: Computational Heuristics for Reflexive Sociology [Documento técnico]. Zenodo. https://doi.org/10.5281/zenodo.17541706"));
   parts.push(paragraphXml("Nota importante: SOCIOKAIROS puede emplearse como herramienta heurística para mejorar claridad conceptual, operacionalización y diseño metodológico. Las decisiones finales (variables, indicadores, hipótesis y métodos) deben justificarse en el marco teórico y la literatura científica del trabajo."));
 
-  parts.push(headingXml("17. Advertencia académica", 2));
+  parts.push(headingXml("18. Advertencia académica", 2));
   parts.push(paragraphXml("SOCIOKAIROS es una herramienta heurística de apoyo a la formulación de problemas científicos. No sustituye la revisión bibliográfica sistemática, el trabajo teórico propio del investigador ni la discusión metodológica detallada. El uso responsable de sus sugerencias exige contrastarlas con la literatura, los datos disponibles y las condiciones concretas del campo de estudio."));
 
   let logoBytes = null;

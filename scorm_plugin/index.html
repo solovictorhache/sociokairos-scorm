@@ -580,31 +580,35 @@ body.sk-dark .version-selector label:hover {
         <h3>2.4 Correlaciones, hipótesis y marcos teóricos</h3>
         <pre id="out_notas"></pre>
 
-        <h3>2.5 Unidad de análisis, diseño de estudio y enfoque metodológico</h3>
+        <h3>2.5 Categorías explicativas para tu problema concreto</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Más allá de una lista de autores: si tu problema describe una dinámica que cuesta explicar a primera vista (por ejemplo, por qué alguien permanece, calla o no cambia de opinión pese a la evidencia), aquí SOCIOKAIROS propone un concepto teórico concreto que puede explicarla, con el razonamiento aplicado a tu caso — no solo el nombre del autor.</p>
+        <pre id="out_categorias_explicativas"></pre>
+
+        <h3>2.6 Unidad de análisis, diseño de estudio y enfoque metodológico</h3>
         <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS decide si tu problema pide un abordaje cualitativo, cuantitativo o mixto, y adapta a partir de ahí el diseño, el software de apoyo y el tipo de muestreo sugeridos.</p>
         <pre id="out_diseno"></pre>
 
-        <h3>2.6 Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
+        <h3>2.7 Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
         <p class="meta sk-tutor" style="font-size:0.78rem;">Un punto de partida para trabajo cualitativo, pensado para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real, o para usarse directamente en análisis manual o en la redacción de tesis.</p>
         <pre id="out_guia_codigos"></pre>
         <pre id="out_guia_preguntas"></pre>
 
-        <h3>2.7 Fuentes de datos / bases recomendadas</h3>
+        <h3>2.8 Fuentes de datos / bases recomendadas</h3>
         <pre id="out_fuentes"></pre>
 
-        <h3>2.8 Alertas metodológicas</h3>
+        <h3>2.9 Alertas metodológicas</h3>
         <pre id="out_alertas"></pre>
 
-        <h3>2.9 Tradiciones sociológicas compatibles</h3>
+        <h3>2.10 Tradiciones sociológicas compatibles</h3>
         <pre id="out_tradiciones"></pre>
 
-        <h3>2.10 Mapa lógico del problema</h3>
+        <h3>2.11 Mapa lógico del problema</h3>
         <pre id="out_mapa"></pre>
 
-        <h3>2.11 Diseños metodológicos sugeridos</h3>
+        <h3>2.12 Diseños metodológicos sugeridos</h3>
         <pre id="out_disenos_plus"></pre>
 
-        <h3>2.12 Visualización heurística del problema</h3>
+        <h3>2.13 Visualización heurística del problema</h3>
         <div class="visual-controls" style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px 0;">
           <button id="btn_visual_causal" class="secondary" type="button">Modo 1 · Mapa causal</button>
           <button id="btn_visual_red" class="secondary" type="button">Modo 2 · Red sociológica</button>
@@ -1165,7 +1169,7 @@ function detectarVariables(lower) {
   }
   if (hasAny(["violencia de género", "violencia de genero", "violencia machista"])) {
     addVd("la violencia de género");
-  } else if (skContienePatron(l, "violencia")) {
+  } else if (hasAny(["violencia", "violentada", "violentado", "violentadas", "violentados", "maltrato", "maltratada", "maltratado", "maltratador", "agresor", "agresora", "agredida", "agredido"])) {
     addVd("la violencia");
   }
   if (hasAny(["salud mental", "problemas de salud mental", "malestar emocional", "bienestar psicológico", "bienestar psicologico"])) {
@@ -1173,7 +1177,8 @@ function detectarVariables(lower) {
   } else if (hasAny(["morbilidad", "mortalidad", "enfermedad"])) {
     addVd("los problemas de salud");
   }
-  if (hasAny(["abandono escolar", "deserción escolar", "desercion escolar", "fracaso escolar"])) {
+  if (hasAny(["abandono escolar", "deserción escolar", "desercion escolar", "fracaso escolar"]) ||
+      (hasAny(["abandona", "abandonan", "abandonó", "abandono", "abandonaron", "deja", "dejan", "dejó", "dejo"]) && hasAny(["escuela", "instituto", "colegio", "estudios", "clases"]))) {
     addVd("el abandono escolar");
   }
   if (hasAny(["absentismo", "ausentismo"])) {
@@ -1236,6 +1241,34 @@ function detectarVariables(lower) {
   } else if (hasAny(["religión", "religion", "religiosidad", "creencias religiosas", "prácticas religiosas", "practicas religiosas"])) {
     addVd("la religiosidad");
   }
+  if (hasAny(["homofobia", "transfobia", "lgtbifobia", "lgbtfobia"])) {
+    addVd("la discriminación hacia personas LGTBIQ+");
+  } else if (hasAny(["lgtbi", "lgtbiq", "lgbt", "diversidad sexual", "orientación sexual", "orientacion sexual", "identidad de género", "identidad de genero", "personas trans", "transgénero", "transgenero", "bisexual", "homosexual", "no binarie", "no binario"])) {
+    addVd("la aceptación social de la diversidad sexual y de género");
+  }
+  if (hasAny(["edadismo", "discriminación por edad", "discriminacion por edad", "ageism"])) {
+    addVd("el edadismo");
+  } else if (hasAny(["envejecimiento", "vejez", "personas mayores", "tercera edad", "adultos mayores", "gerontología", "gerontologia"])) {
+    addVd("las condiciones de vida en la vejez");
+  }
+  if (hasAny(["delincuencia", "criminalidad", "conducta desviada", "conductas desviadas", "desviación social", "desviacion social", "reincidencia"])) {
+    addVd("la delincuencia");
+  }
+  if (hasAny(["desinformación", "desinformacion", "fake news", "bulos", "noticias falsas"])) {
+    addVd("la desinformación");
+  } else if (hasAny(["medios de comunicación", "medios de comunicacion", "opinión pública", "opinion publica", "agenda mediática", "agenda mediatica"])) {
+    addVd("la influencia de los medios de comunicación");
+  }
+  if (hasAny(["consumo ostentoso", "consumo conspicuo", "sobreendeudamiento", "endeudamiento por consumo"])) {
+    addVd("el consumo ostentoso");
+  } else if (hasAny(["consumismo", "pautas de consumo", "hábitos de consumo", "habitos de consumo"])) {
+    addVd("las pautas de consumo social");
+  }
+  if (hasAny(["burocratización", "burocratizacion", "clima organizacional", "cultura organizacional"])) {
+    addVd("el clima organizacional");
+  } else if (hasAny(["organización laboral", "organizacion laboral", "funcionamiento organizacional", "gestión empresarial", "gestion empresarial"])) {
+    addVd("el funcionamiento organizacional");
+  }
 
   // 2) VI concretas asociadas al dominio del problema
   if (hasAny(["estatus administrativo", "situación administrativa", "situacion administrativa", "regularización", "regularizacion", "permiso de residencia"])) {
@@ -1276,6 +1309,51 @@ function detectarVariables(lower) {
   // migración, también sociología de las migraciones (bloque ya existente).
   if (hasAny(["etnia", "étnica", "etnica", "gitano", "gitana", "gitanos", "gitanas", "romaní", "romani", "pueblo gitano", "minoría étnica", "minoria etnica", "grupo étnico", "grupo etnico", "tribu étnica", "tribu etnica", "indígena", "indigena", "afrodescendiente", "racializad", "grupo cultural particular", "minoría cultural", "minoria cultural"])) {
     addVi("la discriminación étnica o cultural percibida");
+  }
+  if (hasAny(["rechazo familiar", "rechazo social", "aceptación familiar", "aceptacion familiar"])) {
+    addVi("el rechazo familiar y social percibido");
+  }
+  if (hasAny(["visibilidad", "reconocimiento legal", "matrimonio igualitario", "ley trans"])) {
+    addVi("la visibilidad y el reconocimiento legal");
+  }
+  if (hasAny(["dependencia", "salud funcional", "movilidad reducida", "cuidados de larga duración"])) {
+    addVi("el estado de salud funcional y la dependencia");
+  }
+  if (hasAny(["pensión", "pension", "pensiones", "jubilación", "jubilacion"])) {
+    addVi("los recursos económicos y la pensión");
+  }
+  if (hasAny(["asociación diferencial", "asociacion diferencial", "malas compañías", "malas companias", "pares desviados"])) {
+    addVi("la asociación diferencial con pares desviados");
+  }
+  if (hasAny(["control social informal", "vigilancia vecinal", "cohesión vecinal", "cohesion vecinal"])) {
+    addVi("el control social informal del entorno");
+  }
+  if (hasAny(["etiqueta social", "estigmatización institucional", "estigmatizacion institucional", "antecedentes penales"])) {
+    addVi("la etiqueta social y la estigmatización institucional");
+  }
+  if (hasAny(["credibilidad de los medios", "confianza en los medios", "exposición mediática", "exposicion mediatica"])) {
+    addVi("la exposición a medios y su credibilidad percibida");
+  }
+  if (hasAny(["cámara de eco", "camara de eco", "burbuja informativa", "consumo selectivo de noticias"])) {
+    addVi("el consumo selectivo de fuentes afines (cámara de eco)");
+  }
+  if (hasAny(["alfabetización mediática", "alfabetizacion mediatica", "pensamiento crítico ante medios"])) {
+    addVi("la alfabetización mediática");
+  }
+  if (hasAny(["capital económico", "capital economico", "poder adquisitivo", "nivel adquisitivo"])) {
+    addVi("la posición de clase y el capital económico");
+  }
+  if (hasAny(["distinción social", "distincion social", "estatus social", "aparentar"])) {
+    addVi("la búsqueda de distinción social");
+  }
+  if (hasAny(["publicidad", "influencers", "marketing"])) {
+    addVi("la exposición a la publicidad y las redes sociales");
+  }
+  if (hasAny(["jerarquía organizacional", "jerarquia organizacional", "diseño organizacional", "diseno organizacional", "estructura jerárquica", "estructura jerarquica"])) {
+    addVi("el diseño formal y la jerarquía organizacional");
+  }
+  if (hasAny(["incentivos", "sistemas de control", "evaluación del desempeño", "evaluacion del desempeno"])) {
+    addVi("los incentivos y sistemas de control");
   }
   if (hasAny(["bajo nivel de instrucción", "bajo nivel de instruccion"])) {
     addVi("el bajo nivel de instrucción");
@@ -1479,6 +1557,24 @@ function candidatosViPorDominio(vd0) {
   if (v.includes("secularización") || v.includes("secularizacion") || v.includes("religiosidad")) {
     return ["la socialización familiar y comunitaria en la fe", "el nivel educativo y la exposición a pluralismo cultural", "la pertenencia generacional"];
   }
+  if (v.includes("discriminación hacia personas lgtbiq") || v.includes("discriminacion hacia personas lgtbiq") || v.includes("aceptación social de la diversidad sexual") || v.includes("aceptacion social de la diversidad sexual")) {
+    return ["el rechazo familiar y social percibido", "la visibilidad y el reconocimiento legal", "el acceso a espacios seguros y redes de apoyo"];
+  }
+  if (v.includes("edadismo") || v.includes("condiciones de vida en la vejez")) {
+    return ["el estado de salud funcional y la dependencia", "las redes familiares y de cuidado", "los recursos económicos y la pensión"];
+  }
+  if (v.includes("delincuencia")) {
+    return ["la asociación diferencial con pares desviados", "el control social informal del entorno", "la etiqueta social y la estigmatización institucional"];
+  }
+  if (v.includes("desinformación") || v.includes("desinformacion") || v.includes("influencia de los medios de comunicación") || v.includes("influencia de los medios de comunicacion")) {
+    return ["la exposición a medios y su credibilidad percibida", "el consumo selectivo de fuentes afines (cámara de eco)", "la alfabetización mediática"];
+  }
+  if (v.includes("consumo ostentoso") || v.includes("pautas de consumo social")) {
+    return ["la posición de clase y el capital económico", "la búsqueda de distinción social", "la exposición a la publicidad y las redes sociales"];
+  }
+  if (v.includes("clima organizacional") || v.includes("funcionamiento organizacional")) {
+    return ["el diseño formal y la jerarquía organizacional", "la cultura y el clima organizacional", "los incentivos y sistemas de control"];
+  }
   return ["variables sociodemográficas básicas (edad, sexo, nivel educativo, situación laboral)", "el contexto territorial e institucional del problema"];
 }
 
@@ -1509,6 +1605,12 @@ function detectarAreaSociologica(lower, vi, vd) {
   if (skContieneAlguno(l, ["cambio climático", "cambio climatico", "medio ambiente", "sostenibilidad", "contaminación", "contaminacion", "crisis climática", "crisis climatica"])) add("Sociología ambiental");
   if (skContieneAlguno(l, ["rural", "ruralidad", "despoblación", "despoblacion", "éxodo rural", "exodo rural"])) add("Sociología rural");
   if (skContieneAlguno(l, ["religión", "religion", "religiosidad", "secularización", "secularizacion", "creencias religiosas"])) add("Sociología de la religión");
+  if (skContieneAlguno(l, ["lgtbi", "lgtbiq", "lgbt", "diversidad sexual", "orientación sexual", "orientacion sexual", "identidad de género", "identidad de genero", "homofobia", "transfobia", "personas trans", "bisexual", "homosexual", "queer"])) add("Sociología de la sexualidad y la diversidad sexual");
+  if (skContieneAlguno(l, ["envejecimiento", "vejez", "personas mayores", "tercera edad", "adultos mayores", "edadismo", "gerontología", "gerontologia"])) add("Sociología del envejecimiento");
+  if (skContieneAlguno(l, ["delincuencia", "criminalidad", "conducta desviada", "desviación social", "desviacion social", "reincidencia"])) add("Criminología y sociología de la desviación");
+  if (skContieneAlguno(l, ["medios de comunicación", "medios de comunicacion", "desinformación", "desinformacion", "fake news", "bulos", "opinión pública", "opinion publica", "framing", "agenda mediática", "agenda mediatica"])) add("Sociología de la comunicación y los medios");
+  if (skContieneAlguno(l, ["consumo", "consumismo", "estilo de vida", "estilos de vida", "publicidad", "marca", "marcas"])) add("Sociología del consumo");
+  if (skContieneAlguno(l, ["organización", "organizacion", "organizaciones", "burocracia", "cultura organizacional", "clima organizacional", "gestión empresarial", "gestion empresarial"])) add("Sociología de las organizaciones");
 
   if (areas.length === 0) add("Sociología general / del cambio social");
   return areas.slice(0, 5);
@@ -1739,6 +1841,42 @@ function indicadoresParaVariable(nombre, tipo) {
   if (lower.includes("discriminación étnica") || lower.includes("discriminacion etnica")) {
     return { variable: nombre, tipo, indicador: "Experiencias percibidas de discriminación por origen étnico o cultural (en la escuela, el empleo, la vivienda)", unidad: "Escala de frecuencia / índice de discriminación percibida", nivel: "Ordinal", fuente: "Encuesta a la población afectada, informes de discriminación (OBERAXE, Fundación Secretariado Gitano)" };
   }
+  if (lower.includes("discriminación hacia personas lgtbiq") || lower.includes("discriminacion hacia personas lgtbiq") || lower.includes("aceptación social de la diversidad sexual") || lower.includes("aceptacion social de la diversidad sexual")) {
+    return { variable: nombre, tipo, indicador: "Experiencias percibidas de discriminación por orientación sexual o identidad de género; escala de actitudes sociales hacia la diversidad", unidad: "Escala de frecuencia / índice de aceptación social", nivel: "Ordinal", fuente: "Encuesta a población LGTBIQ+, FRA (Agencia de Derechos Fundamentales UE), FELGTBI+" };
+  }
+  if (lower.includes("rechazo familiar")) {
+    return { variable: nombre, tipo, indicador: "Grado de aceptación o rechazo familiar percibido tras la revelación de la orientación/identidad", unidad: "Escala de aceptación (rechazo total–aceptación plena)", nivel: "Ordinal", fuente: "Encuesta a población LGTBIQ+, entrevistas" };
+  }
+  if (lower.includes("edadismo")) {
+    return { variable: nombre, tipo, indicador: "Escala de actitudes edadistas y experiencias de discriminación por edad (empleo, salud, trato social)", unidad: "Escala de frecuencia / índice de edadismo percibido", nivel: "Ordinal", fuente: "Encuesta a personas mayores, informes OMS sobre edadismo" };
+  }
+  if (lower.includes("condiciones de vida en la vejez") || lower.includes("estado de salud funcional y la dependencia")) {
+    return { variable: nombre, tipo, indicador: "Grado de dependencia funcional (actividades básicas/instrumentales de la vida diaria) y estado de salud autopercibido", unidad: "Escala de dependencia (Barthel/Katz) / autopercepción de salud", nivel: "Ordinal", fuente: "IMSERSO, Encuesta de Discapacidad y Dependencia (INE), servicios sociales" };
+  }
+  if (lower.includes("la delincuencia") || lower === "delincuencia") {
+    return { variable: nombre, tipo, indicador: "Tasa de delitos registrados y de reincidencia en la población estudiada", unidad: "Número de delitos / 10.000 hab. · % de reincidencia", nivel: "De razón", fuente: "Estadísticas del Ministerio del Interior, Instituciones Penitenciarias" };
+  }
+  if (lower.includes("asociación diferencial") || lower.includes("asociacion diferencial") || lower.includes("etiqueta social")) {
+    return { variable: nombre, tipo, indicador: "Frecuencia de contacto con pares con conductas desviadas y experiencias de etiquetado institucional", unidad: "Escala de frecuencia / índice de estigmatización percibida", nivel: "Ordinal", fuente: "Encuesta a la población objetivo, entrevistas, registros escolares/judiciales" };
+  }
+  if (lower.includes("desinformación") || lower.includes("desinformacion") || lower.includes("influencia de los medios")) {
+    return { variable: nombre, tipo, indicador: "Exposición a noticias falsas y capacidad de identificarlas correctamente; confianza en distintas fuentes mediáticas", unidad: "Puntuación en test de verificación / escala de confianza", nivel: "Ordinal (escala) o de razón (% de aciertos)", fuente: "Eurobarómetro, Reuters Institute Digital News Report, encuesta propia" };
+  }
+  if (lower.includes("exposición a medios") || lower.includes("exposicion a medios") || lower.includes("cámara de eco") || lower.includes("camara de eco") || lower.includes("alfabetización mediática") || lower.includes("alfabetizacion mediatica")) {
+    return { variable: nombre, tipo, indicador: "Horas de consumo mediático, diversidad de fuentes consultadas y nivel de alfabetización mediática autoevaluado", unidad: "Horas/semana · índice de diversidad de fuentes · escala de competencia mediática", nivel: "De razón (horas) u ordinal (escalas)", fuente: "Encuesta de hábitos mediáticos, Reuters Institute Digital News Report" };
+  }
+  if (lower.includes("consumo ostentoso") || lower.includes("pautas de consumo")) {
+    return { variable: nombre, tipo, indicador: "Gasto en bienes de estatus en relación con la renta disponible; frecuencia de compra de bienes de marca/lujo", unidad: "% del gasto total en bienes de estatus", nivel: "De razón", fuente: "Encuesta de Presupuestos Familiares (INE), encuesta propia de hábitos de consumo" };
+  }
+  if (lower.includes("capital económico") || lower.includes("capital economico") || lower.includes("distinción social") || lower.includes("distincion social") || lower.includes("publicidad y las redes")) {
+    return { variable: nombre, tipo, indicador: "Nivel de renta y patrimonio; escala de motivaciones de estatus en el consumo; exposición a publicidad en redes", unidad: "Euros / tramo de renta · escala de motivación · horas de exposición", nivel: "De razón u ordinal según el indicador", fuente: "Encuesta de Condiciones de Vida (INE), encuesta propia" };
+  }
+  if (lower.includes("clima organizacional") || lower.includes("funcionamiento organizacional")) {
+    return { variable: nombre, tipo, indicador: "Escala validada de clima organizacional (comunicación, liderazgo, reconocimiento, condiciones de trabajo)", unidad: "Puntuación en escala de clima organizacional (1–5)", nivel: "Ordinal (tratada habitualmente como cuasi-intervalo)", fuente: "Encuesta interna a la plantilla, escalas estandarizadas (p. ej. FOCUS-93)" };
+  }
+  if (lower.includes("jerarquía organizacional") || lower.includes("jerarquia organizacional") || lower.includes("incentivos y sistemas de control")) {
+    return { variable: nombre, tipo, indicador: "Número de niveles jerárquicos, tramo de control y tipo de sistema de incentivos vigente", unidad: "Categórica / número de niveles", nivel: "Nominal u ordinal", fuente: "Organigramas y documentación interna, entrevistas a RRHH" };
+  }
 
   if (tipo === "VI") {
     return { variable: nombre, tipo, indicador: `Escala / índice que mida «${nombre}» en la población de estudio`, unidad: "Puntuación en escala (1–5 / 1–10)", nivel: "Ordinal (escala tipo Likert)", fuente: "Cuestionario a población objetivo u observaciones estructuradas" };
@@ -1929,6 +2067,54 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
     add("San Román: antropología y sociología del pueblo gitano en España");
     add("Wieviorka: racismo, diferencialismo cultural y minorías étnicas");
   }
+  if (skContieneAlguno(total, ["lgtbi", "lgtbiq", "lgbt", "diversidad sexual", "orientación sexual", "orientacion sexual", "identidad de género", "identidad de genero", "homofobia", "transfobia", "personas trans", "bisexual", "homosexual", "queer"])) {
+    add("Foucault: historia de la sexualidad, biopoder, dispositivo de sexualidad");
+    add("Rubin: sistema sexo/género, jerarquías sexuales");
+    add("Rich: heterosexualidad obligatoria");
+    add("Butler: performatividad de género, heteronormatividad");
+    add("Sedgwick: epistemología del armario");
+    add("Puar: homonacionalismo, ensamblajes de sexualidad y raza");
+  }
+  if (skContieneAlguno(total, ["envejecimiento", "vejez", "personas mayores", "tercera edad", "adultos mayores", "edadismo", "gerontología", "gerontologia"])) {
+    add("Cumming y Henry: teoría de la desvinculación");
+    add("Erikson: integridad del yo frente a la desesperación");
+    add("Beauvoir: construcción social de la vejez");
+    add("Butler R.: edadismo (ageism) y discriminación por edad");
+    add("Phillipson: economía política del envejecimiento");
+    add("Carstensen: teoría de la selectividad socioemocional");
+  }
+  if (skContieneAlguno(total, ["delincuencia", "criminalidad", "conducta desviada", "desviación social", "desviacion social", "reincidencia"])) {
+    add("Merton: anomia y tensión estructural");
+    add("Sutherland: asociación diferencial");
+    add("Becker: etiquetado social (labeling theory)");
+    add("Sampson: eficacia colectiva y control social informal");
+    add("Wacquant: penalidad neoliberal, gueto y prisión");
+    add("Garland: cultura del control penal");
+  }
+  if (skContieneAlguno(total, ["medios de comunicación", "medios de comunicacion", "desinformación", "desinformacion", "fake news", "bulos", "opinión pública", "opinion publica", "framing", "agenda mediática", "agenda mediatica"])) {
+    add("Lippmann: opinión pública y estereotipos");
+    add("Lazarsfeld: flujo de dos pasos, líderes de opinión");
+    add("McLuhan: el medio es el mensaje");
+    add("McCombs: teoría de la agenda-setting");
+    add("Castells: sociedad red, autocomunicación de masas");
+    add("Sunstein: cámaras de eco y polarización de grupo");
+  }
+  if (skContieneAlguno(total, ["consumo", "consumismo", "estilo de vida", "estilos de vida", "publicidad", "marca", "marcas"])) {
+    add("Veblen: consumo conspicuo (ostentoso)");
+    add("Simmel: moda y diferenciación social");
+    add("Bourdieu: distinción y gustos de clase");
+    add("Baudrillard: sociedad de consumo, valor signo");
+    add("Bauman: consumismo líquido");
+    add("Featherstone: cultura de consumo posmoderna");
+  }
+  if (skContieneAlguno(total, ["organización", "organizacion", "organizaciones", "burocracia", "cultura organizacional", "clima organizacional", "gestión empresarial", "gestion empresarial"])) {
+    add("Weber: burocracia y dominación racional-legal");
+    add("Taylor: organización científica del trabajo");
+    add("Mayo: relaciones humanas, efecto Hawthorne");
+    add("Crozier: poder y zonas de incertidumbre");
+    add("Kanter: estructura de oportunidad y tokenismo");
+    add("Alvesson: cultura organizacional desde la teoría crítica");
+  }
   if (skContieneAlguno(total, ["discapacidad", "diversidad funcional", "accesibilidad", "dependencia funcional"])) {
     add("Oliver: modelo social de la discapacidad");
     add("Goffman: estigma e identidad deteriorada");
@@ -1954,6 +2140,116 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
 
   return marcos;
 }
+
+/* ================= categorías explicativas aplicadas al problema concreto ================= */
+/**
+ * A diferencia de sugerirMarcosTeoricos (que da una lista de autores/temas
+ * por afinidad léxica), esto responde a una pregunta más difícil: "¿qué
+ * concepto teórico concreto explica ESTA dinámica en particular?" — el tipo
+ * de razonamiento de un tutor cuando dice "¿cómo se entiende que la mujer
+ * violentada esté de acuerdo con su agresor? Una respuesta posible es la
+ * violencia simbólica de Bourdieu". Cada entrada exige, además del tema
+ * (VD/VI/texto), una marca textual de la dinámica que se quiere explicar
+ * (aceptación, silencio, permanencia, autoexclusión...); sin esa marca no
+ * se sugiere, para no convertirse en una lista genérica de teóricos.
+ */
+function skTiene(total, palabras) { return skContieneAlguno(total, palabras); }
+
+const MARCADORES_ACEPTACION = ["de acuerdo", "acepta", "aceptan", "no denuncia", "no denuncian", "permanece", "permanecen", "normaliza", "normalizan", "justifica", "justifican", "consiente", "consienten", "perdona", "perdonan", "se resigna", "se resignan", "no se queja", "no se quejan", "vuelve con", "vuelven con", "sigue con", "siguen con"];
+const MARCADORES_AUTOEXCLUSION = ["por decisión propia", "por decision propia", "voluntariamente", "no le interesa", "no les interesa", "se autoexcluye", "se autoexcluyen", "no quiere", "no quieren", "prefiere no", "prefieren no", "se retira", "se retiran", "abandona por", "abandonan por"];
+const MARCADORES_SILENCIO = ["no busca ayuda", "no buscan ayuda", "en silencio", "no lo cuenta", "no lo cuentan", "oculta", "ocultan", "nadie denuncia", "todos lo saben", "no se dice", "no se habla de"];
+const MARCADORES_PERSISTENCIA_CREENCIA = ["sigue creyendo", "siguen creyendo", "no cambia de opinión", "no cambia de opinion", "no cambian de opinión", "no cambian de opinion", "pese a la evidencia", "a pesar de la evidencia", "aunque se lo demuestren"];
+const MARCADORES_SOBREGASTO = ["se endeuda", "se endeudan", "gasta más de lo que tiene", "gastan más de lo que tienen", "por encima de sus posibilidades", "para aparentar"];
+const MARCADORES_ETIQUETA = ["está marcado", "esta marcado", "ya no puede", "no le dan otra oportunidad", "no le dan otra opotunidad", "antecedentes", "una vez que"];
+
+function construirCategoriasExplicativas(lower, resultado) {
+  const total = (lower || "") + " " + (resultado.vi || []).join(" ").toLowerCase() + " " + (resultado.vd || []).join(" ").toLowerCase();
+  const out = [];
+  const add = (concepto, autor, texto) => {
+    if (out.length >= 4) return;
+    const linea = `«${concepto}» (${autor}): ${texto}`;
+    if (!out.includes(linea)) out.push(linea);
+  };
+
+  if (skTiene(total, ["violencia"]) && skTiene(lower, MARCADORES_ACEPTACION)) {
+    add("Violencia simbólica", "Bourdieu", "explica por qué la persona violentada puede estar de acuerdo con quien ejerce la violencia — el dominado interioriza los esquemas de percepción del dominante como si fueran naturales, así que la dominación no se vive solo como algo impuesto desde fuera, sino como parte del propio sentido común.");
+    add("Ciclo de la violencia", "Walker", "ayuda a entender por qué la relación no se rompe tras un episodio violento: la fase de reconciliación ('luna de miel') que suele seguir a la agresión refuerza el vínculo y dificulta la salida.");
+  } else if (skTiene(total, ["violencia"])) {
+    add("Continuum de la violencia", "Kelly", "propone no tratar la violencia como episodios aislados, sino como un continuo de conductas de control (desde la coerción sutil hasta la agresión física) que se refuerzan entre sí.");
+  }
+
+  if (skTiene(total, ["pobreza"]) && skTiene(lower, ["se culpa", "se culpan", "se avergüenza", "se avergüenzan", "cree que es su culpa", "creen que es su culpa", "por falta de esfuerzo", "por no esforzarse"])) {
+    add("Culpar a la víctima", "Ryan", "explica por qué las personas en situación de pobreza a menudo interiorizan la causa como un fallo personal (falta de esfuerzo) y no como el resultado de una estructura de oportunidades desigual — la ideología meritocrática legitima la desigualdad como si fuera justa.");
+  }
+
+  if (skTiene(total, ["precariedad laboral"]) && (skTiene(lower, MARCADORES_ACEPTACION) || skTiene(lower, ["no se organiza", "no se organizan", "resignación", "resignacion"]))) {
+    add("Individualización del riesgo", "Beck", "explica por qué quien vive la precariedad tiende a vivirla como un problema personal a resolver en solitario, en vez de como una condición estructural compartida que podría organizarse colectivamente.");
+  }
+
+  if (skTiene(total, ["abandono escolar", "fracaso escolar"]) && skTiene(lower, MARCADORES_AUTOEXCLUSION)) {
+    add("Habitus y autoexclusión", "Bourdieu", "explica por qué el abandono puede parecer una 'elección' del alumnado de origen popular, cuando en realidad refleja expectativas ajustadas de antemano a lo que consideran realista para alguien en su posición social — no es falta de interés, es autoexclusión anticipada y aprendida.");
+  }
+
+  if (skTiene(total, ["etnia", "étnica", "etnica", "gitano", "gitana", "racializad", "indígena", "indigena", "afrodescendiente"]) && (skTiene(lower, MARCADORES_AUTOEXCLUSION) || skTiene(lower, MARCADORES_SILENCIO))) {
+    add("Estigma", "Goffman", "explica por qué una persona puede anticipar el rechazo y retirarse de ciertos espacios (la escuela, el empleo) antes incluso de vivir la discriminación directamente: gestiona una identidad social ya marcada como 'deteriorada' a ojos de los demás.");
+  }
+
+  if (skTiene(total, ["migración", "migracion", "migrante", "inmigración", "inmigracion"]) && (skTiene(lower, MARCADORES_ACEPTACION) || skTiene(lower, MARCADORES_SILENCIO))) {
+    add("Doble ausencia", "Sayad", "explica la posición suspendida de quien migra — ni plenamente perteneciente al lugar de origen ni al de destino — lo que puede llevar a tolerar condiciones que de otro modo se rechazarían, por miedo a perder el frágil lugar conseguido.");
+  }
+
+  if (skTiene(total, ["salud mental", "malestar emocional", "ansiedad", "depresión", "depresion"]) && skTiene(lower, MARCADORES_SILENCIO)) {
+    add("Determinantes sociales de la salud", "Marmot", "recuerda que el malestar psicológico no es solo un fallo individual: el gradiente social de salud muestra que la posición socioeconómica predice sistemáticamente el malestar, lo que reformula la pregunta de 'qué le pasa a esta persona' a 'qué le está pasando a las personas en esta posición social'.");
+  }
+
+  if (skTiene(total, ["soledad"]) && skTiene(lower, ["conectado", "conectados", "conectada", "conectadas", "redes sociales", "muchos contactos", "muchos amigos en redes"])) {
+    add("Individualismo en red", "Wellman", "explica la aparente paradoja de estar hiperconectado y sentirse solo: las relaciones se han vuelto más numerosas pero también más flexibles y centradas en el individuo, no en una comunidad estable que sostenga.");
+  }
+
+  if (skTiene(total, ["discapacidad", "diversidad funcional"]) && skTiene(lower, ["no puede", "no pueden", "limitación", "limitacion", "limitaciones"])) {
+    add("Modelo social de la discapacidad", "Oliver", "invierte la pregunta: no es que la persona 'no pueda', es que el entorno no está diseñado para incluirla — la discapacidad no está en el cuerpo, está en la falta de accesibilidad y de ajustes razonables.");
+  }
+
+  if (skTiene(total, ["delincuencia", "criminalidad", "conducta desviada"]) && skTiene(lower, MARCADORES_ETIQUETA)) {
+    add("Etiquetado social", "Becker", "explica por qué, una vez calificada como 'delincuente', a una persona le resulta más difícil abandonar esa trayectoria: la etiqueta modifica cómo la tratan los demás y cómo se percibe a sí misma, reforzando justo la conducta que se pretendía corregir.");
+  }
+
+  if (skTiene(total, ["lgtbi", "lgtbiq", "lgbt", "diversidad sexual", "orientación sexual", "orientacion sexual", "identidad de género", "identidad de genero"]) && skTiene(lower, MARCADORES_SILENCIO)) {
+    add("Epistemología del armario", "Sedgwick", "explica por qué una persona puede revelar su identidad en unos contextos y ocultarla en otros: no es una decisión única sino una gestión continua y contextual de la visibilidad, con costes reales en cada espacio.");
+  }
+
+  if (skTiene(total, ["consumo ostentoso", "consumismo", "consumo"]) && skTiene(lower, MARCADORES_SOBREGASTO)) {
+    add("Consumo conspicuo", "Veblen", "explica por qué alguien puede gastar por encima de sus posibilidades en bienes visibles: el consumo no solo satisface necesidades, también comunica y compite por estatus ante los demás.");
+  }
+
+  if (skTiene(total, ["organización", "organizacion", "organizaciones", "clima organizacional"]) && skTiene(lower, MARCADORES_SILENCIO)) {
+    add("Zonas de incertidumbre", "Crozier", "explica por qué el silencio persiste dentro de una organización: quienes controlan la información o los recursos críticos —aunque no tengan autoridad formal— acumulan poder informal, y señalar el problema puede amenazar ese equilibrio.");
+  }
+
+  if (skTiene(total, ["envejecimiento", "vejez", "personas mayores", "tercera edad"]) && skTiene(lower, MARCADORES_AUTOEXCLUSION)) {
+    add("Selectividad socioemocional", "Carstensen", "ofrece una lectura alternativa al simple 'declive': la persona mayor no se retira por decadencia, sino que reduce selectivamente sus vínculos para priorizar las relaciones emocionalmente más significativas, al percibir el tiempo como limitado.");
+  }
+
+  if (skTiene(total, ["desinformación", "desinformacion", "fake news", "bulos", "medios de comunicación", "medios de comunicacion"]) && skTiene(lower, MARCADORES_PERSISTENCIA_CREENCIA)) {
+    add("Cámaras de eco", "Sunstein", "explica por qué la evidencia contraria no basta para cambiar de opinión: el entorno informativo selecciona y refuerza lo que ya se cree, y salir de ese circuito tiene un coste social — perder la validación del propio grupo.");
+  }
+
+  if (skTiene(total, ["religiosidad", "secularización", "secularizacion", "religión", "religion"]) && skTiene(lower, ["ya no cree", "ya no creen", "por tradición", "por tradicion", "por costumbre", "sin creer"])) {
+    add("Pertenecer sin creer", "Davie", "explica por qué alguien puede seguir participando en prácticas religiosas por lazo comunitario o familiar aunque ya no comparta plenamente las creencias: la pertenencia social pesa independientemente de la convicción.");
+  }
+
+  if (skTiene(total, ["despoblación", "despoblacion", "rural", "éxodo rural", "exodo rural"]) && skTiene(lower, ["quieren quedarse", "quiere quedarse", "no quiere irse", "no quieren irse", "a pesar de querer quedarse"])) {
+    add("Arraigo territorial", "Camarero", "explica la tensión entre el deseo de quedarse y la salida efectiva: la decisión de emigrar no depende solo de la falta de oportunidades, sino de un cálculo entre el arraigo afectivo al lugar y la falta de futuro material percibido.");
+  }
+
+  if (out.length === 0 && skTiene(lower, ["a pesar de", "pese a", "aunque", "paradójicamente", "paradojicamente"])) {
+    add("Disonancia cognitiva", "Festinger", "es un mecanismo general que puede servir de punto de partida aquí: cuando una persona actúa de forma que contradice sus creencias o intereses, tiende a ajustar sus creencias —no su conducta— para reducir el malestar de esa contradicción.");
+  }
+
+  return out;
+}
+
+const NOTA_CATEGORIAS_EXPLICATIVAS = "Estas categorías no son solo nombres de autores: son conceptos concretos que pueden explicar la dinámica específica que describe tu problema (por ejemplo, por qué alguien permanece, calla, se resigna o no cambia de opinión pese a la evidencia). Son candidatas de partida — evalúa si de verdad encajan con tu caso y con la literatura que revises, y busca la fuente primaria antes de citarlas.";
 
 /* ================= mecanismos micro/meso/macro (idéntico al original) ================= */
 
@@ -2030,7 +2326,8 @@ function analizarProblema(texto) {
       unidad: "Unidad de análisis pendiente de definir.",
       enfoque: "mixto",
       operacionalizacion: [], fuentes: [], viEsCandidato: false,
-      guiaCualitativa: { codigos: [], preguntas: [] }
+      guiaCualitativa: { codigos: [], preguntas: [] },
+      categoriasExplicativas: []
     };
   }
 
@@ -2057,6 +2354,7 @@ function analizarProblema(texto) {
     operacionalizacion, fuentes, viEsCandidato
   };
   resultadoParcial.guiaCualitativa = construirGuiaCualitativa(resultadoParcial);
+  resultadoParcial.categoriasExplicativas = construirCategoriasExplicativas(lower, resultadoParcial);
   return resultadoParcial;
 }
 
@@ -2889,13 +3187,23 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal) 
   resultado.marcos.forEach(m => parts.push(paragraphXml(m, { bullet: true })));
   parts.push(paragraphXml(NOTA_JUSTIFICAR_MARCOS, { italic: true }));
 
-  parts.push(headingXml("7. Unidad de análisis, diseño de estudio y enfoque metodológico", 2));
+  parts.push(headingXml("7. Categorías explicativas para tu problema concreto", 2));
+  const categorias = resultado.categoriasExplicativas || [];
+  if (categorias.length) {
+    parts.push(paragraphXml("Más allá de los marcos teóricos generales de la sección anterior, estas categorías responden a una dinámica concreta identificada en tu problema (por ejemplo, por qué alguien permanece, calla o justifica una situación):", { italic: true }));
+    categorias.forEach(c => parts.push(paragraphXml(c, { bullet: true })));
+    parts.push(paragraphXml(NOTA_CATEGORIAS_EXPLICATIVAS, { italic: true }));
+  } else {
+    parts.push(paragraphXml("SOCIOKAIROS no ha detectado en el texto una dinámica concreta (por ejemplo, alguien que permanece, calla o justifica una situación) que active una categoría explicativa específica. Usa los marcos teóricos generales de la sección anterior, o describe con más detalle qué hace o cómo reacciona la persona o el grupo afectado."));
+  }
+
+  parts.push(headingXml("8. Unidad de análisis, diseño de estudio y enfoque metodológico", 2));
   parts.push(paragraphXml("Unidad de análisis sugerida:"));
   parts.push(paragraphXml(resultado.unidad));
   parts.push(paragraphXml("Diseño de estudio sugerido:"));
   resultado.diseno.split("\n").forEach(linea => parts.push(paragraphXml(linea)));
 
-  parts.push(headingXml("8. Operacionalización sugerida", 2));
+  parts.push(headingXml("9. Operacionalización sugerida", 2));
   parts.push(paragraphXml(`Observación metodológica: la operacionalización propuesta se ha construido a partir de la ${versionLabel} del problema seleccionada en SOCIOKAIROS.`, { italic: true }));
   const filas = resultado.operacionalizacion;
   if (filas.length) {
@@ -2904,11 +3212,11 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal) 
     parts.push(paragraphXml("Pendiente de definir variables, indicadores y fuentes de datos."));
   }
 
-  parts.push(headingXml("9. Fuentes de datos / bases recomendadas", 2));
+  parts.push(headingXml("10. Fuentes de datos / bases recomendadas", 2));
   if (resultado.fuentes.length) resultado.fuentes.forEach(f => parts.push(paragraphXml(f, { bullet: true })));
   else parts.push(paragraphXml("Pendiente de identificar bases de datos y fuentes administrativas específicas."));
 
-  parts.push(headingXml("10. Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)", 2));
+  parts.push(headingXml("11. Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)", 2));
   parts.push(paragraphXml(NOTA_GUIA_CUALITATIVA, { italic: true }));
   const guia = resultado.guiaCualitativa || { codigos: [], preguntas: [] };
   parts.push(paragraphXml("Libro de códigos preliminar:"));
@@ -2922,27 +3230,27 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal) 
   else parts.push(paragraphXml("Pendiente de construir.", { bullet: true }));
 
   const txtBase = textoOriginal || problema;
-  parts.push(headingXml("11. Alertas metodológicas", 2));
+  parts.push(headingXml("12. Alertas metodológicas", 2));
   generarAlertasMetodologicas(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
 
-  parts.push(headingXml("12. Tradiciones sociológicas compatibles", 2));
+  parts.push(headingXml("13. Tradiciones sociológicas compatibles", 2));
   generarTradiciones(resultado, txtBase).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
 
-  parts.push(headingXml("13. Mapa lógico del problema", 2));
+  parts.push(headingXml("14. Mapa lógico del problema", 2));
   parts.push(paragraphXml(generarMapaLogico(resultado)));
 
-  parts.push(headingXml("14. Diseños metodológicos sugeridos", 2));
+  parts.push(headingXml("15. Diseños metodológicos sugeridos", 2));
   generarDisenos(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
 
-  parts.push(headingXml("15. Nota para estudiantes de la Universidad de Zaragoza", 2));
+  parts.push(headingXml("16. Nota para estudiantes de la Universidad de Zaragoza", 2));
   parts.push(paragraphXml("Universidad de Zaragoza: consulta también los recursos de la Biblioteca de Ciencias Sociales y los convenios de acceso a bases de datos restringidas (estadísticas, encuestas, registros administrativos, etc.)."));
 
-  parts.push(headingXml("16. Nota APA para citar SOCIOKAIROS", 2));
+  parts.push(headingXml("17. Nota APA para citar SOCIOKAIROS", 2));
   parts.push(paragraphXml("Pérez Gallo, V. H. (2025). SOCIOKAIROS: A Heuristic Computational Assistant for the Reformulation of Scientific Problems in Sociology (Versión 15) [Software]. Zenodo. https://doi.org/10.5281/zenodo.17462816"));
   parts.push(paragraphXml("Pérez Gallo, V. H. (2025). SOCIOKAIROS Companion Paper: Computational Heuristics for Reflexive Sociology [Documento técnico]. Zenodo. https://doi.org/10.5281/zenodo.17541706"));
   parts.push(paragraphXml("Nota importante: SOCIOKAIROS puede emplearse como herramienta heurística para mejorar claridad conceptual, operacionalización y diseño metodológico. Las decisiones finales (variables, indicadores, hipótesis y métodos) deben justificarse en el marco teórico y la literatura científica del trabajo."));
 
-  parts.push(headingXml("17. Advertencia académica", 2));
+  parts.push(headingXml("18. Advertencia académica", 2));
   parts.push(paragraphXml("SOCIOKAIROS es una herramienta heurística de apoyo a la formulación de problemas científicos. No sustituye la revisión bibliográfica sistemática, el trabajo teórico propio del investigador ni la discusión metodológica detallada. El uso responsable de sus sugerencias exige contrastarlas con la literatura, los datos disponibles y las condiciones concretas del campo de estudio."));
 
   let logoBytes = null;
@@ -3100,6 +3408,14 @@ function actualizarInterfazConResultado(resultado) {
     outNotas.textContent = "Correlaciones a explorar:\n" + corrTxt + "\n\nHipótesis de trabajo:\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS;
   }
 
+  const outCategorias = document.getElementById("out_categorias_explicativas");
+  if (outCategorias) {
+    const cats = resultado.categoriasExplicativas || [];
+    outCategorias.textContent = cats.length
+      ? "- " + cats.join("\n\n- ") + "\n\n" + NOTA_CATEGORIAS_EXPLICATIVAS
+      : "SOCIOKAIROS no ha detectado en tu texto una dinámica concreta (por ejemplo, alguien que permanece, calla o justifica una situación) que active una categoría explicativa específica. Puedes seguir usando los marcos teóricos generales de la sección anterior, o describir con más detalle qué hace o cómo reacciona la persona/grupo afectado.";
+  }
+
   const outDiseno = document.getElementById("out_diseno");
   if (outDiseno) {
     const opTxt = operacionalizacionTexto(resultado.operacionalizacion);
@@ -3144,7 +3460,7 @@ function actualizarInterfazConResultado(resultado) {
 }
 
 function limpiarSalidasPorErrorEdu() {
-  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_diseno", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) el.textContent = "—";
@@ -3249,7 +3565,7 @@ window.addEventListener("load", function () {
 
   if (btnClear) {
     btnClear.addEventListener("click", function () {
-      const ids = ["txt_problema", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_diseno", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+      const ids = ["txt_problema", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
       ids.forEach(function (id) {
         const e = document.getElementById(id);
         if (!e) return;

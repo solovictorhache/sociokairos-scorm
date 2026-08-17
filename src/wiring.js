@@ -147,6 +147,14 @@ function actualizarInterfazConResultado(resultado) {
     outNotas.textContent = "Correlaciones a explorar:\n" + corrTxt + "\n\nHipótesis de trabajo:\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS;
   }
 
+  const outCategorias = document.getElementById("out_categorias_explicativas");
+  if (outCategorias) {
+    const cats = resultado.categoriasExplicativas || [];
+    outCategorias.textContent = cats.length
+      ? "- " + cats.join("\n\n- ") + "\n\n" + NOTA_CATEGORIAS_EXPLICATIVAS
+      : "SOCIOKAIROS no ha detectado en tu texto una dinámica concreta (por ejemplo, alguien que permanece, calla o justifica una situación) que active una categoría explicativa específica. Puedes seguir usando los marcos teóricos generales de la sección anterior, o describir con más detalle qué hace o cómo reacciona la persona/grupo afectado.";
+  }
+
   const outDiseno = document.getElementById("out_diseno");
   if (outDiseno) {
     const opTxt = operacionalizacionTexto(resultado.operacionalizacion);
@@ -191,7 +199,7 @@ function actualizarInterfazConResultado(resultado) {
 }
 
 function limpiarSalidasPorErrorEdu() {
-  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_diseno", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) el.textContent = "—";
@@ -296,7 +304,7 @@ window.addEventListener("load", function () {
 
   if (btnClear) {
     btnClear.addEventListener("click", function () {
-      const ids = ["txt_problema", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_diseno", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+      const ids = ["txt_problema", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
       ids.forEach(function (id) {
         const e = document.getElementById(id);
         if (!e) return;
