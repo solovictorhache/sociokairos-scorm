@@ -1,5 +1,9 @@
 # CHANGELOG — SOCIOKAIROS SCORM Plugin
 
+## Integración continua 2026-08-17
+
+`.github/workflows/test.yml` corre en cada push y pull request: los tests del motor (`npm test`) y una prueba end-to-end con Playwright (`tests/e2e/scorm.e2e.js`) que construye el paquete, simula un LMS SCORM 1.2, reformula un problema, comprueba la interfaz y el seguimiento SCORM, exporta a Word y CSV, y valida con `python-docx` (`tests/e2e/validate_docx.py`) que el informe tiene al menos 15 secciones numeradas y 2 tablas. Los archivos generados quedan disponibles como artefacto del workflow.
+
 ## Robustez, cobertura de dominios y tests 2026-08-17
 
 - **Tolerancia a erratas extendida al resto del motor.** `skHas` (usado en `generarAlertasMetodologicas`, `generarTradiciones`, `generarMapaLogico`, `generarDisenos` y `generarMecanismos`) ahora delega en la comparación tolerante `skContieneAlguno`, igual que ya hacía la detección de variables. También se convirtieron `clasificarEnfoqueMetodologico`, `sugerirDisenoEstudio` y el diccionario de fuentes de `geoFuentes`. Deliberadamente **no** se tocó `geoDetectar` (alias geográficos) ni `indicadoresParaVariable` (opera sobre nombres de variable ya generados internamente, no sobre texto crudo): en ambos casos una errata de una letra puede confundir un nombre propio o una palabra con otra, y el riesgo de colisión pesa más que el beneficio.

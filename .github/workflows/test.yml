@@ -1,0 +1,55 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  engine-tests:
+    name: Tests del motor (node:test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm test
+
+  end-to-end:
+    name: End-to-end (Playwright + validación .docx)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Construir scorm_plugin/index.html
+        run: python3 src/build.py
+
+      - name: Instalar Playwright y Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Ejecutar prueba end-to-end
+        run: node tests/e2e/scorm.e2e.js
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Instalar python-docx
+        run: pip install python-docx
+
+      - name: Validar el informe Word generado
+        run: python3 tests/e2e/validate_docx.py .e2e-output/informe.docx
+
+      - name: Subir archivos generados como artefacto
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-output
+          path: .e2e-output/
+          retention-days: 7

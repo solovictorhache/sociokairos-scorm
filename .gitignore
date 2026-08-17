@@ -1,2 +1,8 @@
 # Artefactos de build (generados con `python3 src/build.py` y `zip`)
 *.zip
+
+# Dependencias instaladas ad hoc para las pruebas end-to-end (Playwright)
+node_modules/
+
+# Salida de tests/e2e/scorm.e2e.js
+.e2e-output/

@@ -18,11 +18,32 @@ src/                    Fuentes del motor y la interfaz, en módulos separados
   wiring.js                 Integración con la API SCORM (1.2/2004), validación EDU y wiring de la interfaz
   head.html / body.html       Plantilla HTML/CSS de la página, con un marcador donde se inserta el script
   build.py                     Ensambla scorm_plugin/index.html a partir de las piezas anteriores
+tests/                  Pruebas automatizadas
+  engine.test.js          Tests del motor (node:test, sin dependencias): variables, validación EDU,
+                            enfoque cuali/cuanti/mixto, hipótesis, operacionalización, dominios sociológicos
+  helpers/load-engine.js    Concatena geo-data.js + engine.js igual que build.py, para poder probarlos con require()
+  e2e/scorm.e2e.js          Prueba end-to-end con Playwright sobre scorm_plugin/index.html ya construido
+  e2e/validate_docx.py       Valida con python-docx el informe Word generado por la prueba end-to-end
+.github/workflows/test.yml  CI: corre los tests del motor y la prueba end-to-end en cada push/PR
 CITATION.cff             Metadatos de citación (Citation File Format)
 metadata.json             Metadatos de depósito para Zenodo
 CHANGELOG.md               Historial de cambios técnicos y metodológicos
 ROADMAP.md                   Estrategia de app nativa (Mac/Windows) y backlog de mejoras futuras
 ```
+
+## Cómo correr los tests
+
+```bash
+npm test                                    # motor: variables, validación EDU, dominios, etc. (node:test, sin dependencias)
+
+python3 src/build.py                        # reconstruye scorm_plugin/index.html primero
+npm install --no-save playwright && npx playwright install --with-deps chromium
+node tests/e2e/scorm.e2e.js                 # end-to-end: reformular, SCORM, exportar Word/CSV
+pip install python-docx
+python3 tests/e2e/validate_docx.py .e2e-output/informe.docx
+```
+
+Ambos se ejecutan automáticamente en cada push y pull request (ver `.github/workflows/test.yml`).
 
 ## Cómo reconstruir `scorm_plugin/index.html`
 
