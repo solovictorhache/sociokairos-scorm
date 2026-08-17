@@ -1,5 +1,7 @@
 SOCIOKAIROS_EDU_SCORM
 Versión fusionada: motor SOCIOKAIROS EDU V32 (validación pedagógica, geolocalización
 mundial, alertas metodológicas, visualización SVG) + correcciones técnicas del wrapper
-SCORM (seguimiento SCORM real, sin dependencias externas, exportación Word/CSV propia).
-Fecha de fusión: 2026-08-17 (ver CHANGELOG.md en el paquete Zenodo).
+SCORM (seguimiento SCORM real, sin dependencias externas, exportación Word/CSV propia)
++ tutor de metodología (clasificación cuali/cuanti/mixto, guía cualitativa pre-CAQDAS,
+síntesis del problema científico definitivo, VI candidatas informadas por dominio).
+Fecha de última actualización: 2026-08-17 (ver CHANGELOG.md en el paquete Zenodo).

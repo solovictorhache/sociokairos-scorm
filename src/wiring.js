@@ -118,6 +118,11 @@ function actualizarInterfazConResultado(resultado) {
     badge.textContent = "Áreas sociológicas sugeridas: " + areasTxt;
   }
 
+  const outPerfecto = document.getElementById("out_problema_perfecto");
+  if (outPerfecto) {
+    outPerfecto.textContent = construirProblemaPerfecto(resultado, "P2 – relacional / explicativa (por defecto)", resultado.p2);
+  }
+
   const outRef = document.getElementById("out_reformulacion");
   if (outRef) {
     outRef.textContent =
@@ -148,6 +153,22 @@ function actualizarInterfazConResultado(resultado) {
     outDiseno.textContent = "Unidad de análisis sugerida:\n" + resultado.unidad + "\n\n" + resultado.diseno + "\n\nOperacionalización sugerida:\n" + opTxt;
   }
 
+  const outGuiaCodigos = document.getElementById("out_guia_codigos");
+  if (outGuiaCodigos) {
+    const guia = resultado.guiaCualitativa || { codigos: [], preguntas: [] };
+    const codTxt = guia.codigos.length
+      ? guia.codigos.map(c => `- ${c.categoria} [${c.tipo}]\n  ${c.definicion}`).join("\n")
+      : "Pendiente: no hay variables ni mecanismos suficientes para proponer códigos.";
+    outGuiaCodigos.textContent = "Libro de códigos preliminar:\n" + codTxt + "\n\n" + NOTA_GUIA_CUALITATIVA;
+  }
+
+  const outGuiaPreguntas = document.getElementById("out_guia_preguntas");
+  if (outGuiaPreguntas) {
+    const guia = resultado.guiaCualitativa || { codigos: [], preguntas: [] };
+    const pregTxt = guia.preguntas.length ? "- " + guia.preguntas.join("\n- ") : "Pendiente de construir.";
+    outGuiaPreguntas.textContent = "Guía de entrevista / observación semiestructurada:\n" + pregTxt;
+  }
+
   const outFuentes = document.getElementById("out_fuentes");
   if (outFuentes) {
     outFuentes.textContent = resultado.fuentes.length ? "- " + resultado.fuentes.join("\n- ") : "Pendiente de identificar bases de datos y fuentes administrativas específicas.";
@@ -170,7 +191,7 @@ function actualizarInterfazConResultado(resultado) {
 }
 
 function limpiarSalidasPorErrorEdu() {
-  const ids = ["out_variables", "out_notas", "out_diseno", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_diseno", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) el.textContent = "—";
@@ -275,7 +296,7 @@ window.addEventListener("load", function () {
 
   if (btnClear) {
     btnClear.addEventListener("click", function () {
-      const ids = ["txt_problema", "badge_area", "out_reformulacion", "out_variables", "out_notas", "out_diseno", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+      const ids = ["txt_problema", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_diseno", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
       ids.forEach(function (id) {
         const e = document.getElementById(id);
         if (!e) return;

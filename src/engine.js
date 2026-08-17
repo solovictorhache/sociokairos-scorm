@@ -627,11 +627,57 @@ function operacionalizacionTexto(filas) {
 
 /* ================= diseño de estudio (con mis avisos metodológicos) ================= */
 
+/**
+ * Clasifica si el problema, tal como está formulado, pide un abordaje
+ * cualitativo, cuantitativo o mixto — a partir del vocabulario del propio
+ * texto (no de una elección arbitraria). Es una heurística determinista:
+ * mismo texto, misma clasificación siempre.
+ */
+function clasificarEnfoqueMetodologico(lower) {
+  const marcadoresCuali = [
+    "sentido", "significado", "experiencia", "percepción", "percepcion", "vivencia",
+    "subjetiv", "narrativa", "discurso", "interpretaci", "comprensi", "relatos", "voces",
+    "representaciones sociales", "cómo viven", "como viven", "qué significa", "que significa",
+    "cómo se vive", "como se vive", "sentido que", "significado que"
+  ];
+  const marcadoresCuanti = [
+    "prevalencia", "tasa de", "correlación", "correlacion", "asociación estadística",
+    "asociacion estadistica", "cuánto", "cuanto", "medir", "comparar grupos", "porcentaje",
+    "nivel de", "frecuencia de", "incidencia", "cuántos", "cuantos", "en qué medida", "en que medida"
+  ];
+  const marcadoresMixtoExplicito = [
+    "cuali", "cuanti", "mixto", "triangulación", "triangulacion",
+    "secuencial explicativo", "secuencial exploratorio", "métodos mixtos", "metodos mixtos"
+  ];
+
+  const scoreCuali = marcadoresCuali.filter(w => lower.includes(w)).length;
+  const scoreCuanti = marcadoresCuanti.filter(w => lower.includes(w)).length;
+  const esMixtoExplicito = marcadoresMixtoExplicito.some(w => lower.includes(w));
+  const esEtnografico = ["etnografía", "etnografia", "observación participante", "observacion participante"].some(w => lower.includes(w));
+  const esExperimental = ["experimento", "experimental", "ensayo controlado"].some(w => lower.includes(w));
+
+  if (esMixtoExplicito || (scoreCuali > 0 && scoreCuanti > 0)) {
+    return { enfoque: "mixto", motivo: "el problema combina vocabulario propio de ambas tradiciones (o pide explícitamente un diseño mixto)." };
+  }
+  if (esExperimental) {
+    return { enfoque: "cuantitativo", motivo: "un diseño experimental/cuasi-experimental requiere medición numérica de efectos." };
+  }
+  if (esEtnografico || (scoreCuali > 0 && scoreCuanti === 0)) {
+    return { enfoque: "cualitativo", motivo: "el problema pide explorar sentido, experiencia o significado, propio de la tradición cualitativa." };
+  }
+  if (scoreCuanti > 0 && scoreCuali === 0) {
+    return { enfoque: "cuantitativo", motivo: "el problema pide medir magnitud, frecuencia o asociación estadística entre variables." };
+  }
+  return { enfoque: "mixto", motivo: "el problema no marca explícitamente una tradición: se sugiere un diseño mixto para medir la asociación y explicar sus mecanismos." };
+}
+
 function sugerirDisenoEstudio(lower) {
   let tipo = "un estudio descriptivo-correlacional de corte transversal";
   let tecnicas = ["Encuesta estructurada", "Entrevistas semiestructuradas a informantes clave"];
   let unidad = "individuos pertenecientes a la población definida";
   let esTransversalPorDefecto = true;
+
+  const { enfoque, motivo } = clasificarEnfoqueMetodologico(lower);
 
   if (["longitudinal", "seguimiento", "evolución", "evolucion"].some(w => lower.includes(w))) {
     tipo = "un estudio longitudinal (panel o cohorte)";
@@ -651,17 +697,43 @@ function sugerirDisenoEstudio(lower) {
     unidad = "unidades territoriales (barrios / comunidades) y actores comunitarios relevantes";
   }
 
+  // El enfoque cuali/cuanti/mixto condiciona las técnicas cuando el tipo de
+  // diseño no lo ha fijado ya (etnográfico/experimental son casos ya resueltos arriba).
+  let software = [];
+  if (esTransversalPorDefecto) {
+    if (enfoque === "cualitativo") {
+      tecnicas = ["Entrevistas en profundidad", "Grupos focales / grupos de discusión", "Observación (si es viable) y notas de campo"];
+      software = ["Atlas.ti", "MAXQDA", "NVivo"];
+    } else if (enfoque === "cuantitativo") {
+      tecnicas = ["Encuesta estructurada con cuestionario validado", "Análisis estadístico de datos secundarios (si están disponibles)"];
+      software = ["SPSS", "R", "Stata", "Jamovi"];
+    } else {
+      tecnicas = ["Encuesta estructurada (fase cuantitativa)", "Entrevistas semiestructuradas a informantes clave (fase cualitativa)"];
+      software = ["SPSS / R / Stata para la fase cuantitativa", "Atlas.ti / MAXQDA / NVivo para la fase cualitativa"];
+    }
+  }
+
   const resumen = [];
   resumen.push(`Tipo de diseño sugerido: ${tipo}.`);
+  resumen.push(`Enfoque metodológico sugerido: ${enfoque} — ${motivo}`);
   resumen.push("Técnicas principales recomendadas:");
   for (const t of tecnicas) resumen.push(`- ${t}`);
+  if (software.length) {
+    resumen.push(`Software de apoyo al análisis, una vez recogidos los datos: ${software.join("; ")}.`);
+  }
 
   resumen.push("");
   resumen.push("Estrategia de muestreo (a decidir por el investigador):");
-  resumen.push("- Si el objetivo es representatividad estadística: muestreo probabilístico (aleatorio simple, estratificado o por conglomerados) y calcular el tamaño muestral según margen de error y nivel de confianza deseados.");
-  resumen.push("- Si el objetivo es profundidad/diversidad de perfiles (más habitual en enfoques cualitativos): muestreo no probabilístico (intencional, por conveniencia o bola de nieve), justificando el criterio de selección y el punto de saturación.");
+  if (enfoque === "cualitativo") {
+    resumen.push("- Muestreo no probabilístico (intencional, por conveniencia o bola de nieve), justificando el criterio de selección de casos y el punto de saturación teórica.");
+  } else if (enfoque === "cuantitativo") {
+    resumen.push("- Muestreo probabilístico (aleatorio simple, estratificado o por conglomerados), calculando el tamaño muestral según margen de error y nivel de confianza deseados.");
+  } else {
+    resumen.push("- Fase cuantitativa: muestreo probabilístico y cálculo de tamaño muestral según margen de error y nivel de confianza deseados.");
+    resumen.push("- Fase cualitativa: muestreo no probabilístico (intencional o bola de nieve) sobre un subconjunto de la muestra o casos adicionales, justificando el criterio de selección y el punto de saturación.");
+  }
 
-  if (esTransversalPorDefecto) {
+  if (esTransversalPorDefecto && enfoque !== "cualitativo") {
     resumen.push("");
     resumen.push("Advertencia metodológica: este es un diseño transversal (una sola medición en el tiempo). Permite describir asociaciones entre variables, pero NO establecer causalidad ni orden temporal. Las preguntas e hipótesis de este informe usan a veces lenguaje explicativo (\"explican\", \"efecto de\"); interpreta esas relaciones como asociativas, no causales, salvo que adoptes un diseño longitudinal o (cuasi)experimental.");
   }
@@ -673,7 +745,7 @@ function sugerirDisenoEstudio(lower) {
     resumen.push("Este problema toca un tema sensible (violencia, salud mental y/o menores de edad): prevé consentimiento informado explícito, protocolos de derivación ante revelación de riesgo, anonimización estricta de los datos y aprobación de un comité de ética antes de recoger cualquier dato.");
   }
 
-  return { texto: resumen.join("\n"), unidad };
+  return { texto: resumen.join("\n"), unidad, enfoque };
 }
 
 /* ================= marcos teóricos ================= */
@@ -795,7 +867,9 @@ function analizarProblema(texto) {
       subdominios: [], mecanismos: [],
       diseno: "Propón un diseño inicial (descriptivo, correlacional, cualitativo, etc.) para comenzar.",
       unidad: "Unidad de análisis pendiente de definir.",
-      operacionalizacion: [], fuentes: []
+      enfoque: "mixto",
+      operacionalizacion: [], fuentes: [], viEsCandidato: false,
+      guiaCualitativa: { codigos: [], preguntas: [] }
     };
   }
 
@@ -814,13 +888,88 @@ function analizarProblema(texto) {
   const disenoInfo = sugerirDisenoEstudio(lower);
   const fuentes = sugerirFuentesDatos(lower, area, contexto);
 
-  return {
+  const resultadoParcial = {
     p1, p2, p3, vi, vd, correlaciones, hipotesis, marcos, area, areas,
     subdominios: subdoms,
     mecanismos: generarMecanismos(areas, subdoms, vi, vd, contexto),
-    diseno: disenoInfo.texto, unidad: disenoInfo.unidad,
+    diseno: disenoInfo.texto, unidad: disenoInfo.unidad, enfoque: disenoInfo.enfoque,
     operacionalizacion, fuentes, viEsCandidato
   };
+  resultadoParcial.guiaCualitativa = construirGuiaCualitativa(resultadoParcial);
+  return resultadoParcial;
+}
+
+/* ================= guía cualitativa pre-CAQDAS (Atlas.ti / MAXQDA / NVivo) ================= */
+
+/**
+ * Libro de códigos preliminar + guía de entrevista/observación, pensados para
+ * importarse como punto de partida en Atlas.ti, MAXQDA o NVivo antes de
+ * codificar el material real. No sustituye la codificación inductiva del
+ * propio material: son categorías de partida (deductivas y sensibilizadoras).
+ */
+function construirGuiaCualitativa(resultado) {
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const mecanismos = resultado.mecanismos || [];
+
+  const codigos = [];
+  const addCodigo = (categoria, tipo, definicion) => {
+    if (!codigos.some(c => c.categoria === categoria)) codigos.push({ categoria, tipo, definicion });
+  };
+
+  vd.forEach(v => addCodigo(
+    toTitleCase(v), "Código descriptivo (fenómeno central)",
+    `Fragmentos donde la persona entrevistada describe, relata, ejemplifica o evalúa ${v}.`
+  ));
+  vi.forEach(v => addCodigo(
+    toTitleCase(v), "Código explicativo (factor asociado)",
+    `Fragmentos que vinculan ${v} con el fenómeno central, ya sea como causa, condición habilitante o justificación percibida por la persona entrevistada.`
+  ));
+  mecanismos.forEach(m => {
+    const match = m.match(/^(Micro|Meso|Macro)\s*\(([^)]+)\):\s*(.+)$/);
+    if (match) addCodigo(`${match[1]} · ${toTitleCase(match[2])}`, "Concepto sensibilizador", match[3]);
+  });
+
+  const preguntas = [];
+  const vd0 = vd.length ? vd[0] : "el fenómeno estudiado";
+  preguntas.push(`Cuéntame, con tus propias palabras, cómo describirías tu experiencia con ${vd0}.`);
+  preguntas.push("¿Cuándo empezaste a notar o vivir esta situación? ¿Qué recuerdas de ese momento?");
+  for (const v of vi.slice(0, 3)) {
+    preguntas.push(`¿Qué papel crees que ha tenido ${v} en esta situación?`);
+  }
+  preguntas.push("¿Cómo ha respondido tu entorno (familia, institución, comunidad) ante esto?");
+  preguntas.push("¿Qué cambiarías si pudieras, y por qué?");
+
+  return { codigos, preguntas };
+}
+
+const NOTA_GUIA_CUALITATIVA = "Esta guía es un punto de partida para trabajo cualitativo: un libro de códigos preliminar (categorías deductivas y conceptos sensibilizadores) y una guía de entrevista/observación semiestructurada, pensados para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real. No sustituye la codificación inductiva que surja de los propios datos — ajusta, fusiona o descarta categorías según lo que encuentres en el campo.";
+
+/* ================= síntesis del problema científico definitivo ================= */
+
+/**
+ * Funde la versión elegida del problema (P1/P2/P3) con el resto del análisis
+ * en un párrafo de apertura ya redactado, del tipo que abriría un capítulo 1
+ * de tesis o un apartado de planteamiento del problema.
+ */
+function construirProblemaPerfecto(resultado, versionLabel, preguntaElegida) {
+  const vdTxt = skJoin(resultado.vd, "el fenómeno estudiado");
+  const viTxt = skJoin(resultado.vi, "los factores explicativos identificados");
+  const areaTxt = (resultado.area || "la sociología").toLowerCase();
+  const unidad = resultado.unidad || "la población de estudio";
+  const enfoque = resultado.enfoque || "mixto";
+
+  const enfoqueTxt = enfoque === "cualitativo"
+    ? "un abordaje cualitativo que permita comprender los sentidos y mecanismos implicados"
+    : enfoque === "cuantitativo"
+      ? "un abordaje cuantitativo que permita medir la magnitud y la asociación entre las variables"
+      : "un abordaje mixto que combine la medición de la asociación con la comprensión de sus mecanismos";
+
+  const p1 = `En el ámbito de ${areaTxt}, ${vdTxt} constituye un fenómeno social relevante cuyo estudio contribuye a comprender las dinámicas que lo producen y lo reproducen.`;
+  const p2 = `Este trabajo se propone examinar la relación entre ${viTxt} y ${vdTxt}, centrando el análisis en ${unidad}, mediante ${enfoqueTxt}.`;
+  const p3 = `Formulado como problema de investigación (${versionLabel}): ${preguntaElegida}`;
+
+  return [p1, p2, p3].join("\n\n");
 }
 
 /* ================= exportador CSV (con nivel de medición) ================= */
@@ -1264,5 +1413,7 @@ if (typeof module !== "undefined") {
     NOTA_DIRECCIONALIDAD_VIVD, NOTA_JUSTIFICAR_MARCOS, NOTA_VI_CANDIDATA,
     geoDetectar, geoFuentes, detectarVariables, detectarAreaSociologica, sugerirMarcosTeoricos,
     candidatosViPorDominio,
+    clasificarEnfoqueMetodologico, sugerirDisenoEstudio,
+    construirGuiaCualitativa, NOTA_GUIA_CUALITATIVA, construirProblemaPerfecto,
   };
 }
