@@ -26,6 +26,75 @@ function uniq(xs) {
   return out;
 }
 
+/* ================= coincidencia tolerante a erratas ================= */
+/* Los estudiantes escriben rápido y con erratas ("instrucion" por
+   "instrucción", "hombrs" por "hombres"). En vez de exigir coincidencia
+   exacta en cada diccionario de palabras clave, se admite una pequeña
+   distancia de edición por palabra — sigue siendo determinista (mismo
+   texto, mismo resultado siempre), solo más tolerante a errores tipográficos. */
+
+function skNormalizar(s) {
+  return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+function skDistanciaEdicion(a, b) {
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp = new Array(n + 1);
+  for (let j = 0; j <= n; j++) dp[j] = j;
+  for (let i = 1; i <= m; i++) {
+    let prev = dp[0];
+    dp[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const tmp = dp[j];
+      dp[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, dp[j], dp[j - 1]);
+      prev = tmp;
+    }
+  }
+  return dp[n];
+}
+
+function skToleranciaPara(len) {
+  // Máximo 1 carácter de diferencia (inserción/omisión/sustitución), sin
+  // importar lo larga que sea la palabra: suficiente para una errata típica
+  // ("instrucion" por "instrucción"), pero no tanto como para confundir dos
+  // palabras españolas distintas que comparten raíz (p. ej. "instrucción"
+  // con "institución", a distancia 2).
+  return len <= 4 ? 0 : 1;
+}
+
+// ¿Aparece "patron" (una o varias palabras) dentro de "texto", tolerando
+// pequeñas erratas en cada palabra del patrón? Coincidencia exacta primero
+// (rápida); si falla, se buscan las palabras del patrón en orden dentro de
+// las palabras del texto, permitiendo una distancia de edición pequeña.
+function skContienePatron(texto, patron) {
+  const t = skNormalizar(texto);
+  const p = skNormalizar(patron);
+  if (!p) return false;
+  if (t.includes(p)) return true;
+
+  const palabrasPatron = p.split(/\s+/).filter(Boolean);
+  const palabrasTexto = t.split(/[^a-z0-9]+/).filter(Boolean);
+  let idx = 0;
+  for (const pw of palabrasPatron) {
+    const tol = skToleranciaPara(pw.length);
+    let encontrada = -1;
+    for (let k = idx; k < palabrasTexto.length; k++) {
+      const tw = palabrasTexto[k];
+      if (Math.abs(tw.length - pw.length) > tol) continue;
+      if (skDistanciaEdicion(pw, tw) <= tol) { encontrada = k; break; }
+    }
+    if (encontrada === -1) return false;
+    idx = encontrada + 1;
+  }
+  return true;
+}
+
+function skContieneAlguno(texto, patrones) {
+  return (patrones || []).some(p => skContienePatron(texto, p));
+}
+
 /* ================= motor geoheurístico (mundial) ================= */
 /* GEO_ALIASES / COUNTRY_ALIASES / COUNTRY_SOURCES / CITY_SOURCES / SK_DOMINIOS
    se cargan desde geo_and_dominios.js, concatenado antes de este archivo. */
@@ -112,14 +181,14 @@ function detectarContextoYPoblacion(lower, textoOriginal) {
   let poblacion = "la población de estudio";
   const l = lower || "";
 
-  if (["personas mayores", "adultos mayores", "ancianos"].some(w => l.includes(w))) poblacion = "las personas mayores";
-  else if (["jóvenes", "jovenes", "juventud", "adolescentes", "juvenil"].some(w => l.includes(w))) poblacion = "la población joven";
-  else if (["hombres", "varones", "masculinidades"].some(w => l.includes(w))) poblacion = "los hombres";
-  else if (["mujeres", "mujer"].some(w => l.includes(w))) poblacion = "las mujeres";
-  else if (["profesores universitarios", "docentes universitarios", "profesorado universitario"].some(w => l.includes(w))) poblacion = "el profesorado universitario";
-  else if (["profesores", "docentes", "profesorado"].some(w => l.includes(w))) poblacion = "el profesorado";
-  else if (["estudiantes", "alumnos", "alumnas"].some(w => l.includes(w))) poblacion = "el estudiantado";
-  else if (["familias", "hogares"].some(w => l.includes(w))) poblacion = "las familias";
+  if (skContieneAlguno(l, ["personas mayores", "adultos mayores", "ancianos"])) poblacion = "las personas mayores";
+  else if (skContieneAlguno(l, ["jóvenes", "jovenes", "juventud", "adolescentes", "juvenil"])) poblacion = "la población joven";
+  else if (skContieneAlguno(l, ["hombres", "varones", "masculinidades"])) poblacion = "los hombres";
+  else if (skContieneAlguno(l, ["mujeres", "mujer"])) poblacion = "las mujeres";
+  else if (skContieneAlguno(l, ["profesores universitarios", "docentes universitarios", "profesorado universitario"])) poblacion = "el profesorado universitario";
+  else if (skContieneAlguno(l, ["profesores", "docentes", "profesorado"])) poblacion = "el profesorado";
+  else if (skContieneAlguno(l, ["estudiantes", "alumnos", "alumnas"])) poblacion = "el estudiantado";
+  else if (skContieneAlguno(l, ["familias", "hogares"])) poblacion = "las familias";
 
   return { contexto, poblacion };
 }
@@ -141,7 +210,7 @@ function detectarVariables(lower) {
     const idx = vi.indexOf(x);
     if (idx !== -1) vi.splice(idx, 1);
   };
-  const hasAny = (words) => words.some(w => l.includes(w));
+  const hasAny = (words) => skContieneAlguno(l, words);
 
   // 1) Objeto sociológico central / VD explícitas
   if (hasAny(["pobreza energética", "pobreza energetica", "vulnerabilidad energética", "vulnerabilidad energetica"])) {
@@ -155,7 +224,7 @@ function detectarVariables(lower) {
   }
   if (hasAny(["violencia de género", "violencia de genero", "violencia machista"])) {
     addVd("la violencia de género");
-  } else if (l.includes("violencia")) {
+  } else if (skContienePatron(l, "violencia")) {
     addVd("la violencia");
   }
   if (hasAny(["salud mental", "problemas de salud mental", "malestar emocional", "bienestar psicológico", "bienestar psicologico"])) {
@@ -178,9 +247,9 @@ function detectarVariables(lower) {
   if (hasAny(["exclusión digital", "exclusion digital", "brecha digital"])) {
     addVd("la exclusión digital");
   }
-  if (l.includes("soledad no deseada")) {
+  if (skContienePatron(l, "soledad no deseada")) {
     addVd("la soledad no deseada");
-  } else if (l.includes("soledad")) {
+  } else if (skContienePatron(l, "soledad")) {
     addVd("la soledad social");
   }
   if (hasAny(["percepción de inseguridad", "percepcion de inseguridad"])) {
@@ -214,7 +283,7 @@ function detectarVariables(lower) {
   } else if (hasAny(["nivel educativo"])) {
     addVi("el nivel educativo");
   }
-  if (l.includes("capital cultural")) addVi("el capital cultural");
+  if (skContienePatron(l, "capital cultural")) addVi("el capital cultural");
   if (hasAny(["expectativas educativas", "escolarización", "escolarizacion"])) addVi("las condiciones educativas");
 
   if (hasAny(["condiciones económicas", "condiciones economicas", "ingresos", "renta", "bajos ingresos", "precariedad económica", "precariedad economica"])) {
@@ -229,7 +298,7 @@ function detectarVariables(lower) {
     addVi("el contexto barrial");
   }
 
-  if (l.includes("aislamiento social")) addVi("el aislamiento social");
+  if (skContienePatron(l, "aislamiento social")) addVi("el aislamiento social");
   if (hasAny(["escasas oportunidades de trabajo"])) {
     addVi("las escasas oportunidades de trabajo");
   } else if (hasAny(["oportunidades laborales", "oportunidades de trabajo"])) {
@@ -250,7 +319,7 @@ function detectarVariables(lower) {
   if (hasAny(["clase social", "exclusión social", "exclusion social", "desigualdad social", "desigualdades sociales"])) {
     addVi("la posición de clase y la exclusión social");
   }
-  if (l.includes("tiktok")) addVi("TikTok como plataforma de socialización política");
+  if (skContienePatron(l, "tiktok")) addVi("TikTok como plataforma de socialización política");
   if (hasAny(["algoritmos de recomendación", "algoritmos de recomendacion"])) {
     addVi("los algoritmos de recomendación");
   } else if (hasAny(["algoritmo", "algoritmos"])) {
@@ -399,20 +468,20 @@ function detectarAreaSociologica(lower, vi, vd) {
   const areas = [];
   const add = (a) => { if (!areas.includes(a)) areas.push(a); };
 
-  if (["pobreza energética", "pobreza energetica", "pobreza", "exclusión social", "exclusion social", "condiciones económicas", "condiciones economicas"].some(x => l.includes(x))) add("Sociología de la pobreza y la desigualdad");
-  if (["energética", "energetica", "vivienda", "residencial", "habitacional", "suministro energético", "suministro energetico"].some(x => l.includes(x))) add("Sociología de la vivienda y la energía");
-  if (["jóvenes", "jovenes", "juventud", "juvenil", "adolescentes", "18 a 25"].some(x => l.includes(x))) add("Sociología de la juventud");
-  if (["violencia de género", "violencia de genero", "género", "genero", "mujer", "mujeres", "hombres", "varones", "masculinidad", "masculinidades", "machismo", "patriarcado"].some(x => l.includes(x))) add("Sociología de género");
-  if (["familia", "familiares", "hogar", "dinámicas familiares", "dinamicas familiares", "padres", "madres"].some(x => l.includes(x))) add("Sociología de la familia");
-  if (["educación", "educacion", "escuela", "abandono escolar", "deserción", "desercion", "fracaso escolar", "nivel de instrucción", "nivel de instruccion", "nivel educativo", "capital cultural"].some(x => l.includes(x))) add("Sociología de la educación");
-  if (["trabajo", "empleo", "laboral", "paro", "desempleo", "salario", "oportunidades laborales", "precariedad laboral"].some(x => l.includes(x))) add("Sociología del trabajo");
-  if (["salud", "enfermedad", "ansiedad", "depresión", "depresion", "malestar emocional"].some(x => l.includes(x))) add("Sociología de la salud");
-  if (["emociones", "afectos", "miedo", "ira", "soledad"].some(x => l.includes(x))) add("Sociología de las emociones");
-  if (["cultura", "identidad", "representaciones", "valores"].some(x => l.includes(x))) add("Sociología de la cultura");
-  if (["política", "politica", "voto", "partido", "hegemonía", "hegemonia", "radicalización", "radicalizacion"].some(x => l.includes(x))) add("Sociología política");
-  if (["conocimiento", "normalidad", "sentido común", "sentido comun", "cognitivo"].some(x => l.includes(x))) add("Sociología del conocimiento");
+  if (skContieneAlguno(l, ["pobreza energética", "pobreza energetica", "pobreza", "exclusión social", "exclusion social", "condiciones económicas", "condiciones economicas"])) add("Sociología de la pobreza y la desigualdad");
+  if (skContieneAlguno(l, ["energética", "energetica", "vivienda", "residencial", "habitacional", "suministro energético", "suministro energetico"])) add("Sociología de la vivienda y la energía");
+  if (skContieneAlguno(l, ["jóvenes", "jovenes", "juventud", "juvenil", "adolescentes", "18 a 25"])) add("Sociología de la juventud");
+  if (skContieneAlguno(l, ["violencia de género", "violencia de genero", "género", "genero", "mujer", "mujeres", "hombres", "varones", "masculinidad", "masculinidades", "machismo", "patriarcado"])) add("Sociología de género");
+  if (skContieneAlguno(l, ["familia", "familiares", "hogar", "dinámicas familiares", "dinamicas familiares", "padres", "madres"])) add("Sociología de la familia");
+  if (skContieneAlguno(l, ["educación", "educacion", "escuela", "abandono escolar", "deserción", "desercion", "fracaso escolar", "nivel de instrucción", "nivel de instruccion", "nivel educativo", "capital cultural"])) add("Sociología de la educación");
+  if (skContieneAlguno(l, ["trabajo", "empleo", "laboral", "paro", "desempleo", "salario", "oportunidades laborales", "precariedad laboral"])) add("Sociología del trabajo");
+  if (skContieneAlguno(l, ["salud", "enfermedad", "ansiedad", "depresión", "depresion", "malestar emocional"])) add("Sociología de la salud");
+  if (skContieneAlguno(l, ["emociones", "afectos", "miedo", "ira", "soledad"])) add("Sociología de las emociones");
+  if (skContieneAlguno(l, ["cultura", "identidad", "representaciones", "valores"])) add("Sociología de la cultura");
+  if (skContieneAlguno(l, ["política", "politica", "voto", "partido", "hegemonía", "hegemonia", "radicalización", "radicalizacion"])) add("Sociología política");
+  if (skContieneAlguno(l, ["conocimiento", "normalidad", "sentido común", "sentido comun", "cognitivo"])) add("Sociología del conocimiento");
   if (["barrio", "barrios", "vecindario", "segregación territorial", "segregacion territorial", "segregación urbana", "segregacion urbana", "gentrificación", "gentrificacion", "desigualdad urbana", "estigma territorial", "periferia", "periférico", "periferico", "periféricos", "perifericos"].some(x => l0.includes(x))) add("Sociología urbana");
-  if (["digital", "internet", "algoritmo", "redes sociales", "brecha digital", "tiktok"].some(x => l.includes(x))) add("Sociología digital y algorítmica");
+  if (skContieneAlguno(l, ["digital", "internet", "algoritmo", "redes sociales", "brecha digital", "tiktok"])) add("Sociología digital y algorítmica");
 
   if (areas.length === 0) add("Sociología general / del cambio social");
   return areas.slice(0, 5);
@@ -533,7 +602,6 @@ function construirHipotesis(vi, vd, contexto, poblacion) {
   const sujeto = poblacion || "la población de estudio";
   const vd0 = vd.length ? vd[0] : "el fenómeno social estudiado";
   const ctx = contexto || "el contexto de estudio";
-  const viStr = vi.length ? vi.join(", ") : "las condiciones sociales del contexto";
 
   if (vd0.toLowerCase().includes("pobreza energética")) {
     return [
@@ -550,10 +618,21 @@ function construirHipotesis(vi, vd, contexto, poblacion) {
       `H3. La condición de género modulará la relación entre trayectoria educativa y empleo precario, al producir expectativas laborales diferenciadas y formas específicas de vulnerabilidad sociolaboral.`
     ];
   }
-  return [
-    `H1. En ${ctx}, entre ${sujeto}, ${viStr} se asociarán con cambios significativos en ${vd0}.`,
-    `H2. La combinación de factores sociales, institucionales y territoriales intensificará la presencia de ${vd0} en ${ctx}.`
-  ];
+  // Caso general: una hipótesis específica por cada variable independiente
+  // detectada (hasta 4), en vez de un texto genérico — así el problema
+  // formulado por el estudiante (sean 1, 2, 3 o más VI) queda reflejado
+  // hipótesis por hipótesis, no fundido en una frase única.
+  const viParaHipotesis = vi.length ? vi : ["las condiciones sociales del contexto"];
+  const hips = viParaHipotesis.slice(0, 4).map((v, i) =>
+    `H${i + 1}. En ${ctx}, entre ${sujeto}, ${v} se asociará con cambios significativos en ${vd0}.`
+  );
+  if (viParaHipotesis.length >= 2) {
+    const combinadas = viParaHipotesis.slice(0, 3);
+    hips.push(`H${hips.length + 1}. La combinación de ${skJoin(combinadas)} intensificará conjuntamente la presencia de ${vd0} en ${ctx}, más allá del efecto de cada factor por separado.`);
+  } else {
+    hips.push(`H${hips.length + 1}. La combinación de factores sociales, institucionales y territoriales intensificará la presencia de ${vd0} en ${ctx}.`);
+  }
+  return hips;
 }
 
 /* ================= operacionalización (con nivel de medición) ================= */
@@ -755,32 +834,32 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
   const total = (lower || "") + " " + vi.concat(vd).join(" ").toLowerCase();
   const add = (x) => { if (!marcos.includes(x)) marcos.push(x); };
 
-  if (["violencia de género", "violencia de genero", "género", "genero", "masculinidad", "masculinidades", "hombres", "machismo"].some(w => total.includes(w))) {
+  if (skContieneAlguno(total, ["violencia de género", "violencia de genero", "género", "genero", "masculinidad", "masculinidades", "hombres", "machismo"])) {
     add("Connell: masculinidades, masculinidad hegemónica y relaciones de género");
     add("Butler: performatividad de género y normas corporales/sociales");
     add("Bourdieu: dominación masculina y violencia simbólica");
   }
-  if (["familia", "familiares", "hogar"].some(w => total.includes(w))) {
+  if (skContieneAlguno(total, ["familia", "familiares", "hogar"])) {
     add("Berger y Luckmann: socialización primaria, construcción social de la realidad");
     add("Bourdieu: habitus familiar, capital cultural y reproducción");
   }
-  if (["educación", "educacion", "abandono escolar", "deserción", "desercion", "fracaso escolar"].some(w => total.includes(w))) {
+  if (skContieneAlguno(total, ["educación", "educacion", "abandono escolar", "deserción", "desercion", "fracaso escolar"])) {
     add("Bourdieu y Passeron: reproducción educativa, capital cultural y desigualdad escolar");
     add("Bernstein: códigos lingüísticos y desigualdad educativa");
   }
-  if (["trabajo", "empleo", "laboral", "precariedad"].some(w => total.includes(w))) {
+  if (skContieneAlguno(total, ["trabajo", "empleo", "laboral", "precariedad"])) {
     add("Marx: trabajo, explotación y relaciones de clase");
     add("Standing: precariado y nuevas formas de inseguridad laboral");
   }
-  if (["salud", "enfermedad", "salud mental", "ansiedad", "depresión", "depresion"].some(w => total.includes(w))) {
+  if (skContieneAlguno(total, ["salud", "enfermedad", "salud mental", "ansiedad", "depresión", "depresion"])) {
     add("Marmot: determinantes sociales de la salud");
     add("Foucault: biopolítica, cuerpos e instituciones");
   }
-  if (["digital", "algoritmo", "internet", "redes sociales"].some(w => total.includes(w))) {
+  if (skContieneAlguno(total, ["digital", "algoritmo", "internet", "redes sociales"])) {
     add("Zuboff: capitalismo de la vigilancia");
     add("Couldry y Mejias: colonialismo de datos y mediaciones digitales");
   }
-  if (["barrio", "territorio", "urbano", "zaragoza"].some(w => total.includes(w))) {
+  if (skContieneAlguno(total, ["barrio", "territorio", "urbano", "zaragoza"])) {
     add("Lefebvre: producción social del espacio");
     add("Wacquant: marginalidad urbana y estigma territorial");
   }
@@ -990,8 +1069,7 @@ let INTENTOS_FALLIDOS_EDU = 0;
 let ULTIMO_PROBLEMA_EDU = "";
 
 function contieneAlguno(texto, patrones) {
-  const t = (texto || "").toLowerCase();
-  return patrones.some(p => t.includes(p));
+  return skContieneAlguno(texto, patrones);
 }
 
 function validarProblemaEdu(texto) {
@@ -1007,7 +1085,11 @@ function validarProblemaEdu(texto) {
     "influye", "influyen", "impacto", "efecto", "afecta", "afectan", "incide", "inciden",
     "explica", "explican", "determina", "determinan", "condiciona", "condicionan",
     "qué factores", "que factores", "cuáles son las causas", "cuales son las causas",
-    "por qué", "por que", "cómo", "como", "de qué manera", "de que manera"
+    "por qué", "por que", "porque", "cómo", "como", "de qué manera", "de que manera",
+    "ejerce", "ejercen", "ejercer", "practica", "practican", "genera", "generan",
+    "produce", "producen", "provoca", "provocan", "causa", "causan", "contribuye", "contribuyen",
+    "aumenta", "aumentan", "reduce", "reducen", "incrementa", "incrementan", "disminuye", "disminuyen",
+    "favorece", "favorecen", "predice", "predicen", "por qué razón", "que factor"
   ];
   const tieneRelacion = contieneAlguno(t, marcadoresRelacion);
 
@@ -1415,5 +1497,7 @@ if (typeof module !== "undefined") {
     candidatosViPorDominio,
     clasificarEnfoqueMetodologico, sugerirDisenoEstudio,
     construirGuiaCualitativa, NOTA_GUIA_CUALITATIVA, construirProblemaPerfecto,
+    skContienePatron, skContieneAlguno, skDistanciaEdicion, validarProblemaEdu,
+    construirHipotesis, construirCorrelaciones,
   };
 }

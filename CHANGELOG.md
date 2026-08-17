@@ -62,3 +62,13 @@ El motor pasa de devolver solo resultados a explicar también el razonamiento me
 - **Documento Word ampliado a 17 secciones**, incorporando la síntesis del problema definitivo (sección 2) y la guía cualitativa con su tabla de códigos y su guía de entrevista (sección 10).
 
 Motor y exportación se re-probaron end-to-end con Playwright (incluida la ruta de descarga con y sin `window.claude.use("downloads")`) y el `.docx` resultante se validó con `python-docx` (dos tablas nuevas, 17 encabezados de sección).
+
+## Tolerancia a erratas en la validación y detección de variables 2026-08-17
+
+Un problema real («¿Porque los hombrs con bajo nivel de instrucion ejercen mas violencia de género en Zaragoza en el 2025?») era rechazado por la validación EDU pese a contener variable, unidad social, contexto y fecha, y —cuando se forzaba— el motor no reconocía «bajo nivel de instrucción» como VI y caía en candidatas genéricas. Causas y corrección:
+
+- **Marcador de relación incompleto.** `marcadoresRelacion` solo reconocía "por qué"/"por que" (con espacio) y "cómo", no "porque" escrito junto ni verbos causales habituales ("ejerce", "genera", "provoca", "produce", "contribuye", "aumenta", "reduce", etc.). Se amplió la lista.
+- **Cero tolerancia a erratas.** Toda la detección de variables, unidad social, contexto y marcadores de relación exigía coincidencia exacta de subcadena. Una sola letra de más o de menos ("instrucion" por "instrucción", "hombrs" por "hombres") bastaba para que el diccionario correspondiente no encontrara nada. Se añadió `skContienePatron`/`skContieneAlguno`: comparación exacta primero (rápido, sin cambios de comportamiento en el caso normal) y, si falla, comparación por palabra con distancia de edición ≤1 — suficiente para una errata típica de escritura rápida, pero no para confundir palabras españolas distintas que comparten raíz (se verificó explícitamente que "instrucción" y "institución", a distancia 2, no colisionan). Aplicado en `detectarVariables`, la detección de población, `detectarAreaSociologica`, `sugerirMarcosTeoricos` y todo `validarProblemaEdu`.
+- **Hipótesis genéricas con 3 o más variables.** El caso general de `construirHipotesis` fundía todas las VI detectadas en una sola frase. Ahora genera una hipótesis específica por cada VI detectada (hasta 4), más una hipótesis de combinación cuando hay 2 o más — reflejando el problema realmente formulado en vez de una plantilla fija, sea cual sea el número de variables.
+
+Verificado con el problema exacto que falló, con la batería de casos de prueba previa (sin regresiones) y con un caso sintético de 5 variables independientes para confirmar la escalada de hipótesis.
