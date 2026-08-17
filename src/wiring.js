@@ -105,6 +105,80 @@ function startSociokairosFullscreen() {
   if (overlay) overlay.style.display = "none";
 }
 
+/* ================= pop-up de corrección de erratas ================= */
+/**
+ * Muestra el pop-up para UNA errata sospechosa (ver detectarErratasSospechosas
+ * en engine.js) y resuelve con la palabra elegida por el estudiante, o null
+ * si decide continuar sin corregir. Nunca corrige nada por sí sola: solo
+ * pregunta, y quien decide es el estudiante.
+ */
+function mostrarModalErrata(errata) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("skTypoModal");
+    const palabraEl = document.getElementById("skTypoPalabra");
+    const btnSug1 = document.getElementById("skTypoBtnSug1");
+    const btnSug2 = document.getElementById("skTypoBtnSug2");
+    const inputManual = document.getElementById("skTypoInputManual");
+    const btnManual = document.getElementById("skTypoBtnManual");
+    const btnContinuar = document.getElementById("skTypoBtnContinuar");
+    if (!modal || !palabraEl || !btnSug1 || !btnSug2 || !inputManual || !btnManual || !btnContinuar) {
+      resolve(null);
+      return;
+    }
+
+    palabraEl.textContent = errata.original;
+    inputManual.value = "";
+
+    const sugerencias = errata.sugerencias || [];
+    btnSug1.textContent = sugerencias[0] || "";
+    btnSug1.style.display = sugerencias[0] ? "" : "none";
+    btnSug2.textContent = sugerencias[1] || "";
+    btnSug2.style.display = sugerencias[1] ? "" : "none";
+
+    const limpiar = () => {
+      modal.style.display = "none";
+      btnSug1.removeEventListener("click", onSug1);
+      btnSug2.removeEventListener("click", onSug2);
+      btnManual.removeEventListener("click", onManual);
+      btnContinuar.removeEventListener("click", onContinuar);
+    };
+    const onSug1 = () => { limpiar(); resolve(sugerencias[0] || null); };
+    const onSug2 = () => { limpiar(); resolve(sugerencias[1] || null); };
+    const onManual = () => {
+      const valor = inputManual.value.trim();
+      limpiar();
+      resolve(valor || null);
+    };
+    const onContinuar = () => { limpiar(); resolve(null); };
+
+    btnSug1.addEventListener("click", onSug1);
+    btnSug2.addEventListener("click", onSug2);
+    btnManual.addEventListener("click", onManual);
+    btnContinuar.addEventListener("click", onContinuar);
+
+    modal.style.display = "flex";
+  });
+}
+
+/**
+ * Revisa el texto en busca de erratas sospechosas y, si encuentra alguna,
+ * pregunta al estudiante (una a la vez) y sustituye solo esa palabra en el
+ * textarea si elige una corrección. Devuelve el texto final (corregido o
+ * no) para que el flujo de reformular continúe con él.
+ */
+async function resolverErratasAntesDeReformular(txtEl) {
+  let texto = txtEl.value;
+  const erratas = detectarErratasSospechosas(texto);
+  if (!erratas.length) return texto;
+
+  const eleccion = await mostrarModalErrata(erratas[0]);
+  if (eleccion) {
+    texto = texto.replace(erratas[0].original, eleccion);
+    txtEl.value = texto;
+  }
+  return texto;
+}
+
 /* ================= Wiring de la interfaz ================= */
 
 let ultimoResultado = null;
@@ -269,13 +343,17 @@ window.addEventListener("load", function () {
   const txtEl = document.getElementById("txt_problema");
 
   if (btnReformular) {
-    btnReformular.addEventListener("click", function () {
-      const txt = txtEl ? txtEl.value : "";
-      if (!txt.trim()) {
+    btnReformular.addEventListener("click", async function () {
+      const txtInicial = txtEl ? txtEl.value : "";
+      if (!txtInicial.trim()) {
         if (statusEl) statusEl.textContent = "Escribe primero un problema para poder aplicar la heurística SOCIOKAIROS.";
         return;
       }
       btnReformular.disabled = true;
+      if (statusEl) statusEl.textContent = "Revisando posibles erratas…";
+
+      const txt = await resolverErratasAntesDeReformular(txtEl);
+
       if (statusEl) statusEl.textContent = "Procesando heurística SOCIOKAIROS en el navegador…";
 
       const validacion = validarProblemaEdu(txt);

@@ -9,6 +9,27 @@
   </div>
 </div>
 
+<div id="skTypoModal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(7,20,33,.72);align-items:center;justify-content:center;padding:20px;">
+  <div style="max-width:520px;width:100%;background:#0e2438;color:#f5f9ff;border-radius:22px;padding:28px 26px;box-shadow:0 25px 60px rgba(0,0,0,.4);text-align:left;">
+    <h3 style="margin:0 0 10px;font-size:19px;">Posible errata en tu problema</h3>
+    <p style="margin:0 0 16px;font-size:14.5px;line-height:1.5;color:#cfe0f9;">
+      No reconocemos la palabra «<strong id="skTypoPalabra"></strong>». Puede ser una errata de una palabra clave para el análisis. ¿Quisiste decir...?
+    </p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+      <button id="skTypoBtnSug1" type="button" class="secondary" style="text-align:left;"></button>
+      <button id="skTypoBtnSug2" type="button" class="secondary" style="text-align:left;"></button>
+    </div>
+    <p style="margin:0 0 8px;font-size:13px;color:#9fb6cf;">O escribe tú la palabra correcta:</p>
+    <div style="display:flex;gap:8px;margin-bottom:18px;">
+      <input id="skTypoInputManual" type="text" placeholder="palabra correcta" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-size:14px;">
+      <button id="skTypoBtnManual" type="button" class="secondary">Usar esta</button>
+    </div>
+    <div style="text-align:right;">
+      <button id="skTypoBtnContinuar" type="button" style="background:transparent;color:#9fb6cf;box-shadow:none;font-weight:600;">Continuar sin corregir</button>
+    </div>
+  </div>
+</div>
+
   <header>
 <div style="max-width:1400px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px;">
 <div style="display:flex;align-items:center;gap:18px;">

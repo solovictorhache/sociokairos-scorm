@@ -1,5 +1,17 @@
 # CHANGELOG — SOCIOKAIROS SCORM Plugin
 
+## Pop-up de corrección de erratas y transposiciones de letras 2026-08-17
+
+**Bug real encontrado y corregido**: "delicnuencia" (transposición de letras, un tipo de errata muy común al escribir rápido) no coincidía con "delincuencia" porque `skDistanciaEdicion` era Levenshtein estándar (una transposición cuesta 2 ediciones ahí, fuera de tolerancia). Se subió a **Damerau-Levenshtein** (cuenta el intercambio de dos letras adyacentes como un solo cambio), sin tocar el tope de tolerancia ni afectar la comparación que ya evita confundir "instrucción" con "institución". Esto arregló en cascada el área sociológica (ahora sí aparece "Criminología y sociología de la desviación"), la VD detectada ("la delincuencia" en vez del genérico "el fenómeno social estudiado") y, con ello, las tres versiones de la pregunta, que ya parten del problema real.
+
+**Pop-up de corrección de erratas** (nuevo): cuando SOCIOKAIROS detecta una palabra de dominio que no reconoce pero que se parece mucho a una que sí conoce, en vez de fallar en silencio pregunta al estudiante — con hasta 2 sugerencias por distancia de edición, más la opción de escribir la palabra correcta a mano, o continuar sin corregir. Corrige solo esa palabra puntual dentro del problema, no el problema entero. Se apoya en un vocabulario de ~320 términos de dominio extraídos del propio motor (no un diccionario genérico de español), así que una palabra corriente sin relación con ningún término de dominio nunca dispara el aviso.
+
+Para evitar falsos positivos se ajustó dos veces durante las pruebas: primero se comprobó que subir el vocabulario a palabras de 8+ letras evitaba que verbos cortos genéricos ("acepta", "genera") dispararan avisos; después, al encontrar que a distancia de edición 2 aparecían demasiados pares de palabras españolas distintas y correctas ("diversidad"/"universidad", "condiciones"/"condiciona", "organizacional"/"organización"), se bajó el tope a distancia 1 estricta para este aviso — con eso desaparecieron los falsos positivos en un barrido de más de 15 problemas bien formados, sin perder la detección del caso real.
+
+De paso se añadió un concepto de prevención situacional del delito (Clarke) a los marcos teóricos de criminología.
+
+Probado end-to-end con Playwright: aparición del pop-up, elegir una sugerencia, escribir una corrección manual, y continuar sin corregir — los cuatro caminos funcionan y no aparece ningún pop-up cuando el problema está bien escrito. 40/40 tests en verde.
+
 ## Seis dominios nuevos y motor de categorías explicativas 2026-08-17
 
 **Seis dominios sociológicos nuevos**, cada uno con detección de VD/VI, candidatas por dominio, área, operacionalización, y **6 marcos teóricos** (3 clásicos + 3 contemporáneos, con conceptos nombrados, no solo el nombre del autor):

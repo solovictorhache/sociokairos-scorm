@@ -264,3 +264,38 @@ describe("operacionalización y CSV", () => {
     assert.match(csv.split("\n")[0], /Variable,Tipo,Indicador,Unidad,Nivel de medición,Fuente/);
   });
 });
+
+describe("detectarErratasSospechosas (pop-up de corrección)", () => {
+  test("detecta una transposición de letras en una palabra de dominio (caso reportado)", () => {
+    const e = eng.detectarErratasSospechosas("cuales son las causas familiares del alto indice de delicnuencia en zaragoza en el 2025?");
+    assert.equal(e.length, 1);
+    assert.equal(e[0].original, "delicnuencia");
+    assert.ok(e[0].sugerencias.includes("delincuencia"));
+  });
+
+  test("no dispara nada sobre texto sin ninguna palabra de dominio deformada", () => {
+    const e = eng.detectarErratasSospechosas("¿Cómo influye la precariedad laboral en la salud mental de los jóvenes en Zaragoza en 2024?");
+    assert.deepEqual(e, []);
+  });
+
+  test("no confunde dos palabras españolas distintas y bien escritas (barrido amplio sin falsos positivos)", () => {
+    const textos = [
+      "¿Cómo influye el estatus administrativo en la discriminación hacia la población migrante en Madrid en 2025?",
+      "¿De qué manera afectan las barreras de accesibilidad a la exclusión social de las personas con discapacidad en Barcelona en 2024?",
+      "¿Cómo influye el nivel socioeconómico en la vulnerabilidad social frente al cambio climático de las familias en Valencia en 2025?",
+      "¿Cómo influye el rechazo familiar en la aceptación social de la diversidad sexual de los jóvenes LGTBI en Zaragoza en 2025?",
+      "¿Cómo influye el estado de salud funcional en las condiciones de vida en la vejez de las personas mayores en Zaragoza en 2025?",
+      "¿Cómo influye la jerarquía organizacional en el clima organizacional de las empresas en Zaragoza en 2025?",
+      "¿Cuáles son las causas familiares del alto índice de deserción escolar de los niños de la etnia gitana en Zaragoza en el 2025?",
+    ];
+    for (const t of textos) {
+      const e = eng.detectarErratasSospechosas(t);
+      assert.deepEqual(e, [], `falso positivo en: "${t}" -> ${JSON.stringify(e)}`);
+    }
+  });
+
+  test("una errata ya cubierta por la tolerancia silenciosa del motor no genera pop-up (no hace falta preguntar)", () => {
+    const e = eng.detectarErratasSospechosas("¿Porque los hombrs con bajo nivel de instrucion ejercen mas violencia de genero en zaragoza en el 2025??");
+    assert.deepEqual(e, []);
+  });
+});

@@ -36,22 +36,37 @@ function skNormalizar(s) {
   return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
 
+// Distancia de Damerau-Levenshtein (variante "optimal string alignment"):
+// igual que Levenshtein normal (inserción/omisión/sustitución), pero además
+// cuenta el intercambio de dos letras adyacentes como un solo cambio, no
+// dos. Es exactamente la errata más común al escribir rápido en un móvil o
+// teclado ("delicnuencia" por "delincuencia": una transposición, no dos
+// sustituciones) — con Levenshtein normal costaba 2 y quedaba fuera de
+// tolerancia; con esto cuesta 1, sin tocar el tope de tolerancia ni el
+// resto de comparaciones.
 function skDistanciaEdicion(a, b) {
   const m = a.length, n = b.length;
   if (m === 0) return n;
   if (n === 0) return m;
-  const dp = new Array(n + 1);
-  for (let j = 0; j <= n; j++) dp[j] = j;
+  const dp = [];
+  for (let i = 0; i <= m; i++) dp.push(new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
   for (let i = 1; i <= m; i++) {
-    let prev = dp[0];
-    dp[0] = i;
     for (let j = 1; j <= n; j++) {
-      const tmp = dp[j];
-      dp[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, dp[j], dp[j - 1]);
-      prev = tmp;
+      const costo = a[i - 1] === b[j - 1] ? 0 : 1;
+      let valor = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + costo
+      );
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        valor = Math.min(valor, dp[i - 2][j - 2] + 1);
+      }
+      dp[i][j] = valor;
     }
   }
-  return dp[n];
+  return dp[m][n];
 }
 
 function skToleranciaPara(len) {
@@ -92,6 +107,111 @@ function skContienePatron(texto, patron) {
 
 function skContieneAlguno(texto, patrones) {
   return (patrones || []).some(p => skContienePatron(texto, p));
+}
+
+/* ================= detección de erratas sospechosas (sugerencias) ================= */
+/**
+ * Vocabulario de dominio de SOCIOKAIROS: extraído de las palabras clave que
+ * el propio motor usa en toda la detección de variables, áreas y marcos.
+ * Se usa solo para SUGERIR una corrección al estudiante (nunca para
+ * corregir nada en silencio) cuando escribe una palabra parecida mais no
+ * idéntica a un término de dominio importante.
+ */
+const VOCABULARIO_DOMINIO = [
+  "abandona", "abandonan", "abandonaron", "abandono", "abandonó", "absentismo", "accesibilidad", "actualidad",
+  "administracion", "administración", "adolescente", "adolescentes", "afrodescendiente", "agredida", "agredido", "agresora",
+  "algoritmo", "algoritmos", "alicante", "alquiler", "alumnado", "ancianos", "andalucia", "andalucía",
+  "ansiedad", "antecedentes", "aparentar", "asociacion", "asociación", "asturias", "aumentan", "ausentismo",
+  "ayuntamiento", "baleares", "barcelona", "bisexual", "bourdieu", "bruselas", "burocracia", "burocratizacion",
+  "burocratización", "calefaccion", "calefacción", "camarero", "canarias", "cantabria", "carstensen", "cataluna",
+  "cataluña", "categórica", "ciudades", "cognitivo", "colectivos", "comarcas", "comunidad", "comunidades",
+  "condiciona", "condicionan", "conectada", "conectadas", "conectado", "conectados", "conectividad", "conocimiento",
+  "consiente", "consienten", "consumismo", "contaminacion", "contaminación", "contrato", "contratos", "contribuye",
+  "contribuyen", "correlacion", "correlación", "criminalidad", "cualitativo", "cuantitativo", "cuidados", "delincuencia",
+  "dependencia", "depresion", "depresión", "desempleo", "desercion", "deserción", "desigualdad", "desinformacion",
+  "desinformación", "despoblacion", "despoblación", "determina", "determinan", "discapacidad", "discriminacion", "discriminación",
+  "discurso", "disminuye", "disminuyen", "distribucion", "distribución", "distrito", "docentes", "dominacion",
+  "dominación", "edadismo", "educacion", "educación", "educativo", "emociones", "energetica", "energeticas",
+  "energética", "energéticas", "enfermedad", "envejecimiento", "escolarizacion", "escolarización", "esperanza", "estudiantes",
+  "estudios", "etnografia", "etnografía", "evolucion", "evolución", "exclusion", "exclusión", "experiencia",
+  "experimental", "experimento", "explican", "extremadura", "familiar", "familiares", "familias", "favorece",
+  "favorecen", "feminicidio", "feminidad", "feminidades", "festinger", "formación", "gentrificacion", "gentrificación",
+  "gerontologia", "gerontología", "habitacional", "hegemonia", "hegemonía", "homofobia", "homologacion", "homologación",
+  "homosexual", "identidad", "incentivos", "incidencia", "incrementa", "incrementan", "indigena", "indígena",
+  "infancia", "influencers", "influyen", "ingresos", "inmigracion", "inmigración", "inseguridad", "institucion",
+  "institución", "instituto", "instruccion", "instrucción", "instrucion", "integracion", "integración", "internet",
+  "jubilacion", "jubilación", "justifica", "justifican", "juventud", "lgbtfobia", "lgtbifobia", "limitacion",
+  "limitaciones", "limitación", "longitudinal", "machismo", "malestar", "maltratada", "maltratado", "maltratador",
+  "maltrato", "marketing", "masculinidad", "masculinidades", "migracion", "migración", "migrante", "migrantes",
+  "monegros", "morbilidad", "mortalidad", "municipio", "municipios", "narrativa", "normalidad", "normaliza",
+  "normalizan", "organizacion", "organizaciones", "organización", "pamplona", "paradojicamente", "paradójicamente", "participacion",
+  "participación", "participativo", "patriarcado", "patriarcal", "pensiones", "percepcion", "percepción", "perdonan",
+  "periferia", "periferico", "perifericos", "periférico", "periféricos", "permanece", "permanecen", "plataforma",
+  "plataformas", "pluralismo", "poblacion", "población", "politica", "política", "porcentaje", "pospandemia",
+  "practica", "practican", "precariedad", "precarizacion", "precarización", "predicen", "prevalencia", "probabilidad",
+  "producen", "profesorado", "profesores", "provincia", "provincias", "provocan", "publicidad", "racializad",
+  "radicalizacion", "radicalización", "refugiadas", "refugiados", "regularizacion", "regularización", "reincidencia", "relacion",
+  "relación", "religion", "religiosidad", "religión", "representaciones", "resentimiento", "residencial", "residenciales",
+  "resignacion", "resignación", "ruralidad", "salarios", "santander", "secularizacion", "secularización", "sedgwick",
+  "segregacion", "segregación", "seguimiento", "significado", "sobreendeudamiento", "sostenibilidad", "sunstein", "temperatura",
+  "temporalidad", "territorial", "territorio", "territorios", "trabajadoras", "trabajadores", "transfobia", "transgenero",
+  "transgénero", "triangulacion", "triangulación", "universidad", "universidades", "usuarias", "usuarios", "valencia",
+  "valladolid", "vecindario", "verguenza", "vergüenza", "violencia", "violentada", "violentadas", "violentado",
+  "violentados", "visibilidad", "vivencia", "vivienda", "voluntariamente", "xenofobia", "zaragoza",
+];
+
+const VOCABULARIO_DOMINIO_NORM = new Set(VOCABULARIO_DOMINIO.map(skNormalizar));
+
+/**
+ * Recorre el texto en busca de palabras "sospechosas": no coinciden
+ * exactamente con ningún término del vocabulario de dominio, pero están a
+ * una distancia de edición muy pequeña de alguno (p. ej. "delicnuencia" de
+ * "delincuencia"). Nunca corrige nada por sí sola — solo devuelve
+ * candidatas para que la interfaz se lo pregunte al estudiante. Como el
+ * vocabulario contiene solo términos de dominio (no palabras comunes del
+ * español), una palabra corriente sin relación con ningún término de
+ * dominio simplemente no genera ninguna sugerencia.
+ */
+function detectarErratasSospechosas(texto) {
+  const raw = texto || "";
+  const tokenRe = /[A-Za-zÁÉÍÓÚÑÜáéíóúñü]{4,}/g;
+  const vistos = new Set();
+  const erratas = [];
+  let m;
+  while ((m = tokenRe.exec(raw))) {
+    const original = m[0];
+    const norm = skNormalizar(original);
+    if (norm.length < 8) continue;
+    if (vistos.has(norm)) continue;
+    if (VOCABULARIO_DOMINIO_NORM.has(norm)) continue;
+    // Tope de 1 SIEMPRE, sin importar lo larga que sea la palabra: a
+    // distancia 2 aparecen demasiados pares de palabras españolas
+    // distintas y perfectamente correctas ("diversidad"/"universidad",
+    // "condiciones"/"condiciona", "organizacional"/"organización") que no
+    // son la misma errata — solo generan avisos molestos y falsos. A
+    // distancia 1 el caso real que motivó esto ("delicnuencia" →
+    // "delincuencia", una transposición) se sigue detectando.
+    const tol = 1;
+    const candidatas = [];
+    for (const palabraVocab of VOCABULARIO_DOMINIO) {
+      const vn = skNormalizar(palabraVocab);
+      if (vn === norm) continue;
+      if (Math.abs(vn.length - norm.length) > tol) continue;
+      const d = skDistanciaEdicion(norm, vn);
+      if (d >= 1 && d <= tol) candidatas.push({ palabra: palabraVocab, dist: d });
+    }
+    if (candidatas.length) {
+      candidatas.sort((a, b) => a.dist - b.dist || a.palabra.localeCompare(b.palabra));
+      const unicas = [];
+      for (const c of candidatas) {
+        if (!unicas.includes(c.palabra)) unicas.push(c.palabra);
+        if (unicas.length >= 2) break;
+      }
+      erratas.push({ original, sugerencias: unicas });
+      vistos.add(norm);
+    }
+  }
+  return erratas;
 }
 
 /* ================= motor geoheurístico (mundial) ================= */
@@ -1167,6 +1287,7 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
     add("Sampson: eficacia colectiva y control social informal");
     add("Wacquant: penalidad neoliberal, gueto y prisión");
     add("Garland: cultura del control penal");
+    add("Clarke: prevención situacional del delito (reducir oportunidades, no solo sancionar)");
   }
   if (skContieneAlguno(total, ["medios de comunicación", "medios de comunicacion", "desinformación", "desinformacion", "fake news", "bulos", "opinión pública", "opinion publica", "framing", "agenda mediática", "agenda mediatica"])) {
     add("Lippmann: opinión pública y estereotipos");
@@ -1966,5 +2087,6 @@ if (typeof module !== "undefined") {
     skContienePatron, skContieneAlguno, skDistanciaEdicion, validarProblemaEdu,
     construirHipotesis, construirCorrelaciones,
     construirCategoriasExplicativas, NOTA_CATEGORIAS_EXPLICATIVAS,
+    detectarErratasSospechosas, VOCABULARIO_DOMINIO,
   };
 }

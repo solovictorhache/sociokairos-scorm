@@ -497,6 +497,27 @@ body.sk-dark .version-selector label:hover {
   </div>
 </div>
 
+<div id="skTypoModal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(7,20,33,.72);align-items:center;justify-content:center;padding:20px;">
+  <div style="max-width:520px;width:100%;background:#0e2438;color:#f5f9ff;border-radius:22px;padding:28px 26px;box-shadow:0 25px 60px rgba(0,0,0,.4);text-align:left;">
+    <h3 style="margin:0 0 10px;font-size:19px;">Posible errata en tu problema</h3>
+    <p style="margin:0 0 16px;font-size:14.5px;line-height:1.5;color:#cfe0f9;">
+      No reconocemos la palabra «<strong id="skTypoPalabra"></strong>». Puede ser una errata de una palabra clave para el análisis. ¿Quisiste decir...?
+    </p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+      <button id="skTypoBtnSug1" type="button" class="secondary" style="text-align:left;"></button>
+      <button id="skTypoBtnSug2" type="button" class="secondary" style="text-align:left;"></button>
+    </div>
+    <p style="margin:0 0 8px;font-size:13px;color:#9fb6cf;">O escribe tú la palabra correcta:</p>
+    <div style="display:flex;gap:8px;margin-bottom:18px;">
+      <input id="skTypoInputManual" type="text" placeholder="palabra correcta" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-size:14px;">
+      <button id="skTypoBtnManual" type="button" class="secondary">Usar esta</button>
+    </div>
+    <div style="text-align:right;">
+      <button id="skTypoBtnContinuar" type="button" style="background:transparent;color:#9fb6cf;box-shadow:none;font-weight:600;">Continuar sin corregir</button>
+    </div>
+  </div>
+</div>
+
   <header>
 <div style="max-width:1400px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px;">
 <div style="display:flex;align-items:center;gap:18px;">
@@ -959,22 +980,37 @@ function skNormalizar(s) {
   return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
 
+// Distancia de Damerau-Levenshtein (variante "optimal string alignment"):
+// igual que Levenshtein normal (inserción/omisión/sustitución), pero además
+// cuenta el intercambio de dos letras adyacentes como un solo cambio, no
+// dos. Es exactamente la errata más común al escribir rápido en un móvil o
+// teclado ("delicnuencia" por "delincuencia": una transposición, no dos
+// sustituciones) — con Levenshtein normal costaba 2 y quedaba fuera de
+// tolerancia; con esto cuesta 1, sin tocar el tope de tolerancia ni el
+// resto de comparaciones.
 function skDistanciaEdicion(a, b) {
   const m = a.length, n = b.length;
   if (m === 0) return n;
   if (n === 0) return m;
-  const dp = new Array(n + 1);
-  for (let j = 0; j <= n; j++) dp[j] = j;
+  const dp = [];
+  for (let i = 0; i <= m; i++) dp.push(new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
   for (let i = 1; i <= m; i++) {
-    let prev = dp[0];
-    dp[0] = i;
     for (let j = 1; j <= n; j++) {
-      const tmp = dp[j];
-      dp[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, dp[j], dp[j - 1]);
-      prev = tmp;
+      const costo = a[i - 1] === b[j - 1] ? 0 : 1;
+      let valor = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + costo
+      );
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        valor = Math.min(valor, dp[i - 2][j - 2] + 1);
+      }
+      dp[i][j] = valor;
     }
   }
-  return dp[n];
+  return dp[m][n];
 }
 
 function skToleranciaPara(len) {
@@ -1015,6 +1051,111 @@ function skContienePatron(texto, patron) {
 
 function skContieneAlguno(texto, patrones) {
   return (patrones || []).some(p => skContienePatron(texto, p));
+}
+
+/* ================= detección de erratas sospechosas (sugerencias) ================= */
+/**
+ * Vocabulario de dominio de SOCIOKAIROS: extraído de las palabras clave que
+ * el propio motor usa en toda la detección de variables, áreas y marcos.
+ * Se usa solo para SUGERIR una corrección al estudiante (nunca para
+ * corregir nada en silencio) cuando escribe una palabra parecida mais no
+ * idéntica a un término de dominio importante.
+ */
+const VOCABULARIO_DOMINIO = [
+  "abandona", "abandonan", "abandonaron", "abandono", "abandonó", "absentismo", "accesibilidad", "actualidad",
+  "administracion", "administración", "adolescente", "adolescentes", "afrodescendiente", "agredida", "agredido", "agresora",
+  "algoritmo", "algoritmos", "alicante", "alquiler", "alumnado", "ancianos", "andalucia", "andalucía",
+  "ansiedad", "antecedentes", "aparentar", "asociacion", "asociación", "asturias", "aumentan", "ausentismo",
+  "ayuntamiento", "baleares", "barcelona", "bisexual", "bourdieu", "bruselas", "burocracia", "burocratizacion",
+  "burocratización", "calefaccion", "calefacción", "camarero", "canarias", "cantabria", "carstensen", "cataluna",
+  "cataluña", "categórica", "ciudades", "cognitivo", "colectivos", "comarcas", "comunidad", "comunidades",
+  "condiciona", "condicionan", "conectada", "conectadas", "conectado", "conectados", "conectividad", "conocimiento",
+  "consiente", "consienten", "consumismo", "contaminacion", "contaminación", "contrato", "contratos", "contribuye",
+  "contribuyen", "correlacion", "correlación", "criminalidad", "cualitativo", "cuantitativo", "cuidados", "delincuencia",
+  "dependencia", "depresion", "depresión", "desempleo", "desercion", "deserción", "desigualdad", "desinformacion",
+  "desinformación", "despoblacion", "despoblación", "determina", "determinan", "discapacidad", "discriminacion", "discriminación",
+  "discurso", "disminuye", "disminuyen", "distribucion", "distribución", "distrito", "docentes", "dominacion",
+  "dominación", "edadismo", "educacion", "educación", "educativo", "emociones", "energetica", "energeticas",
+  "energética", "energéticas", "enfermedad", "envejecimiento", "escolarizacion", "escolarización", "esperanza", "estudiantes",
+  "estudios", "etnografia", "etnografía", "evolucion", "evolución", "exclusion", "exclusión", "experiencia",
+  "experimental", "experimento", "explican", "extremadura", "familiar", "familiares", "familias", "favorece",
+  "favorecen", "feminicidio", "feminidad", "feminidades", "festinger", "formación", "gentrificacion", "gentrificación",
+  "gerontologia", "gerontología", "habitacional", "hegemonia", "hegemonía", "homofobia", "homologacion", "homologación",
+  "homosexual", "identidad", "incentivos", "incidencia", "incrementa", "incrementan", "indigena", "indígena",
+  "infancia", "influencers", "influyen", "ingresos", "inmigracion", "inmigración", "inseguridad", "institucion",
+  "institución", "instituto", "instruccion", "instrucción", "instrucion", "integracion", "integración", "internet",
+  "jubilacion", "jubilación", "justifica", "justifican", "juventud", "lgbtfobia", "lgtbifobia", "limitacion",
+  "limitaciones", "limitación", "longitudinal", "machismo", "malestar", "maltratada", "maltratado", "maltratador",
+  "maltrato", "marketing", "masculinidad", "masculinidades", "migracion", "migración", "migrante", "migrantes",
+  "monegros", "morbilidad", "mortalidad", "municipio", "municipios", "narrativa", "normalidad", "normaliza",
+  "normalizan", "organizacion", "organizaciones", "organización", "pamplona", "paradojicamente", "paradójicamente", "participacion",
+  "participación", "participativo", "patriarcado", "patriarcal", "pensiones", "percepcion", "percepción", "perdonan",
+  "periferia", "periferico", "perifericos", "periférico", "periféricos", "permanece", "permanecen", "plataforma",
+  "plataformas", "pluralismo", "poblacion", "población", "politica", "política", "porcentaje", "pospandemia",
+  "practica", "practican", "precariedad", "precarizacion", "precarización", "predicen", "prevalencia", "probabilidad",
+  "producen", "profesorado", "profesores", "provincia", "provincias", "provocan", "publicidad", "racializad",
+  "radicalizacion", "radicalización", "refugiadas", "refugiados", "regularizacion", "regularización", "reincidencia", "relacion",
+  "relación", "religion", "religiosidad", "religión", "representaciones", "resentimiento", "residencial", "residenciales",
+  "resignacion", "resignación", "ruralidad", "salarios", "santander", "secularizacion", "secularización", "sedgwick",
+  "segregacion", "segregación", "seguimiento", "significado", "sobreendeudamiento", "sostenibilidad", "sunstein", "temperatura",
+  "temporalidad", "territorial", "territorio", "territorios", "trabajadoras", "trabajadores", "transfobia", "transgenero",
+  "transgénero", "triangulacion", "triangulación", "universidad", "universidades", "usuarias", "usuarios", "valencia",
+  "valladolid", "vecindario", "verguenza", "vergüenza", "violencia", "violentada", "violentadas", "violentado",
+  "violentados", "visibilidad", "vivencia", "vivienda", "voluntariamente", "xenofobia", "zaragoza",
+];
+
+const VOCABULARIO_DOMINIO_NORM = new Set(VOCABULARIO_DOMINIO.map(skNormalizar));
+
+/**
+ * Recorre el texto en busca de palabras "sospechosas": no coinciden
+ * exactamente con ningún término del vocabulario de dominio, pero están a
+ * una distancia de edición muy pequeña de alguno (p. ej. "delicnuencia" de
+ * "delincuencia"). Nunca corrige nada por sí sola — solo devuelve
+ * candidatas para que la interfaz se lo pregunte al estudiante. Como el
+ * vocabulario contiene solo términos de dominio (no palabras comunes del
+ * español), una palabra corriente sin relación con ningún término de
+ * dominio simplemente no genera ninguna sugerencia.
+ */
+function detectarErratasSospechosas(texto) {
+  const raw = texto || "";
+  const tokenRe = /[A-Za-zÁÉÍÓÚÑÜáéíóúñü]{4,}/g;
+  const vistos = new Set();
+  const erratas = [];
+  let m;
+  while ((m = tokenRe.exec(raw))) {
+    const original = m[0];
+    const norm = skNormalizar(original);
+    if (norm.length < 8) continue;
+    if (vistos.has(norm)) continue;
+    if (VOCABULARIO_DOMINIO_NORM.has(norm)) continue;
+    // Tope de 1 SIEMPRE, sin importar lo larga que sea la palabra: a
+    // distancia 2 aparecen demasiados pares de palabras españolas
+    // distintas y perfectamente correctas ("diversidad"/"universidad",
+    // "condiciones"/"condiciona", "organizacional"/"organización") que no
+    // son la misma errata — solo generan avisos molestos y falsos. A
+    // distancia 1 el caso real que motivó esto ("delicnuencia" →
+    // "delincuencia", una transposición) se sigue detectando.
+    const tol = 1;
+    const candidatas = [];
+    for (const palabraVocab of VOCABULARIO_DOMINIO) {
+      const vn = skNormalizar(palabraVocab);
+      if (vn === norm) continue;
+      if (Math.abs(vn.length - norm.length) > tol) continue;
+      const d = skDistanciaEdicion(norm, vn);
+      if (d >= 1 && d <= tol) candidatas.push({ palabra: palabraVocab, dist: d });
+    }
+    if (candidatas.length) {
+      candidatas.sort((a, b) => a.dist - b.dist || a.palabra.localeCompare(b.palabra));
+      const unicas = [];
+      for (const c of candidatas) {
+        if (!unicas.includes(c.palabra)) unicas.push(c.palabra);
+        if (unicas.length >= 2) break;
+      }
+      erratas.push({ original, sugerencias: unicas });
+      vistos.add(norm);
+    }
+  }
+  return erratas;
 }
 
 /* ================= motor geoheurístico (mundial) ================= */
@@ -2090,6 +2231,7 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
     add("Sampson: eficacia colectiva y control social informal");
     add("Wacquant: penalidad neoliberal, gueto y prisión");
     add("Garland: cultura del control penal");
+    add("Clarke: prevención situacional del delito (reducir oportunidades, no solo sancionar)");
   }
   if (skContieneAlguno(total, ["medios de comunicación", "medios de comunicacion", "desinformación", "desinformacion", "fake news", "bulos", "opinión pública", "opinion publica", "framing", "agenda mediática", "agenda mediatica"])) {
     add("Lippmann: opinión pública y estereotipos");
@@ -3366,6 +3508,80 @@ function startSociokairosFullscreen() {
   if (overlay) overlay.style.display = "none";
 }
 
+/* ================= pop-up de corrección de erratas ================= */
+/**
+ * Muestra el pop-up para UNA errata sospechosa (ver detectarErratasSospechosas
+ * en engine.js) y resuelve con la palabra elegida por el estudiante, o null
+ * si decide continuar sin corregir. Nunca corrige nada por sí sola: solo
+ * pregunta, y quien decide es el estudiante.
+ */
+function mostrarModalErrata(errata) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("skTypoModal");
+    const palabraEl = document.getElementById("skTypoPalabra");
+    const btnSug1 = document.getElementById("skTypoBtnSug1");
+    const btnSug2 = document.getElementById("skTypoBtnSug2");
+    const inputManual = document.getElementById("skTypoInputManual");
+    const btnManual = document.getElementById("skTypoBtnManual");
+    const btnContinuar = document.getElementById("skTypoBtnContinuar");
+    if (!modal || !palabraEl || !btnSug1 || !btnSug2 || !inputManual || !btnManual || !btnContinuar) {
+      resolve(null);
+      return;
+    }
+
+    palabraEl.textContent = errata.original;
+    inputManual.value = "";
+
+    const sugerencias = errata.sugerencias || [];
+    btnSug1.textContent = sugerencias[0] || "";
+    btnSug1.style.display = sugerencias[0] ? "" : "none";
+    btnSug2.textContent = sugerencias[1] || "";
+    btnSug2.style.display = sugerencias[1] ? "" : "none";
+
+    const limpiar = () => {
+      modal.style.display = "none";
+      btnSug1.removeEventListener("click", onSug1);
+      btnSug2.removeEventListener("click", onSug2);
+      btnManual.removeEventListener("click", onManual);
+      btnContinuar.removeEventListener("click", onContinuar);
+    };
+    const onSug1 = () => { limpiar(); resolve(sugerencias[0] || null); };
+    const onSug2 = () => { limpiar(); resolve(sugerencias[1] || null); };
+    const onManual = () => {
+      const valor = inputManual.value.trim();
+      limpiar();
+      resolve(valor || null);
+    };
+    const onContinuar = () => { limpiar(); resolve(null); };
+
+    btnSug1.addEventListener("click", onSug1);
+    btnSug2.addEventListener("click", onSug2);
+    btnManual.addEventListener("click", onManual);
+    btnContinuar.addEventListener("click", onContinuar);
+
+    modal.style.display = "flex";
+  });
+}
+
+/**
+ * Revisa el texto en busca de erratas sospechosas y, si encuentra alguna,
+ * pregunta al estudiante (una a la vez) y sustituye solo esa palabra en el
+ * textarea si elige una corrección. Devuelve el texto final (corregido o
+ * no) para que el flujo de reformular continúe con él.
+ */
+async function resolverErratasAntesDeReformular(txtEl) {
+  let texto = txtEl.value;
+  const erratas = detectarErratasSospechosas(texto);
+  if (!erratas.length) return texto;
+
+  const eleccion = await mostrarModalErrata(erratas[0]);
+  if (eleccion) {
+    texto = texto.replace(erratas[0].original, eleccion);
+    txtEl.value = texto;
+  }
+  return texto;
+}
+
 /* ================= Wiring de la interfaz ================= */
 
 let ultimoResultado = null;
@@ -3530,13 +3746,17 @@ window.addEventListener("load", function () {
   const txtEl = document.getElementById("txt_problema");
 
   if (btnReformular) {
-    btnReformular.addEventListener("click", function () {
-      const txt = txtEl ? txtEl.value : "";
-      if (!txt.trim()) {
+    btnReformular.addEventListener("click", async function () {
+      const txtInicial = txtEl ? txtEl.value : "";
+      if (!txtInicial.trim()) {
         if (statusEl) statusEl.textContent = "Escribe primero un problema para poder aplicar la heurística SOCIOKAIROS.";
         return;
       }
       btnReformular.disabled = true;
+      if (statusEl) statusEl.textContent = "Revisando posibles erratas…";
+
+      const txt = await resolverErratasAntesDeReformular(txtEl);
+
       if (statusEl) statusEl.textContent = "Procesando heurística SOCIOKAIROS en el navegador…";
 
       const validacion = validarProblemaEdu(txt);
