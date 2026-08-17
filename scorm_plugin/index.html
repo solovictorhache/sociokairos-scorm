@@ -1,0 +1,2890 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SOCIOKAIROS · Research Suite para Moodle</title>
+  <style>
+
+    :root{
+      --sk-bg:#eef5fb;
+      --sk-card:rgba(255,255,255,.86);
+      --sk-card-solid:#ffffff;
+      --sk-text:#0f2f4a;
+      --sk-muted:#61778c;
+      --sk-primary:#083e70;
+      --sk-primary-2:#0b65b1;
+      --sk-accent:#46b4e8;
+      --sk-border:rgba(12,63,105,.14);
+      --sk-shadow:0 18px 45px rgba(8,62,112,.14);
+      --sk-radius:24px;
+    }
+    *{ box-sizing:border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(70,180,232,.22), transparent 32%),
+        radial-gradient(circle at 88% 18%, rgba(8,62,112,.18), transparent 36%),
+        linear-gradient(135deg,#f7fbff,#eaf4ff 55%,#f4f8fc);
+      color:var(--sk-text);
+      min-height:100vh;
+    }
+    header {
+      background: linear-gradient(90deg,#06150f,#0b3d1f,#06150f);
+      color: #f8fbff;
+      padding: 22px 28px;
+      border-bottom:1px solid var(--sk-border);
+      box-shadow:0 8px 28px rgba(8,62,112,.08);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    header > div {
+      max-width: 1220px;
+      margin: 0 auto;
+    }
+    header img {
+      height:72px !important;
+      width:72px !important;
+      border-radius:20px;
+      box-shadow:0 12px 28px rgba(8,62,112,.15);
+      background:white;
+      padding:4px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing:.02em;
+      font-weight:850;
+      color: #ffffff;
+      text-shadow:0 1px 2px rgba(0,0,0,.35);
+    }
+    header p {
+      margin: 7px 0 0 0;
+      font-size: 15px;
+      color: rgba(255,255,255,.86);
+      line-height:1.45;
+      max-width:980px;
+    }
+    header .meta {
+      margin-top: 8px;
+      font-size: 13px;
+      color: rgba(255,255,255,.78);
+    }
+    header a{
+      color:#5fc7ff !important;
+      text-decoration:none;
+      font-weight:700;
+    }
+    main {
+      padding: 28px 28px 52px;
+      max-width: 1220px;
+      margin: 0 auto;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(360px,.95fr) minmax(420px,1.35fr);
+      gap: 22px;
+      align-items:start;
+    }
+    textarea {
+      width: 100%;
+      min-height: 238px;
+      resize: vertical;
+      padding: 16px 18px;
+      font-family: inherit;
+      font-size: 15px;
+      line-height:1.55;
+      border-radius: 20px;
+      border: 1px solid var(--sk-border);
+      background:rgba(255,255,255,.82);
+      color:var(--sk-text);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
+      outline:none;
+      transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+    textarea:focus {
+      border-color: rgba(11,101,177,.55);
+      box-shadow:0 0 0 4px rgba(70,180,232,.18);
+    }
+    .panel {
+      background: var(--sk-card);
+      border-radius: var(--sk-radius);
+      border: 1px solid var(--sk-border);
+      padding: 22px 24px;
+      box-shadow: var(--sk-shadow);
+      font-size: 14px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      animation: skFade .35s ease both;
+    }
+    .sk-logo { height: 32px; margin-right: 8px; vertical-align: middle; }
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom:16px;
+      font-size: 18px;
+      color: var(--sk-primary);
+      letter-spacing:.01em;
+    }
+    .panel h3 {
+      margin: 18px 0 8px;
+      font-size: 14px;
+      color: var(--sk-text);
+      font-weight:800;
+    }
+    .panel pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
+      font-size: 12.5px;
+      line-height:1.55;
+      background: rgba(246,250,255,.92);
+      border-radius: 18px;
+      padding: 14px 16px;
+      border: 1px solid rgba(12,63,105,.10);
+      margin-bottom: 12px;
+      color:#17324a;
+      max-height: 360px;
+      overflow:auto;
+    }
+    button {
+      border: none;
+      border-radius: 16px;
+      padding: 11px 18px;
+      font-size: 13px;
+      cursor: pointer;
+      background: linear-gradient(135deg,var(--sk-primary),var(--sk-primary-2));
+      color: #fff;
+      margin-top: 10px;
+      margin-right: 8px;
+      font-weight:750;
+      box-shadow:0 10px 24px rgba(8,62,112,.18);
+      transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+    }
+    button:hover{
+      transform:translateY(-2px);
+      box-shadow:0 14px 30px rgba(8,62,112,.25);
+    }
+    button.secondary {
+      background: linear-gradient(135deg,#4b86b6,#1476b8);
+    }
+    button:disabled {
+      opacity: 0.55;
+      cursor: default;
+      transform:none;
+    }
+    .tags {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--sk-muted);
+      line-height:1.9;
+    }
+    .badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(11,101,177,.18);
+      margin-right: 5px;
+      margin-bottom: 5px;
+      background:rgba(11,101,177,.08);
+      color:#164569;
+      font-weight:650;
+    }
+    .status {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--sk-muted);
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.72);
+      display:inline-block;
+      border:1px solid rgba(12,63,105,.10);
+    }
+    .badge-area {
+      display: inline-block;
+      margin: 0 0 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(11,101,177,.20);
+      font-size: 12px;
+      background: #e9f4ff;
+      color:#12456f;
+      font-weight:700;
+    }
+    .version-selector{
+      background:rgba(255,255,255,.70);
+      border:1px solid rgba(12,63,105,.12);
+      border-radius:18px;
+      padding:14px 16px;
+      margin:10px 0 14px;
+      line-height:1.7;
+    }
+    .version-selector label{
+      cursor:pointer;
+      display:inline-block;
+      margin:3px 0;
+    }
+    input[type="radio"]{
+      accent-color: var(--sk-primary-2);
+      transform:scale(1.08);
+      margin-right:6px;
+    }
+    @keyframes skFade{
+      from{opacity:0; transform:translateY(10px);}
+      to{opacity:1; transform:translateY(0);}
+    }
+
+    .theme-toggle{
+      width:112px;
+      height:54px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.24);
+      background:rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 12px;
+      color:#fff;
+      box-shadow:0 10px 28px rgba(0,0,0,.22);
+      cursor:pointer;
+      user-select:none;
+    }
+    .theme-toggle .sun{font-size:18px;opacity:.95;}
+    .theme-toggle .track{
+      position:relative;
+      width:54px;
+      height:30px;
+      border-radius:999px;
+      background:rgba(255,255,255,.62);
+    }
+    .theme-toggle .knob{
+      position:absolute;
+      width:26px;
+      height:26px;
+      left:2px;
+      top:2px;
+      border-radius:50%;
+      background:#fff;
+      box-shadow:0 3px 8px rgba(0,0,0,.25);
+      transition:left .18s ease;
+    }
+    body.sk-dark{
+      background:
+        radial-gradient(circle at 10% 10%, rgba(70,180,232,.12), transparent 30%),
+        linear-gradient(135deg,#06111d,#0e2438 55%,#06111d);
+    }
+    body.sk-dark .panel{background:rgba(10,28,44,.88); color:#f5f9ff; border-color:rgba(255,255,255,.10);}
+    body.sk-dark .panel h2, body.sk-dark .panel h3{color:#f8fbff;}
+    body.sk-dark textarea{background:rgba(255,255,255,.08); color:#fff; border-color:rgba(255,255,255,.18);}
+    body.sk-dark .panel pre{background:rgba(255,255,255,.08); color:#f5f9ff; border-color:rgba(255,255,255,.12);}
+    body.sk-dark .version-selector{background:rgba(255,255,255,.08); color:#f5f9ff; border-color:rgba(255,255,255,.12);}
+    body.sk-dark .badge{background:rgba(95,199,255,.16); color:#e8f7ff; border-color:rgba(95,199,255,.28);}
+    body.sk-dark .badge-area{background:rgba(95,199,255,.16); color:#e8f7ff; border-color:rgba(95,199,255,.28);}
+    body.sk-dark .status{background:rgba(255,255,255,.10); color:#cfe0f0; border-color:rgba(255,255,255,.16);}
+    body.sk-dark .theme-toggle .knob{left:26px;}
+
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      header h1{font-size:22px;}
+      main{padding:20px;}
+    }
+
+
+/* --- SOCIOKAIROS EDU V36: botonera unificada y datos abajo --- */
+header{
+  min-height: 138px !important;
+}
+header > div{
+  max-width: 1400px !important;
+}
+.sk-controls-clean{
+  display:flex !important;
+  gap:16px !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  flex-shrink:0 !important;
+}
+.sk-theme-toggle-clean{
+  height:54px !important;
+  min-width:132px !important;
+  border-radius:999px !important;
+  border:1px solid rgba(255,255,255,.28) !important;
+  background:rgba(255,255,255,.13) !important;
+  color:#ffffff !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-around !important;
+  gap:10px !important;
+  padding:0 14px !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.22) !important;
+  backdrop-filter:blur(8px) !important;
+  -webkit-backdrop-filter:blur(8px) !important;
+  cursor:pointer !important;
+}
+.sk-track{
+  position:relative !important;
+  width:56px !important;
+  height:32px !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.45) !important;
+  display:inline-block !important;
+}
+.sk-knob{
+  position:absolute !important;
+  left:3px !important;
+  top:3px !important;
+  width:26px !important;
+  height:26px !important;
+  border-radius:50% !important;
+  background:#ffffff !important;
+  box-shadow:0 3px 10px rgba(0,0,0,.28) !important;
+  transition:left .18s ease !important;
+}
+body.sk-dark .sk-knob{
+  left:27px !important;
+}
+.sk-sun,.sk-moon{
+  font-size:20px !important;
+  color:#ffffff !important;
+  line-height:1 !important;
+  font-weight:800 !important;
+}
+.sk-icon-btn-clean{
+  width:56px !important;
+  height:56px !important;
+  border-radius:16px !important;
+  border:1px solid rgba(255,255,255,.28) !important;
+  background:rgba(255,255,255,.13) !important;
+  color:#ffffff !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font-size:24px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  cursor:pointer !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.22) !important;
+  backdrop-filter:blur(8px) !important;
+  -webkit-backdrop-filter:blur(8px) !important;
+}
+.sk-icon-btn-clean:hover,.sk-theme-toggle-clean:hover{
+  background:rgba(255,255,255,.23) !important;
+}
+.sk-footer-author{
+  margin-top:40px !important;
+  width:100% !important;
+  text-align:center !important;
+  padding:18px 20px 22px !important;
+  color:#16324f !important;
+  font-size:15px !important;
+  line-height:1.6 !important;
+  background:rgba(255,255,255,.78) !important;
+  border-top:1px solid rgba(8,62,112,.14) !important;
+}
+.sk-footer-author a{
+  color:#006bb6 !important;
+  text-decoration:none !important;
+  font-weight:800 !important;
+}
+.sk-footer-author a:hover{
+  text-decoration:underline !important;
+}
+body.sk-dark .sk-footer-author{
+  background:rgba(10,28,44,.92) !important;
+  color:#f5f9ff !important;
+  border-top:1px solid rgba(255,255,255,.14) !important;
+}
+body.sk-dark .sk-footer-author a{
+  color:#5fc7ff !important;
+}
+@media(max-width:980px){
+  header > div{
+    flex-direction:column !important;
+    align-items:flex-start !important;
+  }
+  .sk-controls-clean{
+    margin-left:90px !important;
+  }
+}
+
+
+/* --- SOCIOKAIROS EDU V38: datos visibles arriba --- */
+.sk-author-top{
+  display:block !important;
+  margin-top:8px !important;
+  color:#f7fbff !important;
+  font-size:15px !important;
+  font-weight:600 !important;
+  letter-spacing:.1px !important;
+  text-shadow:0 1px 3px rgba(0,0,0,.35) !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+.sk-author-top a{
+  color:#64c8ff !important;
+  text-decoration:none !important;
+  font-weight:800 !important;
+}
+.sk-author-top a:hover{
+  text-decoration:underline !important;
+}
+header{
+  min-height:150px !important;
+}
+
+
+
+/* --- FIX SOCIOKAIROS EDU II: visibilidad del selector de versión 2.1 ---
+   No modifica la lógica ni la sección 2.3. Solo corrige contraste/legibilidad. */
+.version-selector,
+.version-selector p,
+.version-selector label,
+.version-selector .meta,
+#version_elegida_hint {
+  color: var(--sk-text) !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+.version-selector {
+  background: rgba(255,255,255,.88) !important;
+}
+.version-selector label {
+  display: block !important;
+  padding: 6px 8px !important;
+  border-radius: 12px !important;
+  font-weight: 650 !important;
+}
+.version-selector label:hover {
+  background: rgba(11,101,177,.08) !important;
+}
+.version-selector input[type="radio"] {
+  appearance: auto !important;
+  -webkit-appearance: radio !important;
+  accent-color: var(--sk-primary-2) !important;
+  opacity: 1 !important;
+  transform: scale(1.12) !important;
+  margin-right: 8px !important;
+  vertical-align: middle !important;
+}
+body.sk-dark .version-selector,
+body.sk-dark .version-selector p,
+body.sk-dark .version-selector label,
+body.sk-dark .version-selector .meta,
+body.sk-dark #version_elegida_hint {
+  color: #f5f9ff !important;
+}
+body.sk-dark .version-selector {
+  background: rgba(10,28,44,.92) !important;
+}
+body.sk-dark .version-selector label:hover {
+  background: rgba(95,199,255,.14) !important;
+}
+
+</style>
+</head>
+<body>
+
+<div id="sociokairosStartOverlay" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#071421,#12385c);display:flex;align-items:center;justify-content:center;color:white;text-align:center;">
+  <div style="max-width:850px;padding:40px;">
+    <img src="logo.png" style="width:140px;border-radius:28px;box-shadow:0 12px 38px rgba(0,0,0,.35);">
+    <h1 style="font-size:42px;margin:24px 0 12px;">SOCIOKAIROS</h1>
+    <p style="font-size:22px;line-height:1.5;">Research Suite · Reformulación dinámica de problemas científicos</p>
+    <button onclick="startSociokairosFullscreen()" style="margin-top:24px;padding:16px 28px;border:none;border-radius:18px;background:#0a72c8;color:white;font-weight:800;font-size:18px;cursor:pointer;">Entrar en pantalla completa</button>
+  </div>
+</div>
+
+  <header>
+<div style="max-width:1400px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px;">
+<div style="display:flex;align-items:center;gap:18px;">
+<img src="logo.png" alt="SOCIOKAIROS">
+<div>
+<h1>SOCIOKAIROS EDU V32 — UNIZAR</h1>
+<p>Entrenamiento heurístico, formulación de problemas científicos y aprendizaje metodológico</p>
+<div class="sk-author-top">
+  Dr. Víctor Hugo Pérez Gallo · Universidad de Zaragoza ·
+  <a href="mailto:victorhugo.perez@unizar.es?subject=SOCIOKAIROS%20EDU&body=Estimado%20Dr.%20V%C3%ADctor%20Hugo%20P%C3%A9rez%20Gallo%3A%0A%0ALe%20escribo%20sobre%20SOCIOKAIROS%20EDU.%0A%0AUn%20saludo%2C">victorhugo.perez@unizar.es</a>
+</div>
+
+</div>
+</div>
+
+<div class="sk-controls-clean">
+  <button class="sk-theme-toggle-clean" onclick="toggleSKTheme()" title="Alternar modo claro/oscuro" type="button">
+    <span class="sk-sun">☀</span>
+    <span class="sk-track"><span class="sk-knob"></span></span>
+    <span class="sk-moon">☾</span>
+  </button>
+  <button class="sk-icon-btn-clean" onclick="document.documentElement.requestFullscreen()" title="Ampliar pantalla" type="button">⛶</button>
+  <button class="sk-icon-btn-clean" onclick="salirPantallaCompleta()" title="Salir de pantalla completa" type="button">↗</button>
+</div>
+</div>
+</header>
+
+  <main>
+    <div class="grid">
+      <section class="panel">
+        <h2>1. Problema científico inicial</h2>
+        <textarea id="txt_problema" placeholder="Escribe aquí el problema científico tal como lo formularía un estudiante o investigador..."></textarea>
+        <div>
+          <button id="btn_reformular">Reformular problema y sugerir VI/VD</button>
+          <button id="btn_clear" class="secondary">Borrar problema</button>
+        </div>
+        <div>
+          <button id="btn_export_word" class="secondary">Exportar informe Word</button>
+          <button id="btn_export_csv" class="secondary">Exportar operacionalización (CSV)</button>
+        </div>
+        <div id="status" class="status">Listo.</div>
+        <div id="scorm_status" class="status"></div>
+        <div class="tags">
+          <span class="badge">#preguntas_de_investigación</span>
+          <span class="badge">#VI_VD</span>
+          <span class="badge">#hipótesis</span>
+          <span class="badge">#operacionalización</span>
+          <span class="badge">#área_sociológica</span>
+          <span class="badge">#unidad_de_análisis</span>
+          <span class="badge">#fuentes_de_datos</span>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>2. Salida SOCIOKAIROS</h2>
+
+        <div id="badge_area" class="badge-area"></div>
+
+        <h3>2.1 Tres versiones del problema en forma de pregunta</h3>
+        <pre id="out_reformulacion"></pre>
+
+        <div id="selector_version" class="version-selector" style="display:none;">
+          <p class="meta" style="font-size:0.8rem;">
+            Selecciona la versión que quieres usar como problema de trabajo para la exportación (Word/CSV):
+          </p>
+          <label><input type="radio" name="vers_sel" value="1"> Versión descriptiva (P1)</label><br>
+          <label><input type="radio" name="vers_sel" value="2"> Versión relacional / explicativa (P2)</label><br>
+          <label><input type="radio" name="vers_sel" value="3"> Versión crítica / estratégica (P3)</label>
+          <p id="version_elegida_hint" class="meta" style="font-size:0.75rem; margin-top:4px;">
+            Si no seleccionas ninguna, SOCIOKAIROS usará por defecto la versión relacional (P2).
+          </p>
+        </div>
+
+        <h3>2.2 Variables sugeridas (VI / VD)</h3>
+        <pre id="out_variables"></pre>
+
+        <h3>2.3 Correlaciones, hipótesis y marcos teóricos</h3>
+        <pre id="out_notas"></pre>
+
+        <h3>2.4 Unidad de análisis, diseño de estudio y operacionalización</h3>
+        <pre id="out_diseno"></pre>
+
+        <h3>2.5 Fuentes de datos / bases recomendadas</h3>
+        <pre id="out_fuentes"></pre>
+
+        <h3>2.6 Alertas metodológicas</h3>
+        <pre id="out_alertas"></pre>
+
+        <h3>2.7 Tradiciones sociológicas compatibles</h3>
+        <pre id="out_tradiciones"></pre>
+
+        <h3>2.8 Mapa lógico del problema</h3>
+        <pre id="out_mapa"></pre>
+
+        <h3>2.9 Diseños metodológicos sugeridos</h3>
+        <pre id="out_disenos_plus"></pre>
+
+        <h3>2.10 Visualización heurística del problema</h3>
+        <div class="visual-controls" style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px 0;">
+          <button id="btn_visual_causal" class="secondary" type="button">Modo 1 · Mapa causal</button>
+          <button id="btn_visual_red" class="secondary" type="button">Modo 2 · Red sociológica</button>
+          <button id="btn_visual_capas" class="secondary" type="button">Modo 3 · Capas sociales</button>
+        </div>
+        <div id="out_visual_svg" class="visual-svg-box" style="overflow-x:auto; border:1px solid rgba(0,0,0,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.45);"></div>
+
+      </section>
+    </div>
+  </main>
+
+<script>
+const LOGO_BASE64 = "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";
+
+const GEO_ALIASES = {
+  "madrid": ["Madrid", "España"],
+  "barcelona": ["Barcelona", "España"],
+  "valencia": ["Valencia", "España"],
+  "sevilla": ["Sevilla", "España"],
+  "zaragoza": ["Zaragoza", "España"],
+  "bilbao": ["Bilbao", "España"],
+  "paris": ["París", "Francia"],
+  "parís": ["París", "Francia"],
+  "marsella": ["Marsella", "Francia"],
+  "lyon": ["Lyon", "Francia"],
+  "londres": ["Londres", "Reino Unido"],
+  "manchester": ["Manchester", "Reino Unido"],
+  "birmingham": ["Birmingham", "Reino Unido"],
+  "berlin": ["Berlín", "Alemania"],
+  "berlín": ["Berlín", "Alemania"],
+  "munich": ["Múnich", "Alemania"],
+  "múnich": ["Múnich", "Alemania"],
+  "roma": ["Roma", "Italia"],
+  "milan": ["Milán", "Italia"],
+  "milán": ["Milán", "Italia"],
+  "napoles": ["Nápoles", "Italia"],
+  "nápoles": ["Nápoles", "Italia"],
+  "lisboa": ["Lisboa", "Portugal"],
+  "oporto": ["Oporto", "Portugal"],
+  "porto": ["Oporto", "Portugal"],
+  "bruselas": ["Bruselas", "Bélgica"],
+  "amsterdam": ["Ámsterdam", "Países Bajos"],
+  "rotterdam": ["Róterdam", "Países Bajos"],
+  "viena": ["Viena", "Austria"],
+  "zurich": ["Zúrich", "Suiza"],
+  "zúrich": ["Zúrich", "Suiza"],
+  "ginebra": ["Ginebra", "Suiza"],
+  "estocolmo": ["Estocolmo", "Suecia"],
+  "oslo": ["Oslo", "Noruega"],
+  "copenhague": ["Copenhague", "Dinamarca"],
+  "helsinki": ["Helsinki", "Finlandia"],
+  "dublin": ["Dublín", "Irlanda"],
+  "dublín": ["Dublín", "Irlanda"],
+  "varsovia": ["Varsovia", "Polonia"],
+  "cracovia": ["Cracovia", "Polonia"],
+  "praga": ["Praga", "Chequia"],
+  "budapest": ["Budapest", "Hungría"],
+  "atenas": ["Atenas", "Grecia"],
+  "bucarest": ["Bucarest", "Rumanía"],
+  "sofia": ["Sofía", "Bulgaria"],
+  "zagreb": ["Zagreb", "Croacia"],
+  "belgrado": ["Belgrado", "Serbia"],
+  "moscu": ["Moscú", "Rusia"],
+  "moscú": ["Moscú", "Rusia"],
+  "san petersburgo": ["San Petersburgo", "Rusia"],
+  "kiev": ["Kiev", "Ucrania"],
+  "kyiv": ["Kiev", "Ucrania"],
+  "la habana": ["La Habana", "Cuba"],
+  "santiago de cuba": ["Santiago de Cuba", "Cuba"],
+  "holguin": ["Holguín", "Cuba"],
+  "holguín": ["Holguín", "Cuba"],
+  "ciudad de mexico": ["Ciudad de México", "México"],
+  "ciudad de méxico": ["Ciudad de México", "México"],
+  "mexico df": ["Ciudad de México", "México"],
+  "guadalajara": ["Guadalajara", "México"],
+  "monterrey": ["Monterrey", "México"],
+  "buenos aires": ["Buenos Aires", "Argentina"],
+  "cordoba": ["Córdoba", "Argentina"],
+  "córdoba": ["Córdoba", "Argentina"],
+  "rosario": ["Rosario", "Argentina"],
+  "bogota": ["Bogotá", "Colombia"],
+  "bogotá": ["Bogotá", "Colombia"],
+  "medellin": ["Medellín", "Colombia"],
+  "medellín": ["Medellín", "Colombia"],
+  "cali": ["Cali", "Colombia"],
+  "lima": ["Lima", "Perú"],
+  "arequipa": ["Arequipa", "Perú"],
+  "santiago": ["Santiago de Chile", "Chile"],
+  "santiago de chile": ["Santiago de Chile", "Chile"],
+  "valparaiso": ["Valparaíso", "Chile"],
+  "valparaíso": ["Valparaíso", "Chile"],
+  "montevideo": ["Montevideo", "Uruguay"],
+  "asuncion": ["Asunción", "Paraguay"],
+  "asunción": ["Asunción", "Paraguay"],
+  "la paz": ["La Paz", "Bolivia"],
+  "santa cruz": ["Santa Cruz", "Bolivia"],
+  "quito": ["Quito", "Ecuador"],
+  "guayaquil": ["Guayaquil", "Ecuador"],
+  "caracas": ["Caracas", "Venezuela"],
+  "maracaibo": ["Maracaibo", "Venezuela"],
+  "santo domingo": ["Santo Domingo", "República Dominicana"],
+  "san juan": ["San Juan", "Puerto Rico"],
+  "san jose": ["San José", "Costa Rica"],
+  "san josé": ["San José", "Costa Rica"],
+  "panama": ["Ciudad de Panamá", "Panamá"],
+  "panamá": ["Ciudad de Panamá", "Panamá"],
+  "tegucigalpa": ["Tegucigalpa", "Honduras"],
+  "managua": ["Managua", "Nicaragua"],
+  "san salvador": ["San Salvador", "El Salvador"],
+  "guatemala": ["Ciudad de Guatemala", "Guatemala"],
+  "brasilia": ["Brasilia", "Brasil"],
+  "brasília": ["Brasilia", "Brasil"],
+  "sao paulo": ["São Paulo", "Brasil"],
+  "são paulo": ["São Paulo", "Brasil"],
+  "rio de janeiro": ["Río de Janeiro", "Brasil"],
+  "salvador de bahia": ["Salvador de Bahía", "Brasil"],
+  "salvador de bahía": ["Salvador de Bahía", "Brasil"],
+  "nueva york": ["Nueva York", "Estados Unidos"],
+  "new york": ["Nueva York", "Estados Unidos"],
+  "nyc": ["Nueva York", "Estados Unidos"],
+  "washington": ["Washington D. C.", "Estados Unidos"],
+  "los angeles": ["Los Ángeles", "Estados Unidos"],
+  "los ángeles": ["Los Ángeles", "Estados Unidos"],
+  "chicago": ["Chicago", "Estados Unidos"],
+  "miami": ["Miami", "Estados Unidos"],
+  "boston": ["Boston", "Estados Unidos"],
+  "toronto": ["Toronto", "Canadá"],
+  "ottawa": ["Ottawa", "Canadá"],
+  "montreal": ["Montreal", "Canadá"],
+  "montréal": ["Montreal", "Canadá"],
+  "vancouver": ["Vancouver", "Canadá"],
+  "el cairo": ["El Cairo", "Egipto"],
+  "casablanca": ["Casablanca", "Marruecos"],
+  "rabat": ["Rabat", "Marruecos"],
+  "tunez": ["Túnez", "Túnez"],
+  "túnez": ["Túnez", "Túnez"],
+  "argel": ["Argel", "Argelia"],
+  "nairobi": ["Nairobi", "Kenia"],
+  "lagos": ["Lagos", "Nigeria"],
+  "abuja": ["Abuya", "Nigeria"],
+  "johannesburgo": ["Johannesburgo", "Sudáfrica"],
+  "ciudad del cabo": ["Ciudad del Cabo", "Sudáfrica"],
+  "tokio": ["Tokio", "Japón"],
+  "osaka": ["Osaka", "Japón"],
+  "seul": ["Seúl", "Corea del Sur"],
+  "seúl": ["Seúl", "Corea del Sur"],
+  "pekin": ["Pekín", "China"],
+  "pekín": ["Pekín", "China"],
+  "beijing": ["Pekín", "China"],
+  "shanghai": ["Shanghái", "China"],
+  "hong kong": ["Hong Kong", "China"],
+  "singapur": ["Singapur", "Singapur"],
+  "bangkok": ["Bangkok", "Tailandia"],
+  "yakarta": ["Yakarta", "Indonesia"],
+  "manila": ["Manila", "Filipinas"],
+  "nueva delhi": ["Nueva Delhi", "India"],
+  "mumbai": ["Mumbai", "India"],
+  "bombay": ["Mumbai", "India"],
+  "sidney": ["Sídney", "Australia"],
+  "sydney": ["Sídney", "Australia"],
+  "melbourne": ["Melbourne", "Australia"],
+  "canberra": ["Canberra", "Australia"],
+  "auckland": ["Auckland", "Nueva Zelanda"],
+  "wellington": ["Wellington", "Nueva Zelanda"],
+};
+
+const COUNTRY_ALIASES = {
+  "españa": "España",
+  "espana": "España",
+  "francia": "Francia",
+  "reino unido": "Reino Unido",
+  "alemania": "Alemania",
+  "italia": "Italia",
+  "portugal": "Portugal",
+  "belgica": "Bélgica",
+  "bélgica": "Bélgica",
+  "paises bajos": "Países Bajos",
+  "países bajos": "Países Bajos",
+  "austria": "Austria",
+  "suiza": "Suiza",
+  "suecia": "Suecia",
+  "noruega": "Noruega",
+  "dinamarca": "Dinamarca",
+  "finlandia": "Finlandia",
+  "irlanda": "Irlanda",
+  "polonia": "Polonia",
+  "chequia": "Chequia",
+  "hungria": "Hungría",
+  "hungría": "Hungría",
+  "grecia": "Grecia",
+  "rumania": "Rumanía",
+  "rumanía": "Rumanía",
+  "bulgaria": "Bulgaria",
+  "croacia": "Croacia",
+  "serbia": "Serbia",
+  "rusia": "Rusia",
+  "ucrania": "Ucrania",
+  "cuba": "Cuba",
+  "mexico": "México",
+  "méxico": "México",
+  "argentina": "Argentina",
+  "colombia": "Colombia",
+  "peru": "Perú",
+  "perú": "Perú",
+  "chile": "Chile",
+  "uruguay": "Uruguay",
+  "paraguay": "Paraguay",
+  "bolivia": "Bolivia",
+  "ecuador": "Ecuador",
+  "venezuela": "Venezuela",
+  "brasil": "Brasil",
+  "república dominicana": "República Dominicana",
+  "republica dominicana": "República Dominicana",
+  "costa rica": "Costa Rica",
+  "panama": "Panamá",
+  "panamá": "Panamá",
+  "honduras": "Honduras",
+  "nicaragua": "Nicaragua",
+  "el salvador": "El Salvador",
+  "guatemala": "Guatemala",
+  "estados unidos": "Estados Unidos",
+  "eeuu": "Estados Unidos",
+  "usa": "Estados Unidos",
+  "canada": "Canadá",
+  "canadá": "Canadá",
+  "egipto": "Egipto",
+  "marruecos": "Marruecos",
+  "tunez": "Túnez",
+  "túnez": "Túnez",
+  "argelia": "Argelia",
+  "kenia": "Kenia",
+  "nigeria": "Nigeria",
+  "sudafrica": "Sudáfrica",
+  "sudáfrica": "Sudáfrica",
+  "japon": "Japón",
+  "japón": "Japón",
+  "corea del sur": "Corea del Sur",
+  "china": "China",
+  "singapur": "Singapur",
+  "tailandia": "Tailandia",
+  "indonesia": "Indonesia",
+  "filipinas": "Filipinas",
+  "india": "India",
+  "australia": "Australia",
+  "nueva zelanda": "Nueva Zelanda",
+};
+
+const COUNTRY_SOURCES = {
+  "España": [["INE – Instituto Nacional de Estadística", "https://www.ine.es"], ["CIS – Centro de Investigaciones Sociológicas", "https://www.cis.es"], ["Datos.gob.es", "https://datos.gob.es"]],
+  "Francia": [["INSEE – Institut national de la statistique", "https://www.insee.fr"], ["data.gouv.fr – Datos abiertos de Francia", "https://www.data.gouv.fr"], ["Santé publique France", "https://www.santepubliquefrance.fr"]],
+  "Reino Unido": [["Office for National Statistics", "https://www.ons.gov.uk"], ["data.gov.uk", "https://www.data.gov.uk"], ["NHS Digital", "https://digital.nhs.uk"]],
+  "Alemania": [["Destatis – Federal Statistical Office", "https://www.destatis.de"], ["GovData Germany", "https://www.govdata.de"], ["Robert Koch Institute", "https://www.rki.de"]],
+  "Italia": [["ISTAT", "https://www.istat.it"], ["dati.gov.it", "https://www.dati.gov.it"], ["Ministero della Salute", "https://www.salute.gov.it"]],
+  "Portugal": [["INE Portugal", "https://www.ine.pt"], ["dados.gov.pt", "https://dados.gov.pt"], ["SNS Portugal", "https://www.sns.gov.pt"]],
+  "Cuba": [["ONEI – Oficina Nacional de Estadística e Información", "https://www.onei.gob.cu/"], ["Ministerio de Salud Pública de Cuba", "https://salud.msp.gob.cu/"], ["CEPALSTAT", "https://statistics.cepal.org/portal/cepalstat/"], ["Banco Mundial – Cuba", "https://data.worldbank.org/country/cuba"], ["UNData", "https://data.un.org/"]],
+  "México": [["INEGI", "https://www.inegi.org.mx"], ["datos.gob.mx", "https://datos.gob.mx"], ["Secretaría de Salud", "https://www.gob.mx/salud"]],
+  "Argentina": [["INDEC", "https://www.indec.gob.ar"], ["Datos Argentina", "https://datos.gob.ar"], ["Ministerio de Salud", "https://www.argentina.gob.ar/salud"]],
+  "Colombia": [["DANE", "https://www.dane.gov.co"], ["Datos Abiertos Colombia", "https://www.datos.gov.co"], ["Ministerio de Salud y Protección Social", "https://www.minsalud.gov.co"]],
+  "Perú": [["INEI", "https://www.inei.gob.pe"], ["Datos Abiertos Perú", "https://www.datosabiertos.gob.pe"], ["Ministerio de Salud", "https://www.gob.pe/minsa"]],
+  "Chile": [["INE Chile", "https://www.ine.gob.cl"], ["Datos.gob.cl", "https://datos.gob.cl"], ["Ministerio de Salud", "https://www.minsal.cl"]],
+  "Brasil": [["IBGE", "https://www.ibge.gov.br"], ["dados.gov.br", "https://dados.gov.br"], ["DATASUS", "https://datasus.saude.gov.br"]],
+  "Estados Unidos": [["U.S. Census Bureau", "https://www.census.gov"], ["Data.gov", "https://data.gov"], ["CDC Data & Statistics", "https://www.cdc.gov/datastatistics/"], ["Bureau of Labor Statistics", "https://www.bls.gov"]],
+  "Canadá": [["Statistics Canada", "https://www.statcan.gc.ca"], ["Open Government Canada", "https://open.canada.ca"], ["Public Health Agency of Canada", "https://www.canada.ca/en/public-health.html"]],
+  "Australia": [["Australian Bureau of Statistics", "https://www.abs.gov.au"], ["data.gov.au", "https://data.gov.au"], ["Australian Institute of Health and Welfare", "https://www.aihw.gov.au"]],
+  "Japón": [["Statistics Bureau of Japan", "https://www.stat.go.jp/english/"], ["e-Stat Japan", "https://www.e-stat.go.jp/en"], ["Ministry of Health, Labour and Welfare", "https://www.mhlw.go.jp/english/"]],
+  "China": [["National Bureau of Statistics of China", "https://www.stats.gov.cn/english/"], ["National Health Commission", "http://en.nhc.gov.cn/"]],
+  "India": [["MOSPI India", "https://www.mospi.gov.in"], ["data.gov.in", "https://data.gov.in"], ["Ministry of Health and Family Welfare", "https://mohfw.gov.in"]],
+  "Sudáfrica": [["Statistics South Africa", "https://www.statssa.gov.za"], ["DataFirst", "https://www.datafirst.uct.ac.za"], ["Department of Health", "https://www.health.gov.za"]],
+};
+
+const CITY_SOURCES = {
+  "Madrid": [["Ayuntamiento de Madrid – Datos Abiertos", "https://datos.madrid.es"], ["Comunidad de Madrid – Datos Abiertos", "https://datos.comunidad.madrid/"]],
+  "Barcelona": [["Open Data BCN", "https://opendata-ajuntament.barcelona.cat/"], ["IDESCAT", "https://www.idescat.cat"]],
+  "Valencia": [["València Open Data", "https://valencia.opendatasoft.com/"], ["Generalitat Valenciana – Portal Estadístico", "https://pegv.gva.es/es/estadistica"]],
+  "Sevilla": [["Ayuntamiento de Sevilla – Datos Abiertos", "https://www.sevilla.org/servicios/participacion-ciudadana/datos-abiertos"], ["IECA Andalucía", "https://www.juntadeandalucia.es/institutodeestadisticaycartografia/"]],
+  "Zaragoza": [["Ayuntamiento de Zaragoza – Datos Abiertos", "https://www.zaragoza.es/sede/portal/datos-abiertos/"], ["IAEST", "https://www.aragon.es/iaest"]],
+  "París": [["Paris Data", "https://opendata.paris.fr/"], ["INSEE – Île-de-France", "https://www.insee.fr/fr/statistiques?debut=0&theme=1&geo=REG-11"]],
+  "Nueva York": [["NYC Open Data", "https://opendata.cityofnewyork.us/"], ["NYC Health Data", "https://www.nyc.gov/site/doh/data/data-publications.page"], ["NY State Open Data", "https://data.ny.gov/"]],
+  "Buenos Aires": [["Buenos Aires Data", "https://data.buenosaires.gob.ar/"], ["Estadística y Censos CABA", "https://www.estadisticaciudad.gob.ar/eyc/"]],
+  "Ciudad de México": [["Portal de Datos Abiertos CDMX", "https://datos.cdmx.gob.mx/"], ["INEGI CDMX", "https://www.inegi.org.mx"]],
+  "Bogotá": [["Datos Abiertos Bogotá", "https://datosabiertos.bogota.gov.co/"], ["DANE", "https://www.dane.gov.co"]],
+  "Lima": [["Plataforma Nacional de Datos Abiertos Perú", "https://www.datosabiertos.gob.pe/"], ["INEI", "https://www.inei.gob.pe"]],
+  "Santiago de Chile": [["Datos.gob.cl", "https://datos.gob.cl"], ["INE Chile", "https://www.ine.gob.cl"]],
+  "São Paulo": [["Prefeitura de São Paulo – Dados Abertos", "https://dados.prefeitura.sp.gov.br/"], ["IBGE", "https://www.ibge.gov.br"]],
+};
+const SK_DOMINIOS = [
+  { keys: ["digital", "algorit", "tiktok", "internet", "redes sociales", "plataforma", "brecha digital"], macro: "ecosistema digital / economía de plataformas", meso: "algoritmos, comunidades online y cámaras de eco", micro: "consumo cotidiano de contenidos e identidad digital" },
+  { keys: ["política", "politica", "voto", "partido", "radicalización", "radicalizacion", "hegemon"], macro: "campo político, polarización y legitimidad", meso: "discursos, organizaciones y redes de movilización", micro: "identificación política y percepción de amenaza" },
+  { keys: ["juventud", "juvenil", "jóvenes", "jovenes", "adolesc"], macro: "estructura generacional y oportunidades vitales", meso: "grupos de pares, escuela y redes juveniles", micro: "trayectorias biográficas e identidad juvenil" },
+  { keys: ["educación", "educacion", "instrucción", "instruccion", "educativo", "escuela", "capital cultural", "fracaso escolar"], macro: "sistema educativo y desigualdad de credenciales", meso: "centros, expectativas docentes y capital cultural familiar", micro: "trayectorias escolares y expectativas de futuro" },
+  { keys: ["trabajo", "empleo", "laboral", "paro", "desempleo", "salario", "precar"], macro: "mercado laboral y estructura ocupacional", meso: "segmentación, contratos y redes de acceso al empleo", micro: "empleabilidad percibida y estrategias laborales" },
+  { keys: ["género", "genero", "mujer", "mujeres", "hombres", "varones", "masculinidad", "machismo", "patriarc"], macro: "orden de género y división social del poder", meso: "normas institucionales, familia y pares generizados", micro: "identidades de género y reconocimiento cotidiano" },
+  { keys: ["familia", "hogar", "padres", "madres", "familiar"], macro: "régimen familiar y reproducción social", meso: "hogares, cuidados y autoridad parental", micro: "vínculos afectivos y negociación doméstica" },
+  { keys: ["salud mental", "ansiedad", "depresión", "depresion", "bienestar psicológico", "bienestar psicologico"], macro: "régimen de salud mental y vulnerabilidad social", meso: "servicios, apoyos comunitarios y redes de cuidado", micro: "malestar subjetivo y estrategias de afrontamiento" },
+  { keys: ["salud", "enfermedad", "sanitario", "hospital"], macro: "sistema sanitario y desigualdades en salud", meso: "servicios, accesibilidad y redes de apoyo", micro: "experiencias corporales y prácticas de cuidado" },
+  { keys: ["pobreza", "exclusión", "exclusion", "renta", "ingresos", "vulnerabilidad"], macro: "estructura de desigualdad y distribución de recursos", meso: "servicios sociales, barrios y redes de apoyo", micro: "estrategias de supervivencia y privación cotidiana" },
+  { keys: ["cultura", "representaciones", "valores", "símbol", "simbol", "consumo cultural"], macro: "campo cultural y jerarquías simbólicas", meso: "instituciones culturales, medios y comunidades interpretativas", micro: "gustos, disposiciones y prácticas de sentido" },
+  { keys: ["emociones", "afectos", "miedo", "ira", "odio", "resentimiento", "esperanza"], macro: "régimen afectivo y clima emocional colectivo", meso: "rituales, grupos y circulación de afectos", micro: "experiencia emocional y orientación práctica" },
+  { keys: ["conocimiento", "sentido común", "sentido comun", "normalidad", "cognitivo", "epistem"], macro: "régimen de verdad y producción social del conocimiento", meso: "instituciones expertas, medios y autoridad epistémica", micro: "juicios, creencias y esquemas de interpretación" },
+  { keys: ["urbana", "barrio", "vecindario", "gentrificación", "gentrificacion", "segregación territorial", "segregacion territorial", "periferia"], macro: "estructura urbana y desigualdad territorial", meso: "barrios, equipamientos y redes vecinales", micro: "usos del espacio y pertenencia territorial" },
+  { keys: ["migración", "migracion", "migrante", "inmigración", "inmigracion", "racismo", "xenofobia"], macro: "régimen migratorio y fronteras sociales", meso: "redes transnacionales, instituciones y discriminación", micro: "trayectorias migrantes e identificación cotidiana" },
+  { keys: ["religión", "religion", "iglesia", "creencia", "secular"], macro: "campo religioso y secularización", meso: "comunidades religiosas y autoridad moral", micro: "creencias, prácticas rituales y sentido vital" },
+  { keys: ["delincuencia", "delito", "crimen", "desviación", "desviacion", "control social"], macro: "control social, ley y desigualdad penal", meso: "policía, escuela, calle y redes de desviación", micro: "etiquetamiento, decisiones situadas y justificaciones" },
+  { keys: ["consumo", "mercado", "publicidad", "marca", "cliente"], macro: "capitalismo de consumo y producción de necesidades", meso: "mercados, publicidad y grupos de referencia", micro: "deseos, estilos de vida y prácticas de compra" },
+  { keys: ["medio ambiente", "ambiental", "ecología", "ecologia", "clima", "sostenibilidad"], macro: "crisis ecosocial y régimen ambiental", meso: "políticas ambientales, territorio y conflictos locales", micro: "percepción del riesgo y prácticas ecológicas" },
+  { keys: ["rural", "campo", "agrario", "despoblación", "despoblacion"], macro: "estructura rural y desigualdad centro-periferia", meso: "comunidad local, servicios y economía agraria", micro: "arraigo, movilidad y estrategias familiares" },
+  { keys: ["envejecimiento", "mayores", "vejez", "ancianos", "dependencia"], macro: "régimen demográfico y sistema de cuidados", meso: "familias, residencias y servicios sociosanitarios", micro: "autonomía, soledad y experiencia de la edad" },
+  { keys: ["discapacidad", "diversidad funcional", "accesibilidad"], macro: "régimen de capacidad y desigualdad estructural", meso: "instituciones, apoyos y barreras de accesibilidad", micro: "autonomía, reconocimiento y vida cotidiana" },
+  { keys: ["organización", "organizacion", "empresa", "burocracia", "institucional"], macro: "estructura organizacional y racionalidad burocrática", meso: "normas internas, jerarquías y cultura organizacional", micro: "roles, decisiones y adaptación práctica" },
+  { keys: ["ciencia", "tecnología", "tecnologia", "innovación", "innovacion", "ia", "inteligencia artificial"], macro: "régimen sociotécnico e innovación tecnológica", meso: "infraestructuras, expertos y mediaciones técnicas", micro: "apropiación, confianza y usos situados" },
+];
+
+/* SOCIOKAIROS — motor heurístico v2: fusión del wrapper SCORM original con el
+   motor más avanzado de SOCIOKAIROS EDU V32 (geolocalización mundial,
+   validación pedagógica, alertas/tradiciones/mapa/diseños, visualización SVG),
+   más las mejoras metodológicas propias (nivel de medición, aviso causal,
+   muestreo, ética reforzada, direccionalidad VI/VD). Puerto 1:1 a JS puro. */
+
+/* ================= utilidades ================= */
+
+function skJoin(items, fallback) {
+  fallback = fallback || "el fenómeno estudiado";
+  items = (items || []).filter(Boolean);
+  if (items.length === 0) return fallback;
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return items[0] + " y " + items[1];
+  return items.slice(0, -1).join(", ") + " y " + items[items.length - 1];
+}
+
+function skHas(texto, palabras) {
+  const t = (texto || "").toLowerCase();
+  return palabras.some(p => t.includes(p));
+}
+
+function uniq(xs) {
+  const out = [];
+  for (const x of xs) if (!out.includes(x)) out.push(x);
+  return out;
+}
+
+/* ================= motor geoheurístico (mundial) ================= */
+/* GEO_ALIASES / COUNTRY_ALIASES / COUNTRY_SOURCES / CITY_SOURCES / SK_DOMINIOS
+   se cargan desde geo_and_dominios.js, concatenado antes de este archivo. */
+
+function geoDetectar(texto) {
+  const l = (texto || "").toLowerCase();
+  const regiones = ["aragón", "aragon", "cataluña", "cataluna", "andalucía", "andalucia", "galicia", "navarra", "asturias", "murcia", "extremadura", "valencia", "comunidad valenciana", "castilla la mancha", "castilla y leon", "castilla y león", "país vasco", "pais vasco", "canarias", "baleares", "la rioja", "cantabria"];
+  for (const r of regiones) {
+    if (new RegExp(`\\b${escapeRegExp(r)}\\b`).test(l)) {
+      return { ciudad: null, pais: "España", contexto: toTitleCase(r) };
+    }
+  }
+  const aliasesByLenDesc = Object.keys(GEO_ALIASES).sort((a, b) => b.length - a.length);
+  for (const alias of aliasesByLenDesc) {
+    if (new RegExp(`\\b${escapeRegExp(alias)}\\b`).test(l)) {
+      const [ciudad, pais] = GEO_ALIASES[alias];
+      return { ciudad, pais, contexto: ciudad };
+    }
+  }
+  const countryAliasesByLenDesc = Object.keys(COUNTRY_ALIASES).sort((a, b) => b.length - a.length);
+  for (const alias of countryAliasesByLenDesc) {
+    if (new RegExp(`\\b${escapeRegExp(alias)}\\b`).test(l)) {
+      const pais = COUNTRY_ALIASES[alias];
+      return { ciudad: null, pais, contexto: pais };
+    }
+  }
+  return { ciudad: null, pais: null, contexto: "territorio no detectado" };
+}
+
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function toTitleCase(s) {
+  return s.split(" ").map(w => w.length ? w.charAt(0).toUpperCase() + w.slice(1) : w).join(" ");
+}
+
+function geoFuentes(ciudad, pais, area, lower) {
+  const fuentes = [];
+  const add = (nombre, url) => {
+    const item = `${nombre} — ${url}`;
+    if (!fuentes.includes(item)) fuentes.push(item);
+  };
+  if (ciudad && Object.prototype.hasOwnProperty.call(CITY_SOURCES, ciudad)) {
+    for (const [n, u] of CITY_SOURCES[ciudad]) add(n, u);
+  }
+  if (pais && Object.prototype.hasOwnProperty.call(COUNTRY_SOURCES, pais)) {
+    for (const [n, u] of COUNTRY_SOURCES[pais]) add(n, u);
+  }
+
+  const topic = (lower || "") + " " + (area || "").toLowerCase();
+  if (["salud mental", "salud", "enfermedad", "ansiedad", "depresión", "depresion"].some(k => topic.includes(k))) {
+    if (pais === "Francia") add("Santé publique France – Santé mentale", "https://www.santepubliquefrance.fr/maladies-et-traumatismes/sante-mentale");
+    else if (pais === "España") add("Ministerio de Sanidad – Estadísticas sanitarias", "https://www.sanidad.gob.es/estadEstudios/estadisticas/");
+    else if (pais === "Estados Unidos") add("CDC – Mental Health Data", "https://www.cdc.gov/mentalhealth/data_stats/");
+    else if (pais === "Cuba") add("MINSAP Cuba", "https://salud.msp.gob.cu/");
+  }
+  if (["trabajo", "empleo", "paro", "laboral"].some(k => topic.includes(k))) {
+    if (pais === "Francia") add("DARES – Statistiques du travail", "https://dares.travail-emploi.gouv.fr/");
+    else if (pais === "España") add("SEPE – Estadísticas", "https://www.sepe.es/HomeSepe/que-es-el-sepe/estadisticas.html");
+    else if (pais === "Estados Unidos") add("Bureau of Labor Statistics", "https://www.bls.gov");
+  }
+  if (["educación", "educacion", "abandono escolar", "deserción", "desercion"].some(k => topic.includes(k))) {
+    if (pais === "Francia") add("Ministère de l'Éducation nationale – statistiques", "https://www.education.gouv.fr/etudes-et-statistiques");
+    else if (pais === "España") add("Ministerio de Educación – Estadísticas", "https://www.educacionfpydeportes.gob.es/servicios-al-ciudadano/estadisticas.html");
+  }
+  if (["violencia de género", "violencia de genero", "maltrato"].some(k => topic.includes(k))) {
+    if (pais === "España") add("Delegación del Gobierno contra la Violencia de Género", "https://violenciagenero.igualdad.gob.es/violenciaEnCifras/");
+    else if (pais === "Francia") add("Ministère de l'Intérieur – statistiques sécurité", "https://www.interieur.gouv.fr/Interstats");
+  }
+  add("World Bank Data", "https://data.worldbank.org/");
+  add("UNData – Naciones Unidas", "https://data.un.org/");
+  add("OECD Data", "https://data.oecd.org/");
+  add("World Values Survey (WVS)", "https://www.worldvaluessurvey.org");
+  if (!ciudad && !pais) {
+    add("Nota SOCIOKAIROS: no se localizaron bases oficiales específicas para el territorio indicado; se sugieren fuentes comparativas internacionales y estadísticas generales.", "https://data.un.org/");
+  }
+  return fuentes;
+}
+
+function detectarContextoYPoblacion(lower, textoOriginal) {
+  const g = geoDetectar(textoOriginal || lower);
+  const contexto = g.contexto;
+  let poblacion = "la población de estudio";
+  const l = lower || "";
+
+  if (["personas mayores", "adultos mayores", "ancianos"].some(w => l.includes(w))) poblacion = "las personas mayores";
+  else if (["jóvenes", "jovenes", "juventud", "adolescentes", "juvenil"].some(w => l.includes(w))) poblacion = "la población joven";
+  else if (["hombres", "varones", "masculinidades"].some(w => l.includes(w))) poblacion = "los hombres";
+  else if (["mujeres", "mujer"].some(w => l.includes(w))) poblacion = "las mujeres";
+  else if (["profesores universitarios", "docentes universitarios", "profesorado universitario"].some(w => l.includes(w))) poblacion = "el profesorado universitario";
+  else if (["profesores", "docentes", "profesorado"].some(w => l.includes(w))) poblacion = "el profesorado";
+  else if (["estudiantes", "alumnos", "alumnas"].some(w => l.includes(w))) poblacion = "el estudiantado";
+  else if (["familias", "hogares"].some(w => l.includes(w))) poblacion = "las familias";
+
+  return { contexto, poblacion };
+}
+
+/* ================= detección de variables (VI/VD) ================= */
+
+function detectarVariables(lower) {
+  const l = lower || "";
+  let vi = [];
+  let vd = [];
+
+  const addVi = (x) => {
+    x = (x || "").trim();
+    if (x && !vi.includes(x) && !vd.includes(x)) vi.push(x);
+  };
+  const addVd = (x) => {
+    x = (x || "").trim();
+    if (x && !vd.includes(x)) vd.push(x);
+    const idx = vi.indexOf(x);
+    if (idx !== -1) vi.splice(idx, 1);
+  };
+  const hasAny = (words) => words.some(w => l.includes(w));
+
+  // 1) Objeto sociológico central / VD explícitas
+  if (hasAny(["pobreza energética", "pobreza energetica", "vulnerabilidad energética", "vulnerabilidad energetica"])) {
+    addVd("la pobreza energética");
+  } else if (hasAny(["pobreza infantil", "pobreza juvenil", "pobreza severa", "situación de pobreza", "situacion de pobreza"])) {
+    addVd("la pobreza");
+  }
+
+  if (hasAny(["trabajos precarios", "empleos precarios", "empleo precario", "precariedad laboral", "precarización laboral", "precarizacion laboral"])) {
+    addVd("la precariedad laboral");
+  }
+  if (hasAny(["violencia de género", "violencia de genero", "violencia machista"])) {
+    addVd("la violencia de género");
+  } else if (l.includes("violencia")) {
+    addVd("la violencia");
+  }
+  if (hasAny(["salud mental", "problemas de salud mental", "malestar emocional", "bienestar psicológico", "bienestar psicologico"])) {
+    addVd("el malestar emocional y la salud mental");
+  } else if (hasAny(["morbilidad", "mortalidad", "enfermedad"])) {
+    addVd("los problemas de salud");
+  }
+  if (hasAny(["abandono escolar", "deserción escolar", "desercion escolar", "fracaso escolar"])) {
+    addVd("el abandono escolar");
+  }
+  if (hasAny(["absentismo", "ausentismo"])) {
+    addVd("el absentismo escolar");
+  }
+  if (hasAny(["rendimiento académico", "rendimiento academico", "bajo rendimiento"])) {
+    addVd("el rendimiento académico");
+  }
+  if (hasAny(["desempleo", "paro"])) {
+    addVd("el desempleo");
+  }
+  if (hasAny(["exclusión digital", "exclusion digital", "brecha digital"])) {
+    addVd("la exclusión digital");
+  }
+  if (l.includes("soledad no deseada")) {
+    addVd("la soledad no deseada");
+  } else if (l.includes("soledad")) {
+    addVd("la soledad social");
+  }
+  if (hasAny(["percepción de inseguridad", "percepcion de inseguridad"])) {
+    addVd("la percepción de inseguridad");
+  }
+  if (hasAny(["participación social", "participacion social"])) {
+    addVd("la participación social");
+  }
+  if (hasAny(["radicalización política juvenil", "radicalizacion politica juvenil"])) {
+    addVd("la radicalización política juvenil");
+  } else if (hasAny(["radicalización política", "radicalizacion politica"])) {
+    addVd("la radicalización política");
+  } else if (hasAny(["radicalización", "radicalizacion"])) {
+    addVd("la radicalización");
+  }
+  if (hasAny(["apoyo juvenil a partidos", "apoyo a partidos de extrema derecha", "voto a", "intención de voto", "intencion de voto"])) {
+    addVd("el apoyo político juvenil");
+  }
+  if (hasAny(["integración", "integracion", "percepción de integración", "percepcion de integracion"])) {
+    addVd("la integración social percibida");
+  }
+
+  // 2) VI concretas asociadas al dominio del problema
+  if (hasAny(["bajo nivel de instrucción", "bajo nivel de instruccion"])) {
+    addVi("el bajo nivel de instrucción");
+  } else if (hasAny(["nivel de instrucción", "nivel de instruccion"])) {
+    addVi("el nivel de instrucción");
+  }
+  if (hasAny(["bajo nivel educativo"])) {
+    addVi("el bajo nivel educativo");
+  } else if (hasAny(["nivel educativo"])) {
+    addVi("el nivel educativo");
+  }
+  if (l.includes("capital cultural")) addVi("el capital cultural");
+  if (hasAny(["expectativas educativas", "escolarización", "escolarizacion"])) addVi("las condiciones educativas");
+
+  if (hasAny(["condiciones económicas", "condiciones economicas", "ingresos", "renta", "bajos ingresos", "precariedad económica", "precariedad economica"])) {
+    addVi("las condiciones económicas del hogar");
+  }
+  if (hasAny(["vivienda", "residencial", "habitacional", "alquiler", "calefacción", "calefaccion", "temperatura", "factura eléctrica", "factura electrica", "suministro energético", "suministro energetico"])) {
+    addVi("las condiciones residenciales y energéticas del hogar");
+  }
+  if (hasAny(["barrios periféricos", "barrios perifericos", "periferia", "periféricos", "perifericos", "segregación territorial", "segregacion territorial", "segregación urbana", "segregacion urbana", "desigualdad urbana"])) {
+    addVi("la localización periférica y la segregación territorial");
+  } else if (hasAny(["barrio", "barrios", "vecindario"])) {
+    addVi("el contexto barrial");
+  }
+
+  if (l.includes("aislamiento social")) addVi("el aislamiento social");
+  if (hasAny(["escasas oportunidades de trabajo"])) {
+    addVi("las escasas oportunidades de trabajo");
+  } else if (hasAny(["oportunidades laborales", "oportunidades de trabajo"])) {
+    addVi("las oportunidades laborales");
+  }
+  if (hasAny(["condiciones laborales", "salario", "salarios", "jornada", "temporalidad", "contrato", "contratos"])) {
+    addVi("las condiciones laborales");
+  }
+  if (hasAny(["familia", "familiares", "hogar", "padres", "madres", "dinámicas familiares", "dinamicas familiares", "causas familiares", "apoyo familiar"])) {
+    addVi("las dinámicas familiares y redes de apoyo");
+  }
+  if (hasAny(["masculinidad", "masculinidades", "machismo", "patriarcado", "patriarcal"])) {
+    addVi("los modelos de masculinidad");
+  }
+  if (hasAny(["poder de género", "poder de genero", "dominación de género", "dominacion de genero", "control patriarcal"])) {
+    addVi("las relaciones de poder de género");
+  }
+  if (hasAny(["clase social", "exclusión social", "exclusion social", "desigualdad social", "desigualdades sociales"])) {
+    addVi("la posición de clase y la exclusión social");
+  }
+  if (l.includes("tiktok")) addVi("TikTok como plataforma de socialización política");
+  if (hasAny(["algoritmos de recomendación", "algoritmos de recomendacion"])) {
+    addVi("los algoritmos de recomendación");
+  } else if (hasAny(["algoritmo", "algoritmos"])) {
+    addVi("las mediaciones algorítmicas");
+  }
+  if (hasAny(["redes sociales", "internet", "digital", "plataformas"])) addVi("las plataformas digitales");
+  if (hasAny(["miedo", "ansiedad", "ira", "emociones", "afectos", "vergüenza", "verguenza"])) addVi("las disposiciones emocionales");
+  if (hasAny(["ayuntamiento", "institución", "institucion", "administración", "administracion", "servicios sociales"])) addVi("las mediaciones institucionales");
+
+  // 3) Patrones relacionales y causales, normalizados
+  const mRel = l.match(/relaci[oó]n\s+(?:que\s+existe\s+)?entre\s+(.+?)\s+y\s+(.+?)(?:\s+de\s+los|\s+de\s+las|\s+entre\s+|\s+en\s+|[?.!,]|$)/);
+  if (mRel) {
+    const a = mRel[1].trim().replace(/^[¿?\s]+|[¿?\s]+$/g, "");
+    const b = mRel[2].trim().replace(/^[¿?\s]+|[¿?\s]+$/g, "");
+    const normFrag = (x) => {
+      if (["pobreza energética", "pobreza energetica"].some(t => x.includes(t))) return "la pobreza energética";
+      if (["trabajos precarios", "empleos precarios", "empleo precario", "precariedad laboral"].some(t => x.includes(t))) return "la precariedad laboral";
+      if (x.includes("bajo nivel de instrucción") || x.includes("bajo nivel de instruccion")) return "el bajo nivel de instrucción";
+      if (x.includes("nivel de instrucción") || x.includes("nivel de instruccion")) return "el nivel de instrucción";
+      if (x.includes("nivel educativo")) return "el nivel educativo";
+      return x;
+    };
+    const A = normFrag(a);
+    const B = normFrag(b);
+    const esProblema = (x) => ["pobreza energética", "precariedad", "violencia", "abandono", "desempleo", "exclusión", "exclusion", "soledad", "radicalización", "radicalizacion", "salud mental", "malestar"].some(t => x.includes(t));
+    if (esProblema(A) && !esProblema(B)) { addVd(A); addVi(B); }
+    else if (esProblema(B) && !esProblema(A)) { addVd(B); addVi(A); }
+    else { addVi(A); addVd(B); }
+  }
+
+  const m = l.match(/c[oó]mo\s+(?:influyen|afectan|inciden)\s+(.+?)\s+(?:en|sobre|a)\s+(?:la|el|los|las)?\s*(.+?)(?:\s+en\s+|[?.!,]|$)/);
+  if (m) {
+    const causas = m[1].trim().replace(/^[¿?\s]+|[¿?\s]+$/g, "");
+    const efecto = m[2].trim().replace(/^[¿?\s]+|[¿?\s]+$/g, "");
+    for (let c of causas.split(/\s+y\s+|,/)) {
+      c = c.trim();
+      if (c) addVi(c);
+    }
+    if (efecto) {
+      if (efecto.includes("radicalización") || efecto.includes("radicalizacion")) {
+        addVd(efecto.includes("juvenil") ? "la radicalización política juvenil" : "la radicalización política");
+      } else if (efecto.includes("pobreza energética") || efecto.includes("pobreza energetica")) {
+        addVd("la pobreza energética");
+      } else if (vd.length === 0) {
+        addVd(efecto);
+      }
+    }
+  }
+
+  // 4) Inferencias para preguntas descriptivas tipo "cómo se distribuyen..."
+  if (hasAny(["cómo se distribuyen", "como se distribuyen", "distribución", "distribucion"])) {
+    if (hasAny(["pobreza energética", "pobreza energetica"])) {
+      addVd("la pobreza energética");
+      if (hasAny(["barrio", "barrios", "perifer"])) addVi("la localización periférica y la segregación territorial");
+      addVi("las condiciones económicas del hogar");
+      addVi("las condiciones residenciales y energéticas del hogar");
+    }
+  }
+
+  // 5) Fallbacks nunca genéricos: inferir por dominio sustantivo.
+  if (vd.length === 0) {
+    if (hasAny(["pobreza"])) addVd("la pobreza");
+    else if (hasAny(["trabajo", "empleo", "laboral"])) addVd("la situación laboral");
+    else if (hasAny(["educación", "educacion"])) addVd("la trayectoria educativa");
+    else if (hasAny(["política", "politica", "voto", "partido"])) addVd("la orientación política");
+    else if (hasAny(["cultura", "identidad"])) addVd("la construcción identitaria");
+    else addVd("el fenómeno social estudiado");
+  }
+  let viEsCandidato = false;
+  if (vi.length === 0) {
+    for (const c of candidatosViPorDominio(vd.length ? vd[0] : "")) addVi(c);
+    viEsCandidato = true;
+  }
+
+  // Limpieza final: eliminar comodines heredados si hay variables reales.
+  vi = vi.filter(x => !["las desigualdades estructurales", "las condiciones sociales explicativas"].includes(x));
+  vd = vd.filter(x => x !== "el problema social formulado");
+  if (vi.length === 0) { for (const c of candidatosViPorDominio(vd.length ? vd[0] : "")) addVi(c); viEsCandidato = true; }
+  if (vd.length === 0) addVd("el fenómeno social estudiado");
+
+  return { vi, vd, viEsCandidato };
+}
+
+/**
+ * Cuando el problema no nombra explícitamente ningún factor explicativo,
+ * en vez de un comodín vacío se sugieren VI concretas, informadas por la
+ * literatura sociológica sobre ese fenómeno. Son candidatas a revisar y
+ * adaptar, no variables extraídas literalmente del texto del usuario.
+ */
+function candidatosViPorDominio(vd0) {
+  const v = (vd0 || "").toLowerCase();
+
+  if (v.includes("violencia de género") || v.includes("violencia de genero") || v === "la violencia") {
+    return ["las actitudes hacia los roles de género y el control en la pareja", "la exposición a modelos de masculinidad hegemónica", "el historial de violencia en la familia de origen"];
+  }
+  if (v.includes("precariedad laboral")) {
+    return ["el nivel de instrucción o cualificación profesional", "la segmentación del mercado laboral local", "las cargas familiares y de cuidado"];
+  }
+  if (v.includes("pobreza energética")) {
+    return ["los ingresos disponibles del hogar", "la eficiencia energética de la vivienda", "la localización territorial y el acceso a ayudas"];
+  }
+  if (v.includes("pobreza")) {
+    return ["el nivel de ingresos y la situación laboral del hogar", "el nivel educativo alcanzado", "la composición y el tamaño del hogar"];
+  }
+  if (v.includes("abandono escolar") || v.includes("absentismo") || v.includes("rendimiento académico") || v.includes("fracaso escolar")) {
+    return ["el nivel socioeconómico y cultural de la familia", "el clima de aula y la relación con el profesorado", "las expectativas educativas familiares"];
+  }
+  if (v.includes("desempleo") || v === "la situación laboral") {
+    return ["el nivel de cualificación", "la edad y la experiencia laboral previa", "el sector de actividad y su ciclo económico"];
+  }
+  if (v.includes("soledad")) {
+    return ["el tamaño y la densidad de la red de apoyo social", "la frecuencia de contacto con familiares y amigos", "la participación en actividades comunitarias"];
+  }
+  if (v.includes("percepción de inseguridad") || v.includes("percepcion de inseguridad")) {
+    return ["la exposición directa o mediática a hechos delictivos", "el deterioro percibido del entorno físico del barrio", "la cohesión social del vecindario"];
+  }
+  if (v.includes("radicalización") || v.includes("radicalizacion")) {
+    return ["la exposición a contenidos polarizados en redes sociales", "el sentimiento de agravio o exclusión social", "la pertenencia a grupos o comunidades identitarias"];
+  }
+  if (v.includes("malestar") || v.includes("salud mental") || v === "los problemas de salud") {
+    return ["el nivel de apoyo social percibido", "la exposición a situaciones de estrés crónico", "las condiciones económicas del hogar"];
+  }
+  if (v.includes("exclusión digital") || v.includes("exclusion digital")) {
+    return ["la edad", "el nivel de renta del hogar", "el nivel educativo"];
+  }
+  if (v.includes("participación social") || v.includes("participacion social") || v.includes("integración social") || v.includes("integracion social")) {
+    return ["el nivel de arraigo territorial", "la pertenencia a asociaciones o redes comunitarias", "el dominio del idioma o el tiempo de residencia"];
+  }
+  if (v.includes("delincuencia") || v.includes("criminalidad")) {
+    return ["las oportunidades económicas y educativas disponibles", "el control social informal en el barrio", "la exposición a pares con conductas desviadas"];
+  }
+  if (v.includes("orientación política") || v.includes("orientacion politica")) {
+    return ["el nivel educativo", "la posición socioeconómica", "la exposición a medios de comunicación e información política"];
+  }
+  if (v.includes("construcción identitaria") || v.includes("construccion identitaria")) {
+    return ["el contexto familiar y comunitario de socialización", "la exposición a referentes culturales y mediáticos", "la pertenencia a grupos de pares"];
+  }
+  return ["variables sociodemográficas básicas (edad, sexo, nivel educativo, situación laboral)", "el contexto territorial e institucional del problema"];
+}
+
+/* ================= área sociológica y subdominios ================= */
+
+function detectarAreaSociologica(lower, vi, vd) {
+  const l0 = lower || "";
+  const l = l0 + " " + vi.concat(vd).join(" ").toLowerCase();
+  const areas = [];
+  const add = (a) => { if (!areas.includes(a)) areas.push(a); };
+
+  if (["pobreza energética", "pobreza energetica", "pobreza", "exclusión social", "exclusion social", "condiciones económicas", "condiciones economicas"].some(x => l.includes(x))) add("Sociología de la pobreza y la desigualdad");
+  if (["energética", "energetica", "vivienda", "residencial", "habitacional", "suministro energético", "suministro energetico"].some(x => l.includes(x))) add("Sociología de la vivienda y la energía");
+  if (["jóvenes", "jovenes", "juventud", "juvenil", "adolescentes", "18 a 25"].some(x => l.includes(x))) add("Sociología de la juventud");
+  if (["violencia de género", "violencia de genero", "género", "genero", "mujer", "mujeres", "hombres", "varones", "masculinidad", "masculinidades", "machismo", "patriarcado"].some(x => l.includes(x))) add("Sociología de género");
+  if (["familia", "familiares", "hogar", "dinámicas familiares", "dinamicas familiares", "padres", "madres"].some(x => l.includes(x))) add("Sociología de la familia");
+  if (["educación", "educacion", "escuela", "abandono escolar", "deserción", "desercion", "fracaso escolar", "nivel de instrucción", "nivel de instruccion", "nivel educativo", "capital cultural"].some(x => l.includes(x))) add("Sociología de la educación");
+  if (["trabajo", "empleo", "laboral", "paro", "desempleo", "salario", "oportunidades laborales", "precariedad laboral"].some(x => l.includes(x))) add("Sociología del trabajo");
+  if (["salud", "enfermedad", "ansiedad", "depresión", "depresion", "malestar emocional"].some(x => l.includes(x))) add("Sociología de la salud");
+  if (["emociones", "afectos", "miedo", "ira", "soledad"].some(x => l.includes(x))) add("Sociología de las emociones");
+  if (["cultura", "identidad", "representaciones", "valores"].some(x => l.includes(x))) add("Sociología de la cultura");
+  if (["política", "politica", "voto", "partido", "hegemonía", "hegemonia", "radicalización", "radicalizacion"].some(x => l.includes(x))) add("Sociología política");
+  if (["conocimiento", "normalidad", "sentido común", "sentido comun", "cognitivo"].some(x => l.includes(x))) add("Sociología del conocimiento");
+  if (["barrio", "barrios", "vecindario", "segregación territorial", "segregacion territorial", "segregación urbana", "segregacion urbana", "gentrificación", "gentrificacion", "desigualdad urbana", "estigma territorial", "periferia", "periférico", "periferico", "periféricos", "perifericos"].some(x => l0.includes(x))) add("Sociología urbana");
+  if (["digital", "internet", "algoritmo", "redes sociales", "brecha digital", "tiktok"].some(x => l.includes(x))) add("Sociología digital y algorítmica");
+
+  if (areas.length === 0) add("Sociología general / del cambio social");
+  return areas.slice(0, 5);
+}
+
+function detectarSubdominios(areas, vi, vd, lower) {
+  let subs = [];
+  if (areas.some(a => a.toLowerCase().includes("educación"))) {
+    subs = subs.concat(["trayectorias escolares", "clima de aula", "capital cultural familiar", "currículum oculto y expectativas institucionales"]);
+  }
+  if (areas.some(a => a.toLowerCase().includes("familia"))) {
+    subs = subs.concat(["microinteracciones del hogar", "soporte parental", "tensiones afectivas", "roles de género en la crianza"]);
+  }
+  if (areas.some(a => a.toLowerCase().includes("urbana")) || ["barrio", "vecindario", "segregación", "gentrificación"].some(k => lower.includes(k))) {
+    subs = subs.concat(["estigma territorial", "gentrificación", "segregación espacial y escolar"]);
+  }
+  if (areas.some(a => a.toLowerCase().includes("género")) || ["masculinidad", "masculinidades", "feminidad", "feminidades"].some(k => lower.includes(k))) {
+    subs = subs.concat(["habitus viril", "performatividad de género", "socialización emocional"]);
+  }
+  return uniq(subs);
+}
+
+/* ================= preguntas, correlaciones, hipótesis ================= */
+
+function construirPreguntas(vi, vd, contexto, poblacion, areas) {
+  const viReales = vi.filter(x => !["las desigualdades estructurales", "las condiciones sociales explicativas"].includes(x));
+  const viStr = viReales.length ? viReales.join(", ") : "las condiciones sociales del contexto";
+  const vdStr = vd.length ? vd[0] : "el fenómeno social estudiado";
+  const sujeto = poblacion || "la población de estudio";
+  const ctx = contexto || "el contexto de estudio";
+  const areaTxt = areas.join(" ").toLowerCase();
+  const vdLower = vdStr.toLowerCase();
+
+  if (vdLower.includes("pobreza energética")) {
+    return [
+      `¿Cómo se distribuye ${vdStr} entre ${sujeto} en ${ctx} durante 2025?`,
+      `¿Qué relación existe entre condiciones económicas del hogar, condiciones residenciales y localización territorial con ${vdStr} entre ${sujeto} en ${ctx} durante 2025?`,
+      `¿Cómo interactúan desigualdad territorial, recursos económicos del hogar y condiciones de vivienda en la reproducción de ${vdStr} entre ${sujeto} en ${ctx}?`
+    ];
+  }
+  if (vdLower.includes("precariedad laboral") && viReales.some(x => x.includes("instrucción") || x.includes("educativo") || x.includes("educación"))) {
+    const viEdu = viReales.find(x => x.includes("instrucción") || x.includes("educativo") || x.includes("educación")) || viReales[0];
+    return [
+      `¿Qué relación existe entre ${viEdu} y ${vdStr} entre ${sujeto} en ${ctx} en 2025?`,
+      `¿En qué medida ${viEdu} influye en la probabilidad de inserción en empleos precarios entre ${sujeto} en ${ctx} en 2025?`,
+      `¿Cómo se articulan desigualdad educativa, género y segmentación del mercado laboral en la reproducción de ${vdStr} entre ${sujeto} en ${ctx} en 2025?`
+    ];
+  }
+  if (vdLower.includes("radicalización") || vdLower.includes("radicalizacion")) {
+    return [
+      `¿Qué patrones de exposición digital y social se asocian con ${vdStr} entre ${sujeto} en ${ctx} en 2025?`,
+      `¿Cómo influyen ${viStr} en la configuración de ${vdStr} entre ${sujeto} en ${ctx} en 2025?`,
+      `¿Cómo se articulan plataformas digitales, mediaciones algorítmicas, identidad juvenil y polarización política en la producción de ${vdStr}?`
+    ];
+  }
+  if (vdLower.includes("salud mental") || vdLower.includes("malestar")) {
+    return [
+      `¿Qué distribución social presenta ${vdStr} entre ${sujeto} en ${ctx} en 2025?`,
+      `¿Cómo influyen ${viStr} en la aparición o agravamiento de ${vdStr} entre ${sujeto} en ${ctx} en 2025?`,
+      `¿Cómo se articulan ${viStr}, redes de apoyo y acceso a recursos sociosanitarios en la producción desigual de ${vdStr} en ${ctx} en 2025?`
+    ];
+  }
+  if (vdLower.includes("violencia de género")) {
+    return [
+      `¿Qué distribución social y relacional presenta ${vdStr} entre ${sujeto} en ${ctx} en 2025?`,
+      `¿Cómo influyen ${viStr} en la reproducción de ${vdStr} en ${ctx} en 2025?`,
+      `¿Cómo se articulan normas patriarcales, relaciones de poder y respuesta institucional en la reproducción de ${vdStr} en ${ctx} en 2025?`
+    ];
+  }
+  if (areaTxt.includes("educación") || areaTxt.includes("educacion")) {
+    return [
+      `¿Qué relación observable existe entre ${viStr} y ${vdStr} entre ${sujeto} en ${ctx} en 2025?`,
+      `¿Cómo influyen ${viStr} en la configuración de ${vdStr} entre ${sujeto} en ${ctx} en 2025?`,
+      `¿Cómo se articulan ${viStr}, desigualdades educativas y recursos institucionales en la producción de ${vdStr} en ${ctx} en 2025?`
+    ];
+  }
+  return [
+    `¿Cómo se manifiesta ${vdStr} entre ${sujeto} en ${ctx} en 2025?`,
+    `¿Cómo influyen ${viStr} en la configuración de ${vdStr} entre ${sujeto} en ${ctx} en 2025?`,
+    `¿Cómo se articulan ${viStr} y ${vdStr} con desigualdades sociales, territoriales o institucionales en ${ctx} en 2025?`
+  ];
+}
+
+function construirCorrelaciones(vi, vd, contexto) {
+  const vd0 = vd.length ? vd[0] : "el fenómeno social estudiado";
+  const ctx = contexto || "el contexto de estudio";
+  const out = [];
+  const add = (x) => { if (!out.includes(x)) out.push(x); };
+
+  if (vd0.toLowerCase().includes("pobreza energética")) {
+    add(`- Estimar la asociación entre ingresos del hogar y ${vd0} en ${ctx}.`);
+    add(`- Analizar si las condiciones residenciales y energéticas del hogar incrementan la intensidad de ${vd0} en ${ctx}.`);
+    add(`- Comparar la distribución de ${vd0} entre barrios periféricos y otras zonas urbanas de ${ctx}.`);
+    add(`- Explorar si edad, dependencia familiar y posición socioeconómica modulan la exposición a ${vd0}.`);
+    return out;
+  }
+  for (const x of vi) {
+    const xl = x.toLowerCase();
+    if (xl.includes("instrucción") || xl.includes("educativo") || xl.includes("educación")) {
+      if (vd0.toLowerCase().includes("precariedad laboral")) {
+        add(`- Analizar si menores niveles educativos se asocian con una mayor probabilidad de empleo precario en ${ctx}.`);
+      } else {
+        add(`- Analizar la asociación entre ${x} y ${vd0} en ${ctx}.`);
+      }
+    } else if (xl.includes("plataformas") || xl.includes("algor") || xl.includes("tiktok")) {
+      add(`- Explorar si ${x} incrementa la exposición, frecuencia o intensidad de ${vd0} en ${ctx}.`);
+    } else {
+      add(`- Estimar la relación entre ${x} y ${vd0} en ${ctx}.`);
+    }
+  }
+  if (vi.length >= 2) {
+    add(`- Contrastar si la combinación entre ${vi[0]} y ${vi[1]} intensifica o reduce ${vd0} en ${ctx}.`);
+  }
+  return out.slice(0, 5);
+}
+
+function construirHipotesis(vi, vd, contexto, poblacion) {
+  const sujeto = poblacion || "la población de estudio";
+  const vd0 = vd.length ? vd[0] : "el fenómeno social estudiado";
+  const ctx = contexto || "el contexto de estudio";
+  const viStr = vi.length ? vi.join(", ") : "las condiciones sociales del contexto";
+
+  if (vd0.toLowerCase().includes("pobreza energética")) {
+    return [
+      `H1. En ${ctx}, entre ${sujeto}, menores recursos económicos del hogar se asociarán con mayor probabilidad de ${vd0}.`,
+      `H2. Las condiciones residenciales deficientes y la localización periférica intensificarán la exposición a ${vd0}.`,
+      `H3. La combinación de bajos ingresos, vivienda ineficiente y menor acceso a ayudas institucionales producirá una acumulación de vulnerabilidad energética.`
+    ];
+  }
+  if (vd0.toLowerCase().includes("precariedad laboral") && vi.some(x => x.toLowerCase().includes("instrucción") || x.toLowerCase().includes("educativo"))) {
+    const edu = vi.find(x => x.toLowerCase().includes("instrucción") || x.toLowerCase().includes("educativo")) || vi[0];
+    return [
+      `H1. En ${ctx}, entre ${sujeto}, ${edu} se asociará con una mayor probabilidad de inserción en empleos precarios.`,
+      `H2. La relación entre educación y precariedad laboral será más intensa cuando coincidan segmentación del mercado de trabajo, baja cualificación reconocida y menor capacidad de negociación laboral.`,
+      `H3. La condición de género modulará la relación entre trayectoria educativa y empleo precario, al producir expectativas laborales diferenciadas y formas específicas de vulnerabilidad sociolaboral.`
+    ];
+  }
+  return [
+    `H1. En ${ctx}, entre ${sujeto}, ${viStr} se asociarán con cambios significativos en ${vd0}.`,
+    `H2. La combinación de factores sociales, institucionales y territoriales intensificará la presencia de ${vd0} en ${ctx}.`
+  ];
+}
+
+/* ================= operacionalización (con nivel de medición) ================= */
+
+function indicadoresParaVariable(nombre, tipo) {
+  const lower = nombre.toLowerCase();
+
+  if (lower.includes("pobreza energética") || lower.includes("pobreza energetica")) {
+    return { variable: nombre, tipo, indicador: "Tasa / escala de pobreza energética: incapacidad para mantener temperatura adecuada, retrasos en pago de suministros o gasto energético desproporcionado", unidad: "Porcentaje / escala compuesta", nivel: "De razón (proporción) u ordinal (escala compuesta)", fuente: "Encuesta a hogares, registros municipales, INE/EAPN/indicadores de vulnerabilidad energética" };
+  }
+  if (lower.includes("condiciones económicas") || lower.includes("condiciones economicas") || lower.includes("ingresos")) {
+    return { variable: nombre, tipo, indicador: "Renta disponible, ingresos del hogar, dificultad para afrontar gastos básicos", unidad: "Euros / tramo de renta / escala de dificultad económica", nivel: "De razón (euros) u ordinal (tramos/escala)", fuente: "Encuesta a hogares, INE, servicios sociales municipales" };
+  }
+  if (lower.includes("residenciales") || lower.includes("energéticas") || lower.includes("energeticas") || lower.includes("vivienda")) {
+    return { variable: nombre, tipo, indicador: "Calidad de vivienda, eficiencia térmica, gasto energético, cortes o retrasos en suministros", unidad: "Índice / porcentaje / escala", nivel: "Ordinal (índice) o de razón (porcentaje)", fuente: "Encuesta a hogares, registros de vivienda, indicadores municipales" };
+  }
+  if (lower.includes("localización periférica") || lower.includes("localizacion periferica") || lower.includes("segregación territorial") || lower.includes("segregacion territorial")) {
+    return { variable: nombre, tipo, indicador: "Residencia en barrio periférico, distancia a recursos y concentración territorial de vulnerabilidad", unidad: "Barrio / sección censal / índice territorial", nivel: "Nominal (barrio) u ordinal (índice territorial)", fuente: "Padrón, atlas urbano, observatorios municipales" };
+  }
+
+  if (lower.includes("violencia de género") || lower.includes("violencia de genero")) {
+    return { variable: nombre, tipo, indicador: "Índice de violencia de género (frecuencia y gravedad de episodios en los últimos 12 meses)", unidad: "Puntuación compuesta / número de episodios", nivel: "De razón si se cuentan episodios; ordinal si se usa el índice compuesto", fuente: "Registros especializados, cuestionarios validados o macroencuestas de violencia de género" };
+  }
+  if (lower.includes("género") && !lower.includes("violencia")) {
+    return { variable: nombre, tipo, indicador: "Índice de desigualdad de género en la relación (toma de decisiones, control económico, reparto de cuidados)", unidad: "Puntuación en escala (1–5 / 1–10)", nivel: "Ordinal (escala tipo Likert)", fuente: "Cuestionario a población objetivo / escalas de roles de género" };
+  }
+  if (lower.includes("dinámicas familiares") || lower.includes("dinamicas familiares") || lower.includes("condiciones y dinámicas")) {
+    return { variable: nombre, tipo, indicador: "Escala de conflictividad y control familiar (frecuencia de conflictos, control coercitivo, apoyo percibido)", unidad: "Puntuación en escala (1–5 / 1–10)", nivel: "Ordinal (escala tipo Likert)", fuente: "Cuestionario a miembros del hogar / entrevistas estructuradas" };
+  }
+
+  if (lower.includes("pobreza") || lower.includes("exclusión") || lower.includes("exclusion")) {
+    return { variable: nombre, tipo, indicador: "Índice de privación material (ingresos, gastos fijos, retrasos de pago, capacidad para imprevistos)", unidad: "Puntuación en índice / umbral de pobreza", nivel: "De intervalo/razón (índice compuesto)", fuente: "Encuestas de condiciones de vida, registros administrativos" };
+  }
+  if (lower.includes("precariedad") || lower.includes("precarización") || lower.includes("precarizacion")) {
+    return { variable: nombre, tipo, indicador: "Indicador de precariedad laboral (temporalidad, parcialidad involuntaria, salario bajo, rotación)", unidad: "Índice / % de trabajadores en situación precaria", nivel: "De razón (proporción)", fuente: "Encuestas de empleo, registros laborales, EPA" };
+  }
+
+  if (lower.includes("fracaso escolar") || lower.includes("abandono escolar")) {
+    return { variable: nombre, tipo, indicador: "Tasa de abandono / repetición de curso en la población estudiada", unidad: "% de alumnado que abandona o repite", nivel: "De razón (proporción)", fuente: "Registros académicos, estadísticas educativas" };
+  }
+
+  if (lower.includes("salud mental") || lower.includes("ansiedad") || lower.includes("depresión") || lower.includes("depresion")) {
+    return { variable: nombre, tipo, indicador: "Puntuación en escalas estandarizadas de salud mental (ansiedad, depresión, estrés percibido)", unidad: "Puntuación en escala validada", nivel: "Ordinal (tratada habitualmente como cuasi-intervalo)", fuente: "Cuestionarios clínicos / encuestas de salud" };
+  }
+
+  if (lower.includes("delincuencia") || lower.includes("criminalidad")) {
+    return { variable: nombre, tipo, indicador: "Tasa de delitos registrados por 10.000 habitantes", unidad: "Número de delitos / 10.000 hab.", nivel: "De razón", fuente: "Estadísticas policiales / registros administrativos" };
+  }
+
+  if (tipo === "VI") {
+    return { variable: nombre, tipo, indicador: `Escala / índice que mida «${nombre}» en la población de estudio`, unidad: "Puntuación en escala (1–5 / 1–10)", nivel: "Ordinal (escala tipo Likert)", fuente: "Cuestionario a población objetivo u observaciones estructuradas" };
+  }
+  return { variable: nombre, tipo, indicador: `Indicador observable de «${nombre}» definido para el contexto del estudio`, unidad: "Índice / escala / proporción", nivel: "Ordinal o de razón, según el indicador concreto elegido", fuente: "Encuestas, registros administrativos o datos secundarios" };
+}
+
+function construirOperacionalizacion(vi, vd) {
+  const filas = [];
+  for (const v of vi) filas.push(indicadoresParaVariable(v, "VI"));
+  for (const v of vd) filas.push(indicadoresParaVariable(v, "VD"));
+  if (filas.length === 0) {
+    filas.push({ variable: "Variable a definir", tipo: "N/D", indicador: "Indicador observable asociado", unidad: "Unidad de medida", nivel: "Por determinar", fuente: "Fuente de datos" });
+  }
+  return filas;
+}
+
+function operacionalizacionTexto(filas) {
+  return filas.map(fila =>
+    `- ${fila.variable} (${fila.tipo}): indicador = ${fila.indicador}; unidad = ${fila.unidad}; nivel de medición = ${fila.nivel}; fuente = ${fila.fuente}`
+  ).join("\n");
+}
+
+/* ================= diseño de estudio (con mis avisos metodológicos) ================= */
+
+function sugerirDisenoEstudio(lower) {
+  let tipo = "un estudio descriptivo-correlacional de corte transversal";
+  let tecnicas = ["Encuesta estructurada", "Entrevistas semiestructuradas a informantes clave"];
+  let unidad = "individuos pertenecientes a la población definida";
+  let esTransversalPorDefecto = true;
+
+  if (["longitudinal", "seguimiento", "evolución", "evolucion"].some(w => lower.includes(w))) {
+    tipo = "un estudio longitudinal (panel o cohorte)";
+    esTransversalPorDefecto = false;
+  }
+  if (["etnografía", "etnografia", "observación participante", "observacion participante"].some(w => lower.includes(w))) {
+    tipo = "un estudio cualitativo de inspiración etnográfica";
+    tecnicas = ["Observación participante", "Entrevistas en profundidad", "Sociogramas / mapas de actores"];
+    esTransversalPorDefecto = false;
+  }
+  if (["experimento", "experimental", "ensayo controlado"].some(w => lower.includes(w))) {
+    tipo = "un diseño cuasi-experimental o experimental (según viabilidad ética)";
+    tecnicas = ["Diseño de intervención", "Grupo control / grupo experimental", "Mediciones pre y post"];
+    esTransversalPorDefecto = false;
+  }
+  if (["barrios", "barrio", "territorio", "comunidad", "participativo"].some(w => lower.includes(w))) {
+    unidad = "unidades territoriales (barrios / comunidades) y actores comunitarios relevantes";
+  }
+
+  const resumen = [];
+  resumen.push(`Tipo de diseño sugerido: ${tipo}.`);
+  resumen.push("Técnicas principales recomendadas:");
+  for (const t of tecnicas) resumen.push(`- ${t}`);
+
+  resumen.push("");
+  resumen.push("Estrategia de muestreo (a decidir por el investigador):");
+  resumen.push("- Si el objetivo es representatividad estadística: muestreo probabilístico (aleatorio simple, estratificado o por conglomerados) y calcular el tamaño muestral según margen de error y nivel de confianza deseados.");
+  resumen.push("- Si el objetivo es profundidad/diversidad de perfiles (más habitual en enfoques cualitativos): muestreo no probabilístico (intencional, por conveniencia o bola de nieve), justificando el criterio de selección y el punto de saturación.");
+
+  if (esTransversalPorDefecto) {
+    resumen.push("");
+    resumen.push("Advertencia metodológica: este es un diseño transversal (una sola medición en el tiempo). Permite describir asociaciones entre variables, pero NO establecer causalidad ni orden temporal. Las preguntas e hipótesis de este informe usan a veces lenguaje explicativo (\"explican\", \"efecto de\"); interpreta esas relaciones como asociativas, no causales, salvo que adoptes un diseño longitudinal o (cuasi)experimental.");
+  }
+
+  resumen.push("");
+  resumen.push("Notas: Ajustar el diseño al acceso real al campo, recursos disponibles y criterios éticos; combinar, cuando sea posible, al menos una técnica cuantitativa y una cualitativa.");
+
+  if (["violencia", "maltrato", "feminicidio", "salud mental", "ansiedad", "depresión", "depresion", "menor", "menores", "niño", "niños", "niña", "niñas", "infancia", "adolescente"].some(w => lower.includes(w))) {
+    resumen.push("Este problema toca un tema sensible (violencia, salud mental y/o menores de edad): prevé consentimiento informado explícito, protocolos de derivación ante revelación de riesgo, anonimización estricta de los datos y aprobación de un comité de ética antes de recoger cualquier dato.");
+  }
+
+  return { texto: resumen.join("\n"), unidad };
+}
+
+/* ================= marcos teóricos ================= */
+
+function sugerirMarcosTeoricos(lower, vi, vd) {
+  const marcos = [];
+  const total = (lower || "") + " " + vi.concat(vd).join(" ").toLowerCase();
+  const add = (x) => { if (!marcos.includes(x)) marcos.push(x); };
+
+  if (["violencia de género", "violencia de genero", "género", "genero", "masculinidad", "masculinidades", "hombres", "machismo"].some(w => total.includes(w))) {
+    add("Connell: masculinidades, masculinidad hegemónica y relaciones de género");
+    add("Butler: performatividad de género y normas corporales/sociales");
+    add("Bourdieu: dominación masculina y violencia simbólica");
+  }
+  if (["familia", "familiares", "hogar"].some(w => total.includes(w))) {
+    add("Berger y Luckmann: socialización primaria, construcción social de la realidad");
+    add("Bourdieu: habitus familiar, capital cultural y reproducción");
+  }
+  if (["educación", "educacion", "abandono escolar", "deserción", "desercion", "fracaso escolar"].some(w => total.includes(w))) {
+    add("Bourdieu y Passeron: reproducción educativa, capital cultural y desigualdad escolar");
+    add("Bernstein: códigos lingüísticos y desigualdad educativa");
+  }
+  if (["trabajo", "empleo", "laboral", "precariedad"].some(w => total.includes(w))) {
+    add("Marx: trabajo, explotación y relaciones de clase");
+    add("Standing: precariado y nuevas formas de inseguridad laboral");
+  }
+  if (["salud", "enfermedad", "salud mental", "ansiedad", "depresión", "depresion"].some(w => total.includes(w))) {
+    add("Marmot: determinantes sociales de la salud");
+    add("Foucault: biopolítica, cuerpos e instituciones");
+  }
+  if (["digital", "algoritmo", "internet", "redes sociales"].some(w => total.includes(w))) {
+    add("Zuboff: capitalismo de la vigilancia");
+    add("Couldry y Mejias: colonialismo de datos y mediaciones digitales");
+  }
+  if (["barrio", "territorio", "urbano", "zaragoza"].some(w => total.includes(w))) {
+    add("Lefebvre: producción social del espacio");
+    add("Wacquant: marginalidad urbana y estigma territorial");
+  }
+
+  if (marcos.length === 0) {
+    add("Durkheim: hechos sociales y explicación sociológica");
+    add("Weber: acción social, sentido y comprensión");
+    add("Bourdieu: campo, habitus y capital");
+  }
+
+  return marcos;
+}
+
+/* ================= mecanismos micro/meso/macro (idéntico al original) ================= */
+
+function generarMecanismos(areas, subdoms, vi, vd, contexto) {
+  const mec = [];
+  const lowerAreas = areas && areas.length ? areas.join(" ").toLowerCase() : "";
+  const vdTxt = vd && vd.length ? vd.join(" ").toLowerCase() : "";
+  const viTxt = vi && vi.length ? vi.join(" ").toLowerCase() : "";
+
+  const esGenero = lowerAreas.includes("género") || lowerAreas.includes("genero") || lowerAreas.includes("masculinidad");
+  const esFamilia = lowerAreas.includes("familia");
+  const esEducacion = lowerAreas.includes("educación") || lowerAreas.includes("educacion");
+  const esUrbano = lowerAreas.includes("urbana") || lowerAreas.includes("urbano") || vdTxt.includes("barrio") || viTxt.includes("barrio");
+  const esTrabajo = lowerAreas.includes("trabajo") || lowerAreas.includes("laboral");
+
+  if (esGenero && vdTxt.includes("violencia")) mec.push("Micro (interacciones): circuitos de control coercitivo, escaladas situacionales de conflicto, gestión asimétrica de emociones y autoridad en la pareja.");
+  if (esFamilia) mec.push("Micro (hogar): microinteracciones cotidianas, tensiones afectivas, estilos de crianza, soportes o silencios familiares que facilitan/contienen el fenómeno.");
+  if (esEducacion) mec.push("Micro (escuela): climas de aula, etiquetas docentes, diferentes trayectorias subjetivas del alumnado ante el rendimiento y la pertenencia escolar.");
+  if (esUrbano) mec.push("Micro (barrio): redes de apoyo/estigma territorial, densidad relacional y circulación local de normas prácticas.");
+  if (esTrabajo) mec.push("Micro (trabajo/hogar): estrés laboral, desajustes de tiempo doméstico y precariedad vivida que deterioran la regulación cotidiana.");
+
+  if (esGenero) mec.push("Meso (instituciones): respuestas de servicios sociales, salud, justicia y educación que pueden reforzar o reducir la tolerancia al dominio masculino.");
+  if (esFamilia) mec.push("Meso (familia ampliada): normas de parentesco, expectativas intergeneracionales y redes de cuidado que estructuran posiciones de poder doméstico.");
+  if (esEducacion) mec.push("Meso (centros y políticas): coordinación familia–escuela, protocolos de absentismo/abandono y recursos de intervención comunitaria.");
+  if (esUrbano) mec.push("Meso (territorio): desigual distribución de equipamientos, mediación comunitaria y calidad de servicios por distritos/barrios.");
+  if (esTrabajo) mec.push("Meso (mercado laboral local): segmentación del empleo, temporalidad y trayectorias de inserción/exclusión.");
+
+  if (esGenero) mec.push("Macro (estructura patriarcal): reproducción de desigualdades de género, habitus viril y legitimación cultural de jerarquías.");
+  if (esFamilia) mec.push("Macro (reproducción social): transmisión intergeneracional de habitus, capital cultural/afectivo y desigualdades normalizadas.");
+  if (esEducacion) mec.push("Macro (reproducción educativa): currículum oculto, capital cultural y desigualdades estructurales en el sistema.");
+  if (esUrbano) mec.push("Macro (segregación urbana): estigmatización territorial, gentrificación y desigualdad espacial persistente.");
+  if (esTrabajo) mec.push("Macro (precarización): cambios estructurales del trabajo, desprotección y desigualdad socioeconómica.");
+
+  if (mec.length === 0) {
+    return [
+      "Micro: prácticas e interacciones cotidianas vinculadas al fenómeno.",
+      "Meso: papel de instituciones y redes intermedias en su reproducción/contención.",
+      "Macro: estructuras sociales amplias que lo condicionan."
+    ];
+  }
+  return mec;
+}
+
+/* ================= fuentes de datos (vía motor geo) ================= */
+
+function sugerirFuentesDatos(lower, area, contexto) {
+  const g = geoDetectar((lower || "") + " " + (contexto || ""));
+  return geoFuentes(g.ciudad, g.pais, area, lower);
+}
+
+/* ================= notas metodológicas transversales ================= */
+
+const NOTA_DIRECCIONALIDAD_VIVD = "Nota metodológica: SOCIOKAIROS asume por defecto que las VI son factores explicativos (causas) y las VD el fenómeno a explicar (efectos). Es una simplificación heurística: revísala contra tu propio marco teórico, porque en otros planteamientos estas mismas variables podrían intercambiar su rol (p. ej., el «clima familiar» puede ser VD si tu pregunta es qué lo determina).";
+
+const NOTA_JUSTIFICAR_MARCOS = "Nota: estos marcos se sugieren por coincidencia léxica con tu problema. Justifica en tu trabajo por qué cada uno es realmente pertinente para tu caso concreto, no solo que haya aparecido aquí.";
+
+const NOTA_VI_CANDIDATA = "Nota metodológica: tu problema no nombra explícitamente ningún factor explicativo (VI), así que las de abajo son candidatas típicas en la literatura sobre este fenómeno — no están extraídas de tu texto. Sustitúyelas por las que realmente vayas a estudiar, o añade el factor explicativo directamente en el problema inicial para que SOCIOKAIROS lo detecte.";
+
+/* ================= análisis principal ================= */
+
+function analizarProblema(texto) {
+  texto = (texto || "").trim();
+  if (!texto) {
+    return {
+      p1: "Escribe un problema científico en forma de frase o pregunta para comenzar.",
+      p2: "", p3: "", vi: [], vd: [],
+      correlaciones: [],
+      hipotesis: ["La herramienta necesita al menos una frase con actores, contexto y algún efecto."],
+      marcos: ["Durkheim (hechos sociales)", "Weber (acción social)"],
+      area: "Sociología general / del cambio social",
+      areas: ["Sociología general / del cambio social"],
+      subdominios: [], mecanismos: [],
+      diseno: "Propón un diseño inicial (descriptivo, correlacional, cualitativo, etc.) para comenzar.",
+      unidad: "Unidad de análisis pendiente de definir.",
+      operacionalizacion: [], fuentes: []
+    };
+  }
+
+  const lower = texto.toLowerCase();
+  const { contexto, poblacion } = detectarContextoYPoblacion(lower, texto);
+  const { vi, vd, viEsCandidato } = detectarVariables(lower);
+  const areas = detectarAreaSociologica(lower, vi, vd);
+  const area = areas.join(" · ");
+  const subdoms = detectarSubdominios(areas, vi, vd, lower);
+
+  const [p1, p2, p3] = construirPreguntas(vi, vd, contexto, poblacion, areas);
+  const correlaciones = construirCorrelaciones(vi, vd, contexto);
+  const hipotesis = construirHipotesis(vi, vd, contexto, poblacion);
+  const marcos = sugerirMarcosTeoricos(lower, vi, vd);
+  const operacionalizacion = construirOperacionalizacion(vi, vd);
+  const disenoInfo = sugerirDisenoEstudio(lower);
+  const fuentes = sugerirFuentesDatos(lower, area, contexto);
+
+  return {
+    p1, p2, p3, vi, vd, correlaciones, hipotesis, marcos, area, areas,
+    subdominios: subdoms,
+    mecanismos: generarMecanismos(areas, subdoms, vi, vd, contexto),
+    diseno: disenoInfo.texto, unidad: disenoInfo.unidad,
+    operacionalizacion, fuentes, viEsCandidato
+  };
+}
+
+/* ================= exportador CSV (con nivel de medición) ================= */
+
+function exportarCSV(resultado) {
+  const filas = resultado.operacionalizacion;
+  const limpiar = (s) => String(s).replace(/,/g, ";");
+  const lineas = ["Variable,Tipo,Indicador,Unidad,Nivel de medición,Fuente"];
+  for (const fila of filas) {
+    lineas.push([fila.variable, fila.tipo, fila.indicador, fila.unidad, fila.nivel, fila.fuente].map(limpiar).join(","));
+  }
+  return lineas.join("\n");
+}
+
+/* ================= validación pedagógica SOCIOKAIROS EDU ================= */
+
+let INTENTOS_FALLIDOS_EDU = 0;
+let ULTIMO_PROBLEMA_EDU = "";
+
+function contieneAlguno(texto, patrones) {
+  const t = (texto || "").toLowerCase();
+  return patrones.some(p => t.includes(p));
+}
+
+function validarProblemaEdu(texto) {
+  const original = (texto || "").trim();
+  const t = original.toLowerCase();
+  const fallos = [];
+
+  const varsDetectadas = original ? detectarVariables(t) : { vi: [], vd: [] };
+
+  const marcadoresRelacion = [
+    "se relaciona", "se relacionan", "relación", "relacion", "correlación", "correlacion",
+    "se correlaciona", "se correlacionan", "asociación", "asociacion", "se asocia", "se asocian",
+    "influye", "influyen", "impacto", "efecto", "afecta", "afectan", "incide", "inciden",
+    "explica", "explican", "determina", "determinan", "condiciona", "condicionan",
+    "qué factores", "que factores", "cuáles son las causas", "cuales son las causas",
+    "por qué", "por que", "cómo", "como", "de qué manera", "de que manera"
+  ];
+  const tieneRelacion = contieneAlguno(t, marcadoresRelacion);
+
+  let tieneFecha = /\b(19|20)\d{2}\b/.test(t) || /\b\d{4}[-/]\d{4}\b/.test(t);
+  const periodos = ["últimos años", "ultimos años", "últimos 5 años", "ultimos 5 años", "curso académico", "curso academico", "actualidad", "pospandemia", "durante"];
+  tieneFecha = tieneFecha || contieneAlguno(t, periodos);
+
+  const contextos = [
+    "barrio", "barrios", "ciudad", "ciudades", "municipio", "municipios", "comarca", "comarcas",
+    "provincia", "provincias", "comunidad autónoma", "comunidad autonoma", "país", "pais",
+    "universidad", "instituto", "centro educativo", "escuela", "moodle", "campus", "distrito",
+    "zaragoza", "aragón", "aragon", "españa", "espana", "cuba", "unizar", "torrero", "monegros",
+    "daroca", "holguín", "holguin", "barcelona", "madrid", "valencia", "sevilla", "bilbao",
+    "málaga", "malaga", "murcia", "palma", "alicante", "córdoba", "cordoba", "valladolid",
+    "vigo", "gijón", "gijon", "oviedo", "granada", "vitoria", "santander", "pamplona",
+    "logroño", "logrono", "toledo", "huesca", "teruel", "parís", "paris", "londres", "roma",
+    "berlín", "berlin", "lisboa", "bruselas", "la habana", "habana", "buenos aires", "lima",
+    "quito", "bogotá", "bogota", "caracas", "méxico", "mexico", "ciudad de méxico", "ciudad de mexico"
+  ];
+  let tieneContexto = contieneAlguno(t, contextos);
+  if (!tieneContexto) {
+    const patronToponimo = /\b(en|de|del|desde|para|sobre)\s+([A-ZÁÉÍÓÚÑ][\wáéíóúüñ-]+(?:\s+[A-ZÁÉÍÓÚÑ][\wáéíóúüñ-]+){0,3})/;
+    tieneContexto = patronToponimo.test(original);
+  }
+
+  const unidades = [
+    "estudiantes", "alumnado", "jóvenes", "jovenes", "familias", "mujeres", "hombres",
+    "barrios", "barrio", "vecindario", "hogares", "profesorado", "trabajadores", "trabajadoras",
+    "migrantes", "adolescentes", "población", "poblacion", "usuarios", "usuarias",
+    "personas mayores", "colectivos", "comunidad", "comunidades", "clase trabajadora",
+    "territorios", "territorio", "centros educativos", "universidades", "municipios", "ciudades"
+  ];
+  const tieneUnidad = contieneAlguno(t, unidades);
+
+  const totalVarsDiccionario = varsDetectadas.vi.length + varsDetectadas.vd.length;
+  const tieneDosVariablesDiccionario = totalVarsDiccionario >= 2 || (varsDetectadas.vi.length > 0 && varsDetectadas.vd.length > 0);
+
+  const conectoresVariable = [" y ", " con ", " entre ", " frente a ", " sobre ", " respecto a "];
+  const tieneDosVariablesPorTexto = tieneRelacion && conectoresVariable.some(c => t.includes(c));
+
+  const tieneDosVariables = tieneDosVariablesDiccionario || tieneDosVariablesPorTexto;
+
+  if (tieneRelacion && tieneDosVariables && tieneContexto && tieneFecha) {
+    ULTIMO_PROBLEMA_EDU = original;
+    return { valido: true, fallos: [], intentos: INTENTOS_FALLIDOS_EDU, variables_detectadas: varsDetectadas };
+  }
+
+  if (original.length < 45 || original.split(/\s+/).filter(Boolean).length < 8) {
+    fallos.push("La formulación es demasiado breve: un problema científico necesita expresar una relación sociológica, no solo una pregunta cotidiana.");
+  }
+
+  const nombresComunes = ["paco", "juan", "pedro", "maría", "maria", "luis", "ana", "carlos", "pepe", "manolo"];
+  const marcadoresIndividuales = ["mi amigo", "mi vecina", "mi vecino", "una persona", "un alumno", "una alumna"].concat(nombresComunes);
+  const preguntaCotidiana = ["cuánto dinero", "cuanto dinero", "qué dinero", "que dinero", "tiene dinero", "gana dinero"].some(x => t.includes(x));
+
+  if (preguntaCotidiana || contieneAlguno(t, marcadoresIndividuales)) {
+    fallos.push("La pregunta está formulada en clave individual o cotidiana. SOCIOKAIROS EDU requiere un fenómeno social y una unidad de análisis colectiva, no el caso aislado de una persona.");
+  }
+
+  if (!tieneRelacion || !tieneDosVariables) {
+    fallos.push("Faltan al menos dos variables o dimensiones relacionadas: formula una relación entre un factor explicativo y un fenómeno a explicar.");
+  }
+  if (!tieneUnidad) {
+    fallos.push("Falta la unidad social: indica a quién o qué estudiarás, por ejemplo estudiantes, jóvenes, familias, mujeres, barrios, profesorado o población.");
+  }
+  if (!tieneContexto) {
+    fallos.push("Falta el contexto territorial o institucional: especifica dónde se realizará el estudio, por ejemplo Zaragoza, Sevilla, Madrid, una universidad, un barrio, una ciudad o un centro educativo.");
+  }
+  if (!tieneFecha) {
+    fallos.push("Falta la fecha o periodo: añade un año, curso académico o marco temporal, por ejemplo 2024-2025, 2026 o últimos 5 años.");
+  }
+
+  const conceptosSociales = [
+    "desigualdad", "pobreza", "género", "genero", "educación", "educacion", "salud", "empleo",
+    "trabajo", "familia", "violencia", "participación", "participacion", "redes", "clase",
+    "cultura", "exclusión", "exclusion", "precariedad", "migración", "migracion", "segregación",
+    "segregacion", "inseguridad", "territorial", "urbana", "urbano"
+  ];
+  if (!contieneAlguno(t, conceptosSociales) && preguntaCotidiana) {
+    fallos.push("No aparece un objeto sociológico reconocible. Reformula el caso como fenómeno social: desigualdad económica, renta, precariedad, clase social, hogares, juventud, territorio, etc.");
+  }
+
+  const esValido = fallos.length === 0;
+  if (!esValido) {
+    if (original !== ULTIMO_PROBLEMA_EDU) {
+      INTENTOS_FALLIDOS_EDU += 1;
+      ULTIMO_PROBLEMA_EDU = original;
+    }
+  } else {
+    ULTIMO_PROBLEMA_EDU = original;
+  }
+
+  return { valido: esValido, fallos, intentos: INTENTOS_FALLIDOS_EDU, variables_detectadas: varsDetectadas };
+}
+
+function construirFeedbackValidacionEdu(validacion) {
+  const fallos = validacion.fallos || [];
+  const intentos = validacion.intentos || 0;
+  const lineas = [];
+  lineas.push(`SOCIOKAIROS EDU ha detectado ${fallos.length} fallo(s) epistemológico-estructural(es). Intentos fallidos acumulados: ${intentos}.`);
+  lineas.push("");
+  lineas.push("Antes de reformular, el problema inicial debe contener:");
+  lineas.push("1. Variable(s) o dimensiones sociales relacionadas.");
+  lineas.push("2. Unidad social de análisis.");
+  lineas.push("3. Contexto territorial o institucional.");
+  lineas.push("4. Fecha, curso o periodo temporal.");
+  lineas.push("");
+  lineas.push("Fallos detectados:");
+  for (const f of fallos) lineas.push("- " + f);
+  lineas.push("");
+  lineas.push("Forma correcta orientativa:");
+  lineas.push("¿Cómo influye [VI: precariedad laboral familiar / uso intensivo de redes / capital cultural] en [VD: rendimiento académico / salud mental / participación política] de [unidad social: estudiantes / jóvenes / familias] en [contexto: Zaragoza, Cuba, universidad, barrio] durante [periodo: 2024-2026 / curso 2025-2026 / últimos 5 años]?");
+  lineas.push("");
+  lineas.push("Ejemplo sociológico válido:");
+  lineas.push("¿Cómo influye la precariedad laboral familiar en el rendimiento académico de estudiantes universitarios de Zaragoza durante el curso 2025-2026?");
+  lineas.push("");
+  lineas.push("Reformula el problema inicial y vuelve a pulsar el botón.");
+  return lineas.join("\n");
+}
+
+/* ================= análisis ampliado: alertas, tradiciones, mapa, diseños ================= */
+
+function generarAlertasMetodologicas(txt, resultado) {
+  const t = (txt || "").toLowerCase();
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const areas = (resultado.areas || [resultado.area || ""]).join(" ").toLowerCase();
+  const alertas = [];
+
+  if (!/\b(19|20)\d{2}\b/.test(txt || "")) {
+    alertas.push("• Delimitar el periodo temporal: el problema necesita año, curso académico o intervalo de observación.");
+  }
+
+  if (vd.length === 0) {
+    alertas.push("• Precisar la VD: indicar con claridad qué fenómeno se quiere explicar o medir.");
+  } else {
+    const vdTxt = skJoin(vd);
+    if (skHas(vdTxt, ["precar", "trabajo", "empleo", "laboral"])) alertas.push("• Operacionalizar la precariedad laboral: distinguir temporalidad, parcialidad involuntaria, salario bajo, informalidad e inestabilidad contractual.");
+    if (skHas(vdTxt, ["violencia"])) alertas.push("• Definir el tipo de violencia: física, psicológica, económica, sexual, institucional o simbólica; no tratarlas como equivalentes.");
+    if (skHas(vdTxt, ["abandono", "deserc", "absentismo", "fracaso escolar"])) alertas.push("• Separar absentismo, abandono, fracaso escolar y bajo rendimiento: son fenómenos relacionados, pero no idénticos.");
+    if (skHas(vdTxt, ["salud mental", "ansiedad", "depres"])) alertas.push("• Evitar diagnosticar clínicamente desde datos sociales generales: usar indicadores validados de malestar, riesgo o autopercepción.");
+  }
+
+  if (vi.length === 0) {
+    alertas.push("• Precisar las VI: el problema aún no muestra factores explicativos suficientemente observables.");
+  } else {
+    for (const v of vi.slice(0, 4)) {
+      const vl = v.toLowerCase();
+      if (skHas(vl, ["nivel de instrucción", "instrucción", "educ", "formación"])) alertas.push("• Definir el nivel educativo máximo alcanzado y diferenciarlo de competencias, rendimiento o capital cultural.");
+      if (skHas(vl, ["ingreso", "renta", "pobreza", "precar"])) alertas.push("• Especificar si la posición económica se medirá por renta, empleo, privación material, deuda o dependencia familiar.");
+      if (skHas(vl, ["redes sociales", "digital", "internet"])) alertas.push("• Diferenciar uso, exposición, intensidad, tipo de plataforma y contenido consumido; no reducir lo digital a una sola variable.");
+      if (skHas(vl, ["familia", "familiar", "hogar"])) alertas.push("• Desagregar familia/hogar en composición, recursos, expectativas, cuidados, normas y conflicto doméstico.");
+    }
+  }
+
+  if (skHas(t, ["madrid", "zaragoza", "barcelona", "valencia", "sevilla", "bilbao"])) {
+    if (!skHas(t, ["barrio", "segregación territorial", "segregacion territorial", "espacio urbano", "movilidad urbana", "vivienda"])) {
+      alertas.push("• Tratar la ciudad mencionada como unidad territorial de observación, no como variable explicativa automática.");
+    }
+  }
+
+  if (areas.includes("sociología urbana") && !skHas(t, ["barrio", "territorio", "vivienda", "segregación", "segregacion", "espacio urbano"])) {
+    alertas.push("• Revisar la activación de sociología urbana: solo debe entrar si el espacio urbano es variable analítica, no simple lugar del estudio.");
+  }
+
+  if (alertas.length === 0) {
+    return "• El problema presenta una estructura heurística adecuada. Mantener la coherencia entre VI, VD, población, territorio e indicadores.";
+  }
+  return uniq(alertas).join("\n");
+}
+
+function generarTradiciones(resultado, txt) {
+  const t = (txt || "").toLowerCase();
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const areas = resultado.areas || [resultado.area || ""];
+  const total = areas.concat(vi, vd).join(" ").toLowerCase() + " " + t;
+  const trad = [];
+  const add = (x) => { if (!trad.includes(x)) trad.push(x); };
+
+  if (skHas(total, ["trabajo", "empleo", "laboral", "precar"])) add("• Sociología del trabajo → segmentación laboral, precarización, trayectorias ocupacionales y vulnerabilidad contractual.");
+  if (skHas(total, ["educación", "educacion", "instrucción", "instruccion", "escolar", "formación"])) add("• Sociología de la educación → reproducción de desigualdades educativas, capital cultural y credenciales escolares.");
+  if (skHas(total, ["género", "genero", "hombres", "mujeres", "masculinidad", "masculinidades"])) add("• Sociología de género → masculinidades, división sexual del trabajo, mandatos de género y posiciones diferenciales de poder.");
+  if (skHas(total, ["familia", "hogar", "cuidados"])) add("• Sociología de la familia → socialización, cuidados, normas domésticas, recursos familiares y reproducción intergeneracional.");
+  if (skHas(total, ["pobreza", "renta", "desigualdad", "clase", "exclusión", "exclusion"])) add("• Sociología de la desigualdad → clase social, recursos, privación material y mecanismos de acumulación/desventaja.");
+  if (skHas(total, ["violencia", "control", "dominación", "dominacion"])) add("• Sociología del poder y la dominación → asimetrías, control social, violencia simbólica e institucionalización de jerarquías.");
+  if (skHas(total, ["salud", "salud mental", "ansiedad", "depres"])) add("• Sociología de la salud → determinantes sociales, desigualdades sanitarias y producción social del malestar.");
+  if (skHas(total, ["barrio", "territorio", "vivienda", "segregación", "segregacion", "urbano"])) add("• Sociología urbana y territorial → segregación, estigma territorial, recursos de proximidad e infraestructuras relacionales.");
+  if (skHas(total, ["redes sociales", "digital", "algorit", "internet", "plataforma"])) add("• Sociología digital → mediaciones algorítmicas, plataformas, circulación de discursos y desigualdades digitales.");
+  if (skHas(total, ["emoc", "afect", "miedo", "ira", "esperanza", "resentimiento"])) add("• Sociología de las emociones → producción social de afectos, legitimidad emocional y climas afectivos colectivos.");
+
+  if (trad.length === 0) {
+    add("• Sociología comprensiva → sentido de la acción, posiciones sociales y relación entre experiencia y estructura.");
+    add("• Teoría de la estructuración / sociología relacional → vínculos entre prácticas, instituciones y condiciones sociales.");
+  }
+  return trad.join("\n");
+}
+
+function generarMapaLogico(resultado) {
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const areas = (resultado.areas || [resultado.area || ""]).join(" ").toLowerCase();
+  const viTxt = skJoin(vi, "factores explicativos");
+  const vdTxt = skJoin(vd, "fenómeno a explicar");
+
+  const mecanismos = [];
+  const total = (viTxt + " " + vdTxt + " " + areas).toLowerCase();
+  if (skHas(total, ["educ", "instrucción", "instruccion"])) mecanismos.push("capital educativo / credenciales disponibles");
+  if (skHas(total, ["trabajo", "empleo", "laboral", "precar"])) mecanismos.push("segmentación del mercado laboral");
+  if (skHas(total, ["género", "genero", "hombres", "masculinidad"])) mecanismos.push("mandatos de género y trayectorias masculinas");
+  if (skHas(total, ["familia", "hogar"])) mecanismos.push("recursos y normas familiares");
+  if (skHas(total, ["pobreza", "renta", "clase"])) mecanismos.push("posición de clase y disponibilidad de recursos");
+  if (skHas(total, ["barrio", "territorio", "urbano", "segreg"])) mecanismos.push("oportunidades territoriales y estigma espacial");
+  if (skHas(total, ["redes sociales", "digital", "algorit"])) mecanismos.push("exposición digital y mediación algorítmica");
+  if (skHas(total, ["violencia", "dominación", "control"])) mecanismos.push("asimetrías de poder y control social");
+
+  if (mecanismos.length) {
+    return viTxt + "\n        ↓\n" + mecanismos.slice(0, 4).join(" + ") + "\n        ↓\n" + vdTxt;
+  }
+  if (vi.length && vd.length) return viTxt + "\n        ↓\n" + vdTxt;
+  return "Problema científico\n        ↓\nDefinición de VI/VD\n        ↓\nMecanismo sociológico\n        ↓\nFenómeno observable";
+}
+
+function generarDisenos(txt, resultado) {
+  resultado = resultado || {};
+  const t = (txt || "").toLowerCase();
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const areas = (resultado.areas || [resultado.area || ""]).join(" ").toLowerCase();
+  const total = t + " " + vi.concat(vd).join(" ").toLowerCase() + " " + areas;
+  const salidas = [];
+
+  if (skHas(total, ["relación", "relacion", "influye", "asocia", "correl", "probabilidad"])) salidas.push("• Encuesta transversal analítica → adecuada para estimar asociaciones entre VI y VD en la población definida.");
+  if (skHas(total, ["trabajo", "empleo", "laboral", "precar"])) salidas.push("• Análisis secundario de datos laborales → EPA/INE, registros administrativos o fuentes municipales para contrastar empleo, temporalidad y ocupación.");
+  if (skHas(total, ["educ", "instrucción", "instruccion", "formación"])) salidas.push("• Cruce educación–resultado social → matriz entre nivel formativo alcanzado y el fenómeno dependiente observado.");
+  if (skHas(total, ["género", "genero", "hombres", "mujeres", "masculinidad"])) salidas.push("• Entrevistas semiestructuradas por perfiles → permiten reconstruir trayectorias, mandatos de género y significados atribuidos al fenómeno.");
+  if (skHas(total, ["violencia", "miedo", "emoc", "sentido", "experiencia"])) salidas.push("• Diseño cualitativo interpretativo → entrevistas, relatos de experiencia o grupos focales para captar significados, silencios y justificaciones.");
+  if (skHas(total, ["barrio", "territorio", "urbano", "segreg", "vivienda"])) salidas.push("• Estudio de caso territorial → útil cuando el espacio funciona como mecanismo explicativo y no solo como lugar de observación.");
+  if (skHas(total, ["redes sociales", "digital", "internet", "plataforma", "algorit"])) salidas.push("• Etnografía digital / análisis de contenido → apropiado para discursos, interacciones y circulación algorítmica de significados.");
+  if (skHas(total, ["familia", "hogar", "cuidados"])) salidas.push("• Entrevistas familiares o estudio de hogares → útil para analizar recursos, normas, cuidados y conflictos intradomésticos.");
+
+  salidas.push("• Diseño mixto secuencial → recomendable si se quiere combinar medición de asociaciones con explicación cualitativa de mecanismos.");
+
+  return uniq(salidas).slice(0, 6).join("\n");
+}
+
+/* ================= visualización SVG heurística ================= */
+
+function skSvgEscape(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function skCompactLabel(value, limit) {
+  limit = limit || 42;
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (text.length <= limit) return text;
+  return text.slice(0, Math.max(8, limit - 1)).trimEnd() + "…";
+}
+
+function skFirst(items, fallback) {
+  if (Array.isArray(items) && items.length) return String(items[0]);
+  return fallback;
+}
+
+function skMecanismoPorArea(areaText, viLabel) {
+  const area = (areaText || "").toLowerCase();
+  const vi = (viLabel || "").toLowerCase();
+  if (area.includes("educación") || area.includes("educacion") || vi.includes("instrucción") || vi.includes("instruccion") || vi.includes("educativo")) return "capital educativo / credenciales";
+  if (area.includes("trabajo") || vi.includes("laboral") || vi.includes("empleo")) return "posición laboral / segmentación";
+  if (area.includes("género") || area.includes("genero") || vi.includes("hombre") || vi.includes("mujer")) return "normas de género / trayectorias";
+  if (area.includes("pobreza") || vi.includes("ingreso") || vi.includes("renta")) return "recursos materiales";
+  if (area.includes("salud")) return "bienestar / vulnerabilidad";
+  if (area.includes("política") || area.includes("politica")) return "orientaciones políticas / legitimidad";
+  return "mecanismo social intermedio";
+}
+
+function skSvgTag(name, attrs, content, selfClose) {
+  attrs = attrs || {};
+  const attrTxt = Object.entries(attrs).filter(([, v]) => v !== null && v !== undefined)
+    .map(([k, v]) => ` ${k}="${skSvgEscape(v)}"`).join("");
+  if (selfClose) return `<${name}${attrTxt} />`;
+  return `<${name}${attrTxt}>${content || ""}</${name}>`;
+}
+
+function skLayerDomains(resultado) {
+  resultado = resultado || {};
+  const terms = [
+    (resultado.areas || []).join(" "),
+    String(resultado.area || ""),
+    (resultado.vi || []).join(" "),
+    (resultado.vd || []).join(" "),
+    (resultado.subdominios || []).join(" ")
+  ].join(" ").toLowerCase();
+
+  let activos = SK_DOMINIOS.filter(d => d.keys.some(k => terms.includes(k)));
+  if (activos.length === 0) {
+    activos = [{
+      macro: "estructura social y distribución de oportunidades",
+      meso: "instituciones, redes y mediaciones colectivas",
+      micro: "experiencias situadas, decisiones y trayectorias"
+    }];
+  }
+  activos = activos.slice(0, 3);
+
+  const merge = (level) => {
+    const piezas = [];
+    for (const d of activos) {
+      for (let frag of d[level].split(" y ")) {
+        frag = frag.trim();
+        if (frag && !piezas.includes(frag)) piezas.push(frag);
+      }
+    }
+    return skCompactLabel(piezas.join(" / "), 76);
+  };
+
+  return [merge("macro"), merge("meso"), merge("micro")];
+}
+
+function generarSvgVisual(resultado, modo) {
+  modo = modo || "causal";
+  resultado = resultado || {};
+  const viList = resultado.vi || [];
+  const vdList = resultado.vd || [];
+  const areas = resultado.areas || (resultado.area ? [resultado.area] : []);
+  const vi1 = skCompactLabel(skFirst(viList, "Variable independiente"), 36);
+  const vi2 = viList.length > 1 ? skCompactLabel(viList[1], 32) : "Condicionante social";
+  const vd1 = skCompactLabel(skFirst(vdList, "Variable dependiente"), 36);
+  const areaText = areas.filter(Boolean).join(" · ");
+  const mecanismo1 = skCompactLabel(skMecanismoPorArea(areaText, vi1), 34);
+  const mecanismo2 = skCompactLabel(skMecanismoPorArea(areaText, vi2), 34);
+
+  const text = (x, y, value, size, weight, anchor) => skSvgTag("text", {
+    x, y, "text-anchor": anchor || "middle", "font-size": size || 13, "font-weight": weight || "500",
+    "font-family": "Arial, sans-serif", fill: "#111827"
+  }, skSvgEscape(value));
+
+  const box = (x, y, w, h, value, size) =>
+    skSvgTag("rect", { x, y, width: w, height: h, rx: 14, fill: "#ffffff", stroke: "#111827", "stroke-width": "1.2" }, "", true) +
+    text(x + w / 2, y + h / 2 + 5, value, size || 13);
+
+  const arrow = (x1, y1, x2, y2) => skSvgTag("line", { x1, y1, x2, y2, stroke: "#111827", "stroke-width": "1.6", "marker-end": "url(#arrow)" }, "", true);
+
+  const markerPath = skSvgTag("path", { d: "M0,0 L0,6 L9,3 z", fill: "#111827" }, "", true);
+  const marker = skSvgTag("marker", { id: "arrow", markerWidth: 10, markerHeight: 10, refX: 8, refY: 3, orient: "auto", markerUnits: "strokeWidth" }, markerPath);
+  const defs = skSvgTag("defs", {}, marker);
+
+  if (modo === "red") {
+    const parts = [`<svg viewBox="0 0 760 310" width="100%" height="310" xmlns="http://www.w3.org/2000/svg">`, defs];
+    parts.push(text(380, 28, "Red sociológica de variables", 16, "700"));
+    const nodes = [[180, 120, vi1], [380, 90, vi2], [580, 120, vd1]];
+    if (areas.length) nodes.push([380, 220, skCompactLabel(areas[0], 34)]);
+    for (const [a, b] of [[0, 1], [1, 2], [0, 3], [2, 3]]) {
+      if (a < nodes.length && b < nodes.length) {
+        parts.push(skSvgTag("line", { x1: nodes[a][0], y1: nodes[a][1], x2: nodes[b][0], y2: nodes[b][1], stroke: "#6b7280", "stroke-width": "1.2" }, "", true));
+      }
+    }
+    for (const [x, y, label] of nodes) {
+      parts.push(skSvgTag("circle", { cx: x, cy: y, r: 58, fill: "#ffffff", stroke: "#111827", "stroke-width": "1.2" }, "", true));
+      parts.push(text(x, y + 4, label, 12));
+    }
+    parts.push("</svg>");
+    return parts.join("");
+  }
+
+  if (modo === "capas") {
+    const [macro, meso, micro] = skLayerDomains(resultado);
+    const parts = [`<svg viewBox="0 0 760 330" width="100%" height="330" xmlns="http://www.w3.org/2000/svg">`, defs];
+    parts.push(text(380, 28, "Capas sociales del problema", 16, "700"));
+    parts.push(box(80, 55, 600, 58, "MACRO · " + macro, 12));
+    parts.push(arrow(380, 113, 380, 138));
+    parts.push(box(80, 140, 600, 58, "MESO · " + meso, 12));
+    parts.push(arrow(380, 198, 380, 223));
+    parts.push(box(80, 225, 600, 58, "MICRO · " + micro, 12));
+    parts.push(text(380, 310, `Objeto: ${vd1}`, 12, "600"));
+    parts.push("</svg>");
+    return parts.join("");
+  }
+
+  const parts = [`<svg viewBox="0 0 760 360" width="100%" height="360" xmlns="http://www.w3.org/2000/svg">`, defs];
+  parts.push(text(380, 28, "Mapa causal del problema", 16, "700"));
+  parts.push(box(60, 70, 220, 55, vi1, 13));
+  parts.push(arrow(280, 98, 330, 98));
+  parts.push(box(330, 70, 190, 55, mecanismo1, 12));
+  parts.push(arrow(520, 98, 570, 98));
+  parts.push(box(570, 70, 150, 55, vd1, 13));
+  parts.push(box(155, 210, 220, 55, vi2, 12));
+  parts.push(arrow(375, 238, 430, 238));
+  parts.push(box(430, 210, 210, 55, mecanismo2, 12));
+  parts.push(arrow(535, 210, 630, 126));
+  if (areaText) parts.push(text(380, 320, "Áreas: " + skCompactLabel(areaText, 90), 12, "500"));
+  parts.push("</svg>");
+  return parts.join("");
+}
+
+
+/* Escritor mínimo de ZIP (método store, sin dependencias) + generador de .docx OOXML. */
+
+function crc32(bytes) {
+  if (!crc32.table) {
+    const table = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      table[n] = c >>> 0;
+    }
+    crc32.table = table;
+  }
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) {
+    crc = (crc >>> 8) ^ crc32.table[(crc ^ bytes[i]) & 0xFF];
+  }
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+function dosDateTime(date) {
+  const time = ((date.getHours() & 0x1F) << 11) | ((date.getMinutes() & 0x3F) << 5) | ((date.getSeconds() >> 1) & 0x1F);
+  const d = (((Math.max(date.getFullYear(), 1980) - 1980) & 0x7F) << 9) | (((date.getMonth() + 1) & 0xF) << 5) | (date.getDate() & 0x1F);
+  return { time, date: d };
+}
+
+function concatBytes(chunks) {
+  let total = 0;
+  for (const c of chunks) total += c.length;
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { out.set(c, off); off += c.length; }
+  return out;
+}
+
+/** files: array of {name: string, data: Uint8Array} -> Uint8Array (zip bytes) */
+function buildZip(files) {
+  const encoder = new TextEncoder();
+  const { time, date } = dosDateTime(new Date());
+  const localChunks = [];
+  const centralChunks = [];
+  let offset = 0;
+
+  for (const f of files) {
+    const nameBytes = encoder.encode(f.name);
+    const data = f.data;
+    const crc = crc32(data);
+    const size = data.length;
+
+    const lh = new Uint8Array(30 + nameBytes.length);
+    const lv = new DataView(lh.buffer);
+    lv.setUint32(0, 0x04034b50, true);
+    lv.setUint16(4, 20, true);
+    lv.setUint16(6, 0, true);
+    lv.setUint16(8, 0, true); // store (sin compresión)
+    lv.setUint16(10, time, true);
+    lv.setUint16(12, date, true);
+    lv.setUint32(14, crc, true);
+    lv.setUint32(18, size, true);
+    lv.setUint32(22, size, true);
+    lv.setUint16(26, nameBytes.length, true);
+    lv.setUint16(28, 0, true);
+    lh.set(nameBytes, 30);
+    localChunks.push(lh, data);
+
+    const ch = new Uint8Array(46 + nameBytes.length);
+    const cv = new DataView(ch.buffer);
+    cv.setUint32(0, 0x02014b50, true);
+    cv.setUint16(4, 20, true);
+    cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0, true);
+    cv.setUint16(10, 0, true);
+    cv.setUint16(12, time, true);
+    cv.setUint16(14, date, true);
+    cv.setUint32(16, crc, true);
+    cv.setUint32(20, size, true);
+    cv.setUint32(24, size, true);
+    cv.setUint16(28, nameBytes.length, true);
+    cv.setUint16(30, 0, true);
+    cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true);
+    cv.setUint16(36, 0, true);
+    cv.setUint32(38, 0, true);
+    cv.setUint32(42, offset, true);
+    ch.set(nameBytes, 46);
+    centralChunks.push(ch);
+
+    offset += lh.length + data.length;
+  }
+
+  const centralStart = offset;
+  let centralSize = 0;
+  for (const c of centralChunks) centralSize += c.length;
+
+  const eocd = new Uint8Array(22);
+  const ev = new DataView(eocd.buffer);
+  ev.setUint32(0, 0x06054b50, true);
+  ev.setUint16(4, 0, true);
+  ev.setUint16(6, 0, true);
+  ev.setUint16(8, files.length, true);
+  ev.setUint16(10, files.length, true);
+  ev.setUint32(12, centralSize, true);
+  ev.setUint32(16, centralStart, true);
+  ev.setUint16(20, 0, true);
+
+  return concatBytes([...localChunks, ...centralChunks, eocd]);
+}
+
+function xmlEscape(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function runXml(text, opts) {
+  opts = opts || {};
+  const rpr = [];
+  if (opts.bold) rpr.push("<w:b/>");
+  if (opts.italic) rpr.push("<w:i/>");
+  if (opts.sz) rpr.push(`<w:sz w:val="${opts.sz}"/><w:szCs w:val="${opts.sz}"/>`);
+  if (opts.color) rpr.push(`<w:color w:val="${opts.color}"/>`);
+  const rprXml = rpr.length ? `<w:rPr>${rpr.join("")}</w:rPr>` : "";
+  return `<w:r>${rprXml}<w:t xml:space="preserve">${xmlEscape(text)}</w:t></w:r>`;
+}
+
+function paragraphXml(text, opts) {
+  opts = opts || {};
+  const ppr = [];
+  if (opts.spacingBefore || opts.spacingAfter) {
+    ppr.push(`<w:spacing w:before="${opts.spacingBefore || 0}" w:after="${opts.spacingAfter || 120}"/>`);
+  }
+  if (opts.bullet) {
+    ppr.push(`<w:ind w:left="360" w:hanging="360"/>`);
+  }
+  const pprXml = ppr.length ? `<w:pPr>${ppr.join("")}</w:pPr>` : "";
+  const prefix = opts.bullet ? "• " : "";
+  return `<w:p>${pprXml}${runXml(prefix + text, opts)}</w:p>`;
+}
+
+function headingXml(text, level) {
+  const sz = level === 1 ? 32 : 26;
+  return `<w:p><w:pPr><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="${level - 1}"/></w:pPr>${runXml(text, { bold: true, sz, color: "133A5C" })}</w:p>`;
+}
+
+function tableXml(headers, rows) {
+  const colW = Math.floor(9026 / headers.length);
+  const gridCols = headers.map(() => `<w:gridCol w:w="${colW}"/>`).join("");
+  const border = (tag) => `<w:${tag} w:val="single" w:sz="4" w:space="0" w:color="999999"/>`;
+  const borders = `<w:tblBorders>${["top", "left", "bottom", "right", "insideH", "insideV"].map(border).join("")}</w:tblBorders>`;
+  const cell = (text, bold) => `<w:tc><w:tcPr><w:tcW w:w="${colW}" w:type="dxa"/></w:tcPr><w:p>${runXml(text, { bold, sz: 18 })}</w:p></w:tc>`;
+  const headerRow = `<w:tr>${headers.map(h => cell(h, true)).join("")}</w:tr>`;
+  const bodyRows = rows.map(r => `<w:tr>${r.map(c => cell(c, false)).join("")}</w:tr>`).join("");
+  return `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${borders}</w:tblPr><w:tblGrid>${gridCols}</w:tblGrid>${headerRow}${bodyRows}</w:tbl>`;
+}
+
+function imageParagraphXml(cxEmu, cyEmu) {
+  return `<w:p><w:r><w:drawing>` +
+    `<wp:inline distT="0" distB="0" distL="0" distR="0">` +
+    `<wp:extent cx="${cxEmu}" cy="${cyEmu}"/>` +
+    `<wp:effectExtent l="0" t="0" r="0" b="0"/>` +
+    `<wp:docPr id="1" name="Logo"/>` +
+    `<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>` +
+    `<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+    `<pic:pic>` +
+    `<pic:nvPicPr><pic:cNvPr id="0" name="logo.png"/><pic:cNvPicPr/></pic:nvPicPr>` +
+    `<pic:blipFill><a:blip r:embed="rIdLogo"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+    `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cxEmu}" cy="${cyEmu}"/></a:xfrm>` +
+    `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
+    `</pic:pic>` +
+    `</a:graphicData></a:graphic>` +
+    `</wp:inline></w:drawing></w:r></w:p>`;
+}
+
+/**
+ * bodyParts: array of XML paragraph/table strings
+ * logoPngBytes: Uint8Array | null
+ */
+function buildDocx(bodyParts, logoPngBytes) {
+  const encoder = new TextEncoder();
+  const hasLogo = !!logoPngBytes;
+
+  const documentXml =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+    `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ` +
+    `xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" ` +
+    `xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ` +
+    `xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" ` +
+    `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
+    `<w:body>${bodyParts.join("")}` +
+    `<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>` +
+    `<w:pgMar w:top="1417" w:right="1417" w:bottom="1417" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/>` +
+    `</w:sectPr></w:body></w:document>`;
+
+  const contentTypes =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+    `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+    `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+    `<Default Extension="xml" ContentType="application/xml"/>` +
+    (hasLogo ? `<Default Extension="png" ContentType="image/png"/>` : "") +
+    `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+    `<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>` +
+    `</Types>`;
+
+  const rootRels =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>` +
+    `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>` +
+    `</Relationships>`;
+
+  const docRels =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+    (hasLogo ? `<Relationship Id="rIdLogo" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/>` : "") +
+    `</Relationships>`;
+
+  const nowIso = new Date().toISOString();
+  const coreXml =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+    `<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" ` +
+    `xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">` +
+    `<dc:title>Informe SOCIOKAIROS</dc:title>` +
+    `<dc:creator>SOCIOKAIROS</dc:creator>` +
+    `<dcterms:created xsi:type="dcterms:W3CDTF">${nowIso}</dcterms:created>` +
+    `<dcterms:modified xsi:type="dcterms:W3CDTF">${nowIso}</dcterms:modified>` +
+    `</cp:coreProperties>`;
+
+  const files = [
+    { name: "[Content_Types].xml", data: encoder.encode(contentTypes) },
+    { name: "_rels/.rels", data: encoder.encode(rootRels) },
+    { name: "docProps/core.xml", data: encoder.encode(coreXml) },
+    { name: "word/document.xml", data: encoder.encode(documentXml) },
+    { name: "word/_rels/document.xml.rels", data: encoder.encode(docRels) },
+  ];
+  if (hasLogo) {
+    files.push({ name: "word/media/image1.png", data: logoPngBytes });
+  }
+
+  return buildZip(files);
+}
+
+
+function base64ToBytes(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+function construirInformeWord(resultado, problema, versionLabel, textoOriginal) {
+  const now = new Date();
+  const fechaStr = now.toLocaleDateString("es-ES");
+  const horaStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+
+  const parts = [];
+  parts.push(paragraphXml(`© Víctor Hugo Pérez Gallo – Universidad de Zaragoza – victorhugo.perez@unizar.es`, { italic: true, sz: 16 }));
+  parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 16 }));
+  try {
+    if (LOGO_BASE64) parts.push(imageParagraphXml(502920, 502920));
+  } catch (e) { /* logo opcional */ }
+
+  parts.push(headingXml("Informe SOCIOKAIROS EDU – Research Suite", 1));
+
+  if (problema.trim()) {
+    parts.push(headingXml("1. Problema científico inicial", 2));
+    parts.push(paragraphXml(problema));
+  }
+
+  parts.push(headingXml("2. Área sociológica principal", 2));
+  parts.push(paragraphXml(resultado.area));
+  parts.push(paragraphXml(`Versión del problema utilizada como base: ${versionLabel}.`, { italic: true }));
+
+  parts.push(headingXml("3. Reformulación del problema en forma de preguntas", 2));
+  parts.push(paragraphXml("Pregunta 1 – Descriptiva:"));
+  parts.push(paragraphXml(resultado.p1));
+  parts.push(paragraphXml("Pregunta 2 – Relacional / explicativa:"));
+  parts.push(paragraphXml(resultado.p2));
+  parts.push(paragraphXml("Pregunta 3 – Crítica / estratégica:"));
+  parts.push(paragraphXml(resultado.p3));
+
+  parts.push(headingXml("4. Variables (VI / VD)", 2));
+  parts.push(paragraphXml("Variables independientes (VI) sugeridas:"));
+  if (resultado.vi.length) resultado.vi.forEach(v => parts.push(paragraphXml(v, { bullet: true })));
+  else parts.push(paragraphXml("Pendiente de especificar.", { bullet: true }));
+  if (resultado.viEsCandidato) parts.push(paragraphXml(NOTA_VI_CANDIDATA, { italic: true }));
+
+  parts.push(paragraphXml("Variables dependientes (VD) sugeridas:"));
+  if (resultado.vd.length) resultado.vd.forEach(v => parts.push(paragraphXml(v, { bullet: true })));
+  else parts.push(paragraphXml("Pendiente de especificar.", { bullet: true }));
+
+  parts.push(paragraphXml(NOTA_DIRECCIONALIDAD_VIVD, { italic: true }));
+
+  parts.push(headingXml("5. Correlaciones, hipótesis y marcos teóricos", 2));
+  parts.push(paragraphXml("Correlaciones a explorar:"));
+  parts.push(paragraphXml(`Nota: las hipótesis y marcos que se detallan a continuación toman como referencia la ${versionLabel} del problema.`, { italic: true }));
+  if (resultado.correlaciones.length) resultado.correlaciones.forEach(c => parts.push(paragraphXml(c, { bullet: true })));
+  else parts.push(paragraphXml("Formula al menos una relación hipotética entre VI y VD.", { bullet: true }));
+
+  parts.push(paragraphXml("Hipótesis de trabajo:"));
+  resultado.hipotesis.forEach(h => parts.push(paragraphXml(h, { bullet: true })));
+
+  parts.push(paragraphXml("Marcos teóricos sugeridos:"));
+  resultado.marcos.forEach(m => parts.push(paragraphXml(m, { bullet: true })));
+  parts.push(paragraphXml(NOTA_JUSTIFICAR_MARCOS, { italic: true }));
+
+  parts.push(headingXml("6. Unidad de análisis y diseño de estudio", 2));
+  parts.push(paragraphXml("Unidad de análisis sugerida:"));
+  parts.push(paragraphXml(resultado.unidad));
+  parts.push(paragraphXml("Diseño de estudio sugerido:"));
+  resultado.diseno.split("\n").forEach(linea => parts.push(paragraphXml(linea)));
+
+  parts.push(headingXml("7. Operacionalización sugerida", 2));
+  parts.push(paragraphXml(`Observación metodológica: la operacionalización propuesta se ha construido a partir de la ${versionLabel} del problema seleccionada en SOCIOKAIROS.`, { italic: true }));
+  const filas = resultado.operacionalizacion;
+  if (filas.length) {
+    parts.push(tableXml(["Variable", "Tipo", "Indicador", "Unidad", "Nivel de medición", "Fuente"], filas.map(f => [f.variable, f.tipo, f.indicador, f.unidad, f.nivel, f.fuente])));
+  } else {
+    parts.push(paragraphXml("Pendiente de definir variables, indicadores y fuentes de datos."));
+  }
+
+  parts.push(headingXml("8. Fuentes de datos / bases recomendadas", 2));
+  if (resultado.fuentes.length) resultado.fuentes.forEach(f => parts.push(paragraphXml(f, { bullet: true })));
+  else parts.push(paragraphXml("Pendiente de identificar bases de datos y fuentes administrativas específicas."));
+
+  const txtBase = textoOriginal || problema;
+  parts.push(headingXml("9. Alertas metodológicas", 2));
+  generarAlertasMetodologicas(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
+
+  parts.push(headingXml("10. Tradiciones sociológicas compatibles", 2));
+  generarTradiciones(resultado, txtBase).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
+
+  parts.push(headingXml("11. Mapa lógico del problema", 2));
+  parts.push(paragraphXml(generarMapaLogico(resultado)));
+
+  parts.push(headingXml("12. Diseños metodológicos sugeridos", 2));
+  generarDisenos(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
+
+  parts.push(headingXml("13. Nota para estudiantes de la Universidad de Zaragoza", 2));
+  parts.push(paragraphXml("Universidad de Zaragoza: consulta también los recursos de la Biblioteca de Ciencias Sociales y los convenios de acceso a bases de datos restringidas (estadísticas, encuestas, registros administrativos, etc.)."));
+
+  parts.push(headingXml("14. Nota APA para citar SOCIOKAIROS", 2));
+  parts.push(paragraphXml("Pérez Gallo, V. H. (2025). SOCIOKAIROS: A Heuristic Computational Assistant for the Reformulation of Scientific Problems in Sociology (Versión 15) [Software]. Zenodo. https://doi.org/10.5281/zenodo.17462816"));
+  parts.push(paragraphXml("Pérez Gallo, V. H. (2025). SOCIOKAIROS Companion Paper: Computational Heuristics for Reflexive Sociology [Documento técnico]. Zenodo. https://doi.org/10.5281/zenodo.17541706"));
+  parts.push(paragraphXml("Nota importante: SOCIOKAIROS puede emplearse como herramienta heurística para mejorar claridad conceptual, operacionalización y diseño metodológico. Las decisiones finales (variables, indicadores, hipótesis y métodos) deben justificarse en el marco teórico y la literatura científica del trabajo."));
+
+  parts.push(headingXml("15. Advertencia académica", 2));
+  parts.push(paragraphXml("SOCIOKAIROS es una herramienta heurística de apoyo a la formulación de problemas científicos. No sustituye la revisión bibliográfica sistemática, el trabajo teórico propio del investigador ni la discusión metodológica detallada. El uso responsable de sus sugerencias exige contrastarlas con la literatura, los datos disponibles y las condiciones concretas del campo de estudio."));
+
+  let logoBytes = null;
+  try { if (LOGO_BASE64) logoBytes = base64ToBytes(LOGO_BASE64); } catch (e) { logoBytes = null; }
+
+  return buildDocx(parts, logoBytes);
+}
+
+/* ================= Integración SCORM (1.2 / 2004) ================= */
+
+let scormAPI = null;
+let scormVersion = null;
+let scormCompletedYaMarcado = false;
+
+function scormFindAPI(win) {
+  let attempts = 0;
+  while (win.API == null && win.API_1484_11 == null && win.parent != null && win.parent !== win && attempts < 500) {
+    attempts++;
+    win = win.parent;
+  }
+  if (win.API_1484_11) { scormVersion = "2004"; return win.API_1484_11; }
+  if (win.API) { scormVersion = "1.2"; return win.API; }
+  return null;
+}
+
+function scormGetAPI() {
+  let api = scormFindAPI(window);
+  if (!api && window.opener) api = scormFindAPI(window.opener);
+  return api;
+}
+
+function scormInit() {
+  const statusEl = document.getElementById("scorm_status");
+  try {
+    scormAPI = scormGetAPI();
+    if (!scormAPI) {
+      if (statusEl) statusEl.textContent = "Modo independiente: no se detectó ningún LMS (sin seguimiento SCORM).";
+      return false;
+    }
+    const result = scormVersion === "2004" ? scormAPI.Initialize("") : scormAPI.LMSInitialize("");
+    if (result === "true" || result === true) {
+      const already = scormVersion === "2004"
+        ? scormAPI.GetValue("cmi.completion_status")
+        : scormAPI.LMSGetValue("cmi.core.lesson_status");
+      if (!already || already === "not attempted" || already === "unknown") {
+        scormSetStatus("incomplete");
+      }
+      if (statusEl) statusEl.textContent = `Conectado al LMS (SCORM ${scormVersion}). El progreso se registrará en Moodle.`;
+      return true;
+    }
+    scormAPI = null;
+    if (statusEl) statusEl.textContent = "No se pudo inicializar la conexión SCORM con el LMS.";
+    return false;
+  } catch (e) {
+    scormAPI = null;
+    if (statusEl) statusEl.textContent = "Modo independiente: no se detectó ningún LMS (sin seguimiento SCORM).";
+    return false;
+  }
+}
+
+function scormSetStatus(status) {
+  if (!scormAPI) return;
+  try {
+    if (scormVersion === "2004") {
+      scormAPI.SetValue("cmi.completion_status", status);
+      scormAPI.SetValue("cmi.success_status", status === "completed" ? "passed" : "unknown");
+    } else {
+      scormAPI.LMSSetValue("cmi.core.lesson_status", status);
+    }
+    scormCommit();
+  } catch (e) { /* LMS no disponible o rechazó el valor: continuar sin bloquear la interfaz */ }
+}
+
+function scormCommit() {
+  if (!scormAPI) return;
+  try {
+    if (scormVersion === "2004") scormAPI.Commit("");
+    else scormAPI.LMSCommit("");
+  } catch (e) { /* ignorar fallos de commit */ }
+}
+
+function scormMarkCompleted() {
+  if (scormCompletedYaMarcado) { scormCommit(); return; }
+  scormCompletedYaMarcado = true;
+  scormSetStatus("completed");
+}
+
+function scormFinish() {
+  if (!scormAPI) return;
+  try {
+    if (scormVersion === "2004") scormAPI.Terminate("");
+    else scormAPI.LMSFinish("");
+  } catch (e) { /* ignorar */ }
+  scormAPI = null;
+}
+
+/* ================= Tema claro/oscuro y pantalla completa ================= */
+
+function toggleSKTheme() {
+  document.body.classList.toggle("sk-dark");
+  try { localStorage.setItem("sk_theme", document.body.classList.contains("sk-dark") ? "dark" : "light"); } catch (e) { /* localStorage no disponible */ }
+}
+
+function salirPantallaCompleta() {
+  try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { /* no disponible */ }
+}
+
+function startSociokairosFullscreen() {
+  const overlay = document.getElementById("sociokairosStartOverlay");
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+  if (overlay) overlay.style.display = "none";
+}
+
+/* ================= Wiring de la interfaz ================= */
+
+let ultimoResultado = null;
+
+function actualizarInterfazConResultado(resultado) {
+  ultimoResultado = resultado;
+
+  const badge = document.getElementById("badge_area");
+  if (badge) {
+    const areasTxt = (resultado.areas && resultado.areas.length) ? resultado.areas.join(" · ") : resultado.area;
+    badge.textContent = "Áreas sociológicas sugeridas: " + areasTxt;
+  }
+
+  const outRef = document.getElementById("out_reformulacion");
+  if (outRef) {
+    outRef.textContent =
+      "Pregunta 1 – Descriptiva:\n" + resultado.p1 +
+      "\n\nPregunta 2 – Relacional / explicativa:\n" + resultado.p2 +
+      "\n\nPregunta 3 – Crítica / estratégica:\n" + resultado.p3;
+  }
+
+  const outVars = document.getElementById("out_variables");
+  if (outVars) {
+    const viTxt = resultado.vi.length ? "- " + resultado.vi.join("\n- ") : "Pendiente de especificar.";
+    const vdTxt = resultado.vd.length ? "- " + resultado.vd.join("\n- ") : "Pendiente de especificar.";
+    const notaCandidata = resultado.viEsCandidato ? "\n\n" + NOTA_VI_CANDIDATA : "";
+    outVars.textContent = "VI sugeridas (factores explicativos):\n" + viTxt + notaCandidata + "\n\nVD sugeridas (fenómenos a explicar):\n" + vdTxt + "\n\n" + NOTA_DIRECCIONALIDAD_VIVD;
+  }
+
+  const outNotas = document.getElementById("out_notas");
+  if (outNotas) {
+    const corrTxt = resultado.correlaciones.length ? resultado.correlaciones.join("\n") : "Formula al menos una relación hipotética entre VI y VD.";
+    const hipTxt = resultado.hipotesis.length ? "- " + resultado.hipotesis.join("\n- ") : "Pendiente de formular.";
+    const marTxt = resultado.marcos.length ? "- " + resultado.marcos.join("\n- ") : "Pendiente de sugerir marcos.";
+    outNotas.textContent = "Correlaciones a explorar:\n" + corrTxt + "\n\nHipótesis de trabajo:\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS;
+  }
+
+  const outDiseno = document.getElementById("out_diseno");
+  if (outDiseno) {
+    const opTxt = operacionalizacionTexto(resultado.operacionalizacion);
+    outDiseno.textContent = "Unidad de análisis sugerida:\n" + resultado.unidad + "\n\n" + resultado.diseno + "\n\nOperacionalización sugerida:\n" + opTxt;
+  }
+
+  const outFuentes = document.getElementById("out_fuentes");
+  if (outFuentes) {
+    outFuentes.textContent = resultado.fuentes.length ? "- " + resultado.fuentes.join("\n- ") : "Pendiente de identificar bases de datos y fuentes administrativas específicas.";
+  }
+
+  const outAlertas = document.getElementById("out_alertas");
+  if (outAlertas) outAlertas.textContent = generarAlertasMetodologicas(document.getElementById("txt_problema").value, resultado);
+
+  const outTrad = document.getElementById("out_tradiciones");
+  if (outTrad) outTrad.textContent = generarTradiciones(resultado, document.getElementById("txt_problema").value);
+
+  const outMapa = document.getElementById("out_mapa");
+  if (outMapa) outMapa.textContent = generarMapaLogico(resultado);
+
+  const outDisPlus = document.getElementById("out_disenos_plus");
+  if (outDisPlus) outDisPlus.textContent = generarDisenos(document.getElementById("txt_problema").value, resultado);
+
+  const outVisual = document.getElementById("out_visual_svg");
+  if (outVisual) outVisual.innerHTML = generarSvgVisual(resultado, "causal");
+}
+
+function limpiarSalidasPorErrorEdu() {
+  const ids = ["out_variables", "out_notas", "out_diseno", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+  for (const id of ids) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = "—";
+  }
+  const outVisual = document.getElementById("out_visual_svg");
+  if (outVisual) outVisual.innerHTML = "";
+  const badge = document.getElementById("badge_area");
+  if (badge) badge.textContent = "Validación pendiente: reformula el problema inicial.";
+  const selector = document.getElementById("selector_version");
+  if (selector) selector.style.display = "none";
+  ultimoResultado = null;
+}
+
+function activarSalidasValidasEdu() {
+  const selector = document.getElementById("selector_version");
+  if (selector) selector.style.display = "block";
+}
+
+function descargarBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function obtenerVersionSeleccionada(resultado, txtOriginal) {
+  let problemaTrabajo = txtOriginal;
+  let versionLabel = "P2 – relacional / explicativa (por defecto)";
+  const sel = document.querySelector('input[name="vers_sel"]:checked');
+  if (sel) {
+    const val = sel.value;
+    if (val === "1") { problemaTrabajo = resultado.p1 || txtOriginal; versionLabel = "P1 – descriptiva"; }
+    else if (val === "2") { problemaTrabajo = resultado.p2 || txtOriginal; versionLabel = "P2 – relacional / explicativa"; }
+    else if (val === "3") { problemaTrabajo = resultado.p3 || txtOriginal; versionLabel = "P3 – crítica / estratégica"; }
+  } else if (resultado.p2) {
+    problemaTrabajo = resultado.p2;
+    versionLabel = "P2 – relacional / explicativa (por defecto)";
+  }
+  const hint = document.getElementById("version_elegida_hint");
+  if (hint) {
+    hint.textContent = (problemaTrabajo === txtOriginal)
+      ? "No has seleccionado ninguna versión: se emplea el problema original tal como fue escrito."
+      : `Exportando informe usando como base: ${versionLabel}.`;
+  }
+  return { problemaTrabajo, versionLabel };
+}
+
+window.addEventListener("load", function () {
+  scormInit();
+
+  try {
+    if (localStorage.getItem("sk_theme") === "dark") document.body.classList.add("sk-dark");
+  } catch (e) { /* localStorage no disponible */ }
+
+  const btnReformular = document.getElementById("btn_reformular");
+  const btnClear = document.getElementById("btn_clear");
+  const btnExportWord = document.getElementById("btn_export_word");
+  const btnExportCsv = document.getElementById("btn_export_csv");
+  const btnVisualCausal = document.getElementById("btn_visual_causal");
+  const btnVisualRed = document.getElementById("btn_visual_red");
+  const btnVisualCapas = document.getElementById("btn_visual_capas");
+  const statusEl = document.getElementById("status");
+  const txtEl = document.getElementById("txt_problema");
+
+  if (btnReformular) {
+    btnReformular.addEventListener("click", function () {
+      const txt = txtEl ? txtEl.value : "";
+      if (!txt.trim()) {
+        if (statusEl) statusEl.textContent = "Escribe primero un problema para poder aplicar la heurística SOCIOKAIROS.";
+        return;
+      }
+      btnReformular.disabled = true;
+      if (statusEl) statusEl.textContent = "Procesando heurística SOCIOKAIROS en el navegador…";
+
+      const validacion = validarProblemaEdu(txt);
+      if (!validacion.valido) {
+        const outRef = document.getElementById("out_reformulacion");
+        if (outRef) outRef.textContent = construirFeedbackValidacionEdu(validacion);
+        limpiarSalidasPorErrorEdu();
+        if (statusEl) statusEl.textContent = "Reformula el problema inicial: aún no cumple la estructura mínima de SOCIOKAIROS EDU.";
+        btnReformular.disabled = false;
+        return;
+      }
+      activarSalidasValidasEdu();
+
+      try {
+        const resultado = analizarProblema(txt);
+        actualizarInterfazConResultado(resultado);
+        if (statusEl) statusEl.textContent = "Análisis completado. Puedes exportar a Word o CSV.";
+        scormMarkCompleted();
+      } catch (e) {
+        if (statusEl) statusEl.textContent = "Error interno del motor: " + e.message;
+      } finally {
+        btnReformular.disabled = false;
+      }
+    });
+  }
+
+  if (btnClear) {
+    btnClear.addEventListener("click", function () {
+      const ids = ["txt_problema", "badge_area", "out_reformulacion", "out_variables", "out_notas", "out_diseno", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+      ids.forEach(function (id) {
+        const e = document.getElementById(id);
+        if (!e) return;
+        if (e.tagName === "TEXTAREA" || e.tagName === "INPUT") e.value = "";
+        else e.textContent = "—";
+      });
+      const outVisual = document.getElementById("out_visual_svg");
+      if (outVisual) outVisual.innerHTML = "";
+      const selector = document.getElementById("selector_version");
+      if (selector) selector.style.display = "none";
+      ultimoResultado = null;
+      if (statusEl) statusEl.textContent = "Problema borrado. Introduce un nuevo problema científico.";
+    });
+  }
+
+  if (btnVisualCausal) btnVisualCausal.addEventListener("click", function () {
+    if (!ultimoResultado) return;
+    const outVisual = document.getElementById("out_visual_svg");
+    if (outVisual) outVisual.innerHTML = generarSvgVisual(ultimoResultado, "causal");
+  });
+  if (btnVisualRed) btnVisualRed.addEventListener("click", function () {
+    if (!ultimoResultado) return;
+    const outVisual = document.getElementById("out_visual_svg");
+    if (outVisual) outVisual.innerHTML = generarSvgVisual(ultimoResultado, "red");
+  });
+  if (btnVisualCapas) btnVisualCapas.addEventListener("click", function () {
+    if (!ultimoResultado) return;
+    const outVisual = document.getElementById("out_visual_svg");
+    if (outVisual) outVisual.innerHTML = generarSvgVisual(ultimoResultado, "capas");
+  });
+
+  if (btnExportWord) {
+    btnExportWord.addEventListener("click", function () {
+      const txt = txtEl ? txtEl.value.trim() : "";
+      if (!txt) {
+        if (statusEl) statusEl.textContent = "Escribe primero un problema para poder exportar el informe.";
+        return;
+      }
+      if (!ultimoResultado) {
+        if (statusEl) statusEl.textContent = "Reformula el problema primero (debe pasar la validación SOCIOKAIROS EDU).";
+        return;
+      }
+      if (statusEl) statusEl.textContent = "Generando informe Word…";
+      try {
+        const resultado = ultimoResultado;
+        const { problemaTrabajo, versionLabel } = obtenerVersionSeleccionada(resultado, txt);
+        const zipBytes = construirInformeWord(resultado, problemaTrabajo, versionLabel, txt);
+        const blob = new Blob([zipBytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+        const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12);
+        descargarBlob(blob, `Informe_SOCIOKAIROS_${ts}.docx`);
+        if (statusEl) statusEl.textContent = "Informe Word generado.";
+        scormMarkCompleted();
+      } catch (e) {
+        if (statusEl) statusEl.textContent = "Error al generar el informe Word: " + e.message;
+      }
+    });
+  }
+
+  if (btnExportCsv) {
+    btnExportCsv.addEventListener("click", function () {
+      const txt = txtEl ? txtEl.value.trim() : "";
+      if (!txt) {
+        if (statusEl) statusEl.textContent = "Escribe primero un problema para poder exportar la operacionalización.";
+        return;
+      }
+      if (!ultimoResultado) {
+        if (statusEl) statusEl.textContent = "Reformula el problema primero (debe pasar la validación SOCIOKAIROS EDU).";
+        return;
+      }
+      if (statusEl) statusEl.textContent = "Generando CSV de operacionalización…";
+      try {
+        const csvText = exportarCSV(ultimoResultado);
+        const blob = new Blob(["﻿" + csvText], { type: "text/csv;charset=utf-8" });
+        descargarBlob(blob, "Operacionalizacion_SOCIOKAIROS.csv");
+        if (statusEl) statusEl.textContent = "CSV de operacionalización generado.";
+        scormMarkCompleted();
+      } catch (e) {
+        if (statusEl) statusEl.textContent = "Error al generar el CSV: " + e.message;
+      }
+    });
+  }
+});
+
+window.addEventListener("beforeunload", scormFinish);
+window.addEventListener("pagehide", scormFinish);
+
+</script>
+
+</body>
+</html>

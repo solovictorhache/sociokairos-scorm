@@ -1,0 +1,125 @@
+<body>
+
+<div id="sociokairosStartOverlay" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#071421,#12385c);display:flex;align-items:center;justify-content:center;color:white;text-align:center;">
+  <div style="max-width:850px;padding:40px;">
+    <img src="logo.png" style="width:140px;border-radius:28px;box-shadow:0 12px 38px rgba(0,0,0,.35);">
+    <h1 style="font-size:42px;margin:24px 0 12px;">SOCIOKAIROS</h1>
+    <p style="font-size:22px;line-height:1.5;">Research Suite · Reformulación dinámica de problemas científicos</p>
+    <button onclick="startSociokairosFullscreen()" style="margin-top:24px;padding:16px 28px;border:none;border-radius:18px;background:#0a72c8;color:white;font-weight:800;font-size:18px;cursor:pointer;">Entrar en pantalla completa</button>
+  </div>
+</div>
+
+  <header>
+<div style="max-width:1400px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px;">
+<div style="display:flex;align-items:center;gap:18px;">
+<img src="logo.png" alt="SOCIOKAIROS">
+<div>
+<h1>SOCIOKAIROS EDU V32 — UNIZAR</h1>
+<p>Entrenamiento heurístico, formulación de problemas científicos y aprendizaje metodológico</p>
+<div class="sk-author-top">
+  Dr. Víctor Hugo Pérez Gallo · Universidad de Zaragoza ·
+  <a href="mailto:victorhugo.perez@unizar.es?subject=SOCIOKAIROS%20EDU&body=Estimado%20Dr.%20V%C3%ADctor%20Hugo%20P%C3%A9rez%20Gallo%3A%0A%0ALe%20escribo%20sobre%20SOCIOKAIROS%20EDU.%0A%0AUn%20saludo%2C">victorhugo.perez@unizar.es</a>
+</div>
+
+</div>
+</div>
+
+<div class="sk-controls-clean">
+  <button class="sk-theme-toggle-clean" onclick="toggleSKTheme()" title="Alternar modo claro/oscuro" type="button">
+    <span class="sk-sun">☀</span>
+    <span class="sk-track"><span class="sk-knob"></span></span>
+    <span class="sk-moon">☾</span>
+  </button>
+  <button class="sk-icon-btn-clean" onclick="document.documentElement.requestFullscreen()" title="Ampliar pantalla" type="button">⛶</button>
+  <button class="sk-icon-btn-clean" onclick="salirPantallaCompleta()" title="Salir de pantalla completa" type="button">↗</button>
+</div>
+</div>
+</header>
+
+  <main>
+    <div class="grid">
+      <section class="panel">
+        <h2>1. Problema científico inicial</h2>
+        <textarea id="txt_problema" placeholder="Escribe aquí el problema científico tal como lo formularía un estudiante o investigador..."></textarea>
+        <div>
+          <button id="btn_reformular">Reformular problema y sugerir VI/VD</button>
+          <button id="btn_clear" class="secondary">Borrar problema</button>
+        </div>
+        <div>
+          <button id="btn_export_word" class="secondary">Exportar informe Word</button>
+          <button id="btn_export_csv" class="secondary">Exportar operacionalización (CSV)</button>
+        </div>
+        <div id="status" class="status">Listo.</div>
+        <div id="scorm_status" class="status"></div>
+        <div class="tags">
+          <span class="badge">#preguntas_de_investigación</span>
+          <span class="badge">#VI_VD</span>
+          <span class="badge">#hipótesis</span>
+          <span class="badge">#operacionalización</span>
+          <span class="badge">#área_sociológica</span>
+          <span class="badge">#unidad_de_análisis</span>
+          <span class="badge">#fuentes_de_datos</span>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>2. Salida SOCIOKAIROS</h2>
+
+        <div id="badge_area" class="badge-area"></div>
+
+        <h3>2.1 Tres versiones del problema en forma de pregunta</h3>
+        <pre id="out_reformulacion"></pre>
+
+        <div id="selector_version" class="version-selector" style="display:none;">
+          <p class="meta" style="font-size:0.8rem;">
+            Selecciona la versión que quieres usar como problema de trabajo para la exportación (Word/CSV):
+          </p>
+          <label><input type="radio" name="vers_sel" value="1"> Versión descriptiva (P1)</label><br>
+          <label><input type="radio" name="vers_sel" value="2"> Versión relacional / explicativa (P2)</label><br>
+          <label><input type="radio" name="vers_sel" value="3"> Versión crítica / estratégica (P3)</label>
+          <p id="version_elegida_hint" class="meta" style="font-size:0.75rem; margin-top:4px;">
+            Si no seleccionas ninguna, SOCIOKAIROS usará por defecto la versión relacional (P2).
+          </p>
+        </div>
+
+        <h3>2.2 Variables sugeridas (VI / VD)</h3>
+        <pre id="out_variables"></pre>
+
+        <h3>2.3 Correlaciones, hipótesis y marcos teóricos</h3>
+        <pre id="out_notas"></pre>
+
+        <h3>2.4 Unidad de análisis, diseño de estudio y operacionalización</h3>
+        <pre id="out_diseno"></pre>
+
+        <h3>2.5 Fuentes de datos / bases recomendadas</h3>
+        <pre id="out_fuentes"></pre>
+
+        <h3>2.6 Alertas metodológicas</h3>
+        <pre id="out_alertas"></pre>
+
+        <h3>2.7 Tradiciones sociológicas compatibles</h3>
+        <pre id="out_tradiciones"></pre>
+
+        <h3>2.8 Mapa lógico del problema</h3>
+        <pre id="out_mapa"></pre>
+
+        <h3>2.9 Diseños metodológicos sugeridos</h3>
+        <pre id="out_disenos_plus"></pre>
+
+        <h3>2.10 Visualización heurística del problema</h3>
+        <div class="visual-controls" style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px 0;">
+          <button id="btn_visual_causal" class="secondary" type="button">Modo 1 · Mapa causal</button>
+          <button id="btn_visual_red" class="secondary" type="button">Modo 2 · Red sociológica</button>
+          <button id="btn_visual_capas" class="secondary" type="button">Modo 3 · Capas sociales</button>
+        </div>
+        <div id="out_visual_svg" class="visual-svg-box" style="overflow-x:auto; border:1px solid rgba(0,0,0,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.45);"></div>
+
+      </section>
+    </div>
+  </main>
+
+<script>
+/*__SCRIPT__*/
+</script>
+
+</body>
+</html>

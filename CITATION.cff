@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this plugin in your teaching or research, please cite it as follows."
+title: "SOCIOKAIROS EDU – Research Suite for Moodle (Merged Version 2026)"
+authors:
+  - family-names: "Perez Gallo"
+    given-names: "Víctor Hugo"
+    affiliation: "Universidad de Zaragoza"
+    email: "victorhugo.perez@unizar.es"
+date-released: 2026-08-17
+version: "2026.1"
+type: software
+keywords:
+  - sociology
+  - heuristic computing
+  - Moodle
+  - SCORM
+  - teaching innovation
+  - SOCIOKAIROS
+# Nota: CITATION.cff solo admite identificadores de licencia SPDX (p.ej. "MIT",
+# "CC-BY-4.0"). Esta obra se distribuye bajo términos de todos los derechos
+# reservados, sin identificador SPDX equivalente; ver LICENCIA.txt.

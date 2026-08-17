@@ -1,0 +1,35 @@
+{
+  "title": "SOCIOKAIROS EDU \u2013 Research Suite for Moodle (Merged Version 2026)",
+  "upload_type": "software",
+  "description": "SCORM/LTI plugin of the SOCIOKAIROS project for Moodle. It integrates a deterministic heuristic engine for sociological problem formulation and variable operationalization into SCORM 1.2/2004 learning objects, with pedagogical input validation, worldwide geolocation of data sources, methodological alerts, and an SVG problem visualization.",
+  "creators": [
+    {
+      "name": "Perez Gallo, Victor Hugo",
+      "affiliation": "Universidad de Zaragoza"
+    }
+  ],
+  "keywords": [
+    "Sociology",
+    "Research methods",
+    "Heuristic computing",
+    "Moodle",
+    "SCORM",
+    "Teaching innovation",
+    "SOCIOKAIROS"
+  ],
+  "access_right": "open",
+  "license": "other-closed",
+  "language": "eng",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.17462816",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementTo",
+      "identifier": "10.5281/zenodo.17541706",
+      "resource_type": "publication-article"
+    }
+  ]
+}
