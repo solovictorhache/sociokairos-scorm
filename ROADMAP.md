@@ -50,14 +50,14 @@ Para una herramienta como esta —un formulario + salida de texto + tabla, sin a
 - Auditoría metodológica: huecos VI/VD, aviso causal-vs-diseño, nivel de medición, muestreo, ética reforzada, direccionalidad VI/VD. *(ver CHANGELOG.md)*
 
 ### Prioridad alta
-1. **App nativa (Tauri)** — descrito arriba.
-2. **Selector manual de dirección VI/VD.** Hoy el motor asigna VI/VD por convención léxica fija (ver nota metodológica ya añadida). El siguiente paso lógico es dejar que el estudiante intercambie manualmente qué lista es VI y cuál VD antes de generar el informe, en vez de solo advertir del supuesto.
-3. **Transparencia de la detección ("por qué SOCIOKAIROS sugirió esto").** Como el motor es determinista y no una caja negra —algo que el propio proyecto reivindica—, tiene sentido explotarlo: mostrar qué palabras clave del problema activaron cada área/variable/marco sugerido. Refuerza la propuesta pedagógica (el estudiante entiende el razonamiento, no solo el resultado) y ayuda a detectar falsos positivos léxicos.
+1. **App nativa (Tauri)** — descrito arriba. **Scaffold construido en `native-app/`** (2026-08-18): `frontendDist` apunta directamente a `scorm_plugin/` (cero duplicación), guardado nativo con diálogo "Guardar como…" integrado en `descargarBlob()`, permisos mínimos. Pendiente de compilar y probar en un Mac real — instrucciones en `native-app/README.md`. Firma/notarización de Apple y empaquetado de Windows, aún no abordados.
+2. ~~Selector manual de dirección VI/VD.~~ **Hecho** (2026-08-18): botón «⇄ Intercambiar VI ↔ VD» que recalcula preguntas/correlaciones/hipótesis/operacionalización con la nueva dirección, no solo la etiqueta. *(ver CHANGELOG.md)*
+3. ~~Transparencia de la detección ("por qué SOCIOKAIROS sugirió esto").~~ **Hecho** (2026-08-18): cada VD/VI/área/marco muestra la palabra o frase del problema que lo activó. *(ver CHANGELOG.md)*
 
 ### Prioridad media
-4. **Selección/justificación de marcos teóricos en el propio formulario.** Convertir la nota "justifica por qué este marco es pertinente" en un campo de texto real que se incluya en el Word exportado, en vez de solo un recordatorio.
+4. ~~Selección/justificación de marcos teóricos en el propio formulario.~~ **Hecho** (2026-08-18): campo de texto real que se inserta literalmente en el Word exportado. *(ver CHANGELOG.md)*
 5. **Ampliar cobertura geográfica de fuentes de datos.** Hoy cubre España, Cuba, Argentina, Brasil, México y Colombia con detalle; el resto cae en un fallback genérico. Ampliar según la demanda real de uso (Perú, Chile, Ecuador aparecen en la detección de contexto pero no tienen bloque de fuentes propio en `sugerirFuentesDatos`).
-6. **Historial y comparación de versiones de un mismo problema** (aplica tanto a la app nativa como, con almacenamiento en `localStorage`, a la versión web/SCORM).
+6. ~~Historial y comparación de versiones de un mismo problema.~~ **Hecho** (2026-08-18) para la versión web/SCORM, con `localStorage` (máx. 8 entradas). Pendiente para la app nativa: historial en disco (JSON o `tauri-plugin-sql`) en vez de `localStorage`.
 
 ### Prioridad baja / exploratorio
 7. **Versión en inglés** de la interfaz y de las plantillas de preguntas/hipótesis, para uso fuera de contextos hispanohablantes.

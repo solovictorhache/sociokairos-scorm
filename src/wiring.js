@@ -408,7 +408,28 @@ function activarSalidasValidasEdu() {
   if (selector) selector.style.display = "block";
 }
 
-function descargarBlob(blob, filename) {
+/**
+ * Guarda un blob en disco. Dentro de la app de escritorio (Tauri, ver
+ * native-app/) usa el diálogo nativo «Guardar como…» y escribe el archivo
+ * directamente — el estudiante elige carpeta y nombre como en cualquier app
+ * de escritorio, sin pasar por la carpeta de Descargas del navegador. Fuera
+ * de Tauri (navegador normal, SCORM dentro de Moodle, o el Artifact de
+ * Claude) se mantiene sin cambios el mecanismo existente basado en
+ * `<a download>`. Devuelve `true` si el archivo se guardó, `false` si el
+ * estudiante canceló el diálogo nativo.
+ */
+async function descargarBlob(blob, filename) {
+  if (window.__TAURI__ && window.__TAURI__.dialog && window.__TAURI__.fs) {
+    try {
+      const destino = await window.__TAURI__.dialog.save({ defaultPath: filename });
+      if (!destino) return false;
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      await window.__TAURI__.fs.writeFile(destino, bytes);
+      return true;
+    } catch (e) {
+      console.error("Guardado nativo (Tauri) falló, se usa el método de navegador:", e);
+    }
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -417,6 +438,7 @@ function descargarBlob(blob, filename) {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return true;
 }
 
 function obtenerVersionSeleccionada(resultado, txtOriginal) {
@@ -565,7 +587,7 @@ window.addEventListener("load", function () {
   });
 
   if (btnExportWord) {
-    btnExportWord.addEventListener("click", function () {
+    btnExportWord.addEventListener("click", async function () {
       const txt = txtEl ? txtEl.value.trim() : "";
       if (!txt) {
         if (statusEl) statusEl.textContent = "Escribe primero un problema para poder exportar el informe.";
@@ -584,9 +606,9 @@ window.addEventListener("load", function () {
         const zipBytes = construirInformeWord(resultado, problemaTrabajo, versionLabel, txt, justificacionMarcos);
         const blob = new Blob([zipBytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
         const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12);
-        descargarBlob(blob, `Informe_SOCIOKAIROS_${ts}.docx`);
-        if (statusEl) statusEl.textContent = "Informe Word generado.";
-        scormMarkCompleted();
+        const guardado = await descargarBlob(blob, `Informe_SOCIOKAIROS_${ts}.docx`);
+        if (statusEl) statusEl.textContent = guardado ? "Informe Word generado." : "Guardado cancelado.";
+        if (guardado) scormMarkCompleted();
       } catch (e) {
         if (statusEl) statusEl.textContent = "Error al generar el informe Word: " + e.message;
       }
@@ -594,7 +616,7 @@ window.addEventListener("load", function () {
   }
 
   if (btnExportCsv) {
-    btnExportCsv.addEventListener("click", function () {
+    btnExportCsv.addEventListener("click", async function () {
       const txt = txtEl ? txtEl.value.trim() : "";
       if (!txt) {
         if (statusEl) statusEl.textContent = "Escribe primero un problema para poder exportar la operacionalización.";
@@ -608,9 +630,9 @@ window.addEventListener("load", function () {
       try {
         const csvText = exportarCSV(ultimoResultado);
         const blob = new Blob(["﻿" + csvText], { type: "text/csv;charset=utf-8" });
-        descargarBlob(blob, "Operacionalizacion_SOCIOKAIROS.csv");
-        if (statusEl) statusEl.textContent = "CSV de operacionalización generado.";
-        scormMarkCompleted();
+        const guardado = await descargarBlob(blob, "Operacionalizacion_SOCIOKAIROS.csv");
+        if (statusEl) statusEl.textContent = guardado ? "CSV de operacionalización generado." : "Guardado cancelado.";
+        if (guardado) scormMarkCompleted();
       } catch (e) {
         if (statusEl) statusEl.textContent = "Error al generar el CSV: " + e.message;
       }

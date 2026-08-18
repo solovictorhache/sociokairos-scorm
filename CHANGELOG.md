@@ -1,5 +1,41 @@
 # CHANGELOG — SOCIOKAIROS SCORM Plugin
 
+## Scaffold de la app de escritorio (Tauri) para Mac/Windows 2026-08-18
+
+Primer paso de "1. App nativa (Tauri)" del ROADMAP: nueva carpeta `native-app/`
+con el proyecto Tauri v2 completo (`Cargo.toml`, `tauri.conf.json`, `src/main.rs`,
+`capabilities/`, `package.json`). No duplica el motor ni la interfaz: `tauri.conf.json`
+apunta `frontendDist` directamente a `../../scorm_plugin`, y ejecuta
+`python3 ../src/build.py` antes de cada arranque/build, así que la app de
+escritorio siempre carga el mismo `index.html` que Moodle, sin una segunda copia
+que mantener sincronizada.
+
+Único cambio funcional (retrocompatible) en el motor: `descargarBlob()` en
+`src/wiring.js` ahora es `async` y, si detecta `window.__TAURI__` (es decir, si
+se está ejecutando dentro de la app de escritorio), usa el diálogo nativo del
+sistema operativo "Guardar como…" (`tauri-plugin-dialog`) y escribe el archivo
+directamente (`tauri-plugin-fs`) en vez del hack de `<a download>`. Fuera de
+Tauri —navegador, SCORM en Moodle, Artifact de Claude— el comportamiento es
+exactamente el mismo que antes: se verificó con Playwright contra el paquete
+SCORM construido (46/46 tests unitarios + el e2e completo de las mejoras
+siguen en verde sin cambios).
+
+Los permisos del `capabilities/default.json` son mínimos a propósito: solo el
+diálogo de guardado y la escritura del archivo que el propio estudiante elige
+por ruta — nada de acceso a disco más allá de eso.
+
+**Pendiente de compilar/probar en un Mac real**: este entorno de desarrollo es
+un contenedor Linux sin las librerías gráficas del sistema (GTK/WebKitGTK)
+que Tauri necesita para su backend de Linux — irrelevante para macOS, que usa
+WKWebView (un framework del propio sistema operativo, sin dependencias que
+instalar). Se validó lo que sí es reproducible aquí: el `Cargo.toml` resuelve
+todas las dependencias sin conflictos (`cargo check` avanza hasta compilar
+crates de terceros y solo falla en la librería gráfica específica de Linux
+`gdk-3.0`, ausente en este contenedor), y los JSON de configuración
+(`tauri.conf.json`, `capabilities/default.json`) son válidos. Instrucciones
+paso a paso para instalar Rust, generar el icono real y compilar el `.app`/`.dmg`
+en `native-app/README.md`.
+
 ## Cuatro mejoras pedagógicas: transparencia, VI/VD manual, historial y justificación teórica 2026-08-18
 
 **1) Transparencia de detección ("por qué SOCIOKAIROS sugirió esto")**. El motor es determinista, sin caja negra, pero hasta ahora entregaba VD/VI/área/marcos como un resultado dado, sin mostrar el razonamiento. Ahora cada `hasAny`/`skContieneAlguno` de `detectarVariables`, `detectarAreaSociologica` y `sugerirMarcosTeoricos` registra qué palabra o frase concreta del problema hizo cada coincidencia (`skContieneAlgunoTrack`), y `construirExplicacionDeteccion` arma un bloque de texto nuevo — sección 2.5 en pantalla, `#out_transparencia` — que dice, VD por VD, VI por VI, área por área y marco por marco, la palabra que lo activó, o si es una candidata sugerida por el dominio (no del texto). Refactor sin cambiar ningún resultado: el diseño elegido (un `hasAny` con estado local que memoriza el último match) permitió instrumentar ~60 reglas de detección sin tocar la lógica de cada una.

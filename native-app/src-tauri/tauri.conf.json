@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "SOCIOKAIROS EDU",
+  "version": "1.0.0",
+  "identifier": "es.unizar.sociokairos.edu",
+  "build": {
+    "frontendDist": "../../scorm_plugin",
+    "beforeDevCommand": "npm run build:engine",
+    "beforeBuildCommand": "npm run build:engine"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "SOCIOKAIROS EDU — Research Suite",
+        "width": 1440,
+        "height": 920,
+        "minWidth": 960,
+        "minHeight": 640,
+        "resizable": true
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/icon.png"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "sociokairos-edu-desktop",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SOCIOKAIROS EDU empaquetado como app de escritorio (Mac/Windows) con Tauri. Reutiliza tal cual el motor y la interfaz de scorm_plugin/index.html; solo sustituye la descarga vía navegador por guardado nativo (diálogo Guardar como…).",
+  "scripts": {
+    "build:engine": "python3 ../src/build.py",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "icon": "tauri icon ../scorm_plugin/logo.png"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

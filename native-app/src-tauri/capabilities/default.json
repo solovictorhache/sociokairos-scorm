@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Permisos de SOCIOKAIROS EDU: la ventana principal más el diálogo nativo «Guardar como…» y la escritura del archivo que el propio estudiante elige, para exportar el informe Word y el CSV de operacionalización sin el hack de descarga del navegador.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-save",
+    "fs:allow-write-file"
+  ]
+}
