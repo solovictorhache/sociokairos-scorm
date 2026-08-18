@@ -5,7 +5,7 @@ function base64ToBytes(b64) {
   return bytes;
 }
 
-function construirInformeWord(resultado, problema, versionLabel, textoOriginal) {
+function construirInformeWord(resultado, problema, versionLabel, textoOriginal, justificacionMarcos) {
   const now = new Date();
   const fechaStr = now.toLocaleDateString("es-ES");
   const horaStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
@@ -64,6 +64,14 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal) 
   parts.push(paragraphXml("Marcos teóricos sugeridos:"));
   resultado.marcos.forEach(m => parts.push(paragraphXml(m, { bullet: true })));
   parts.push(paragraphXml(NOTA_JUSTIFICAR_MARCOS, { italic: true }));
+
+  parts.push(paragraphXml("Justificación teórica propia del estudiante:", { bold: true }));
+  const justificacion = (justificacionMarcos || "").trim();
+  if (justificacion) {
+    justificacion.split("\n").forEach(linea => { if (linea.trim()) parts.push(paragraphXml(linea)); });
+  } else {
+    parts.push(paragraphXml("(Sin completar. Escribe en la interfaz por qué el marco elegido es pertinente para tu problema concreto — no basta con que el motor lo haya sugerido por afinidad léxica: la elección teórica es tuya.)", { italic: true }));
+  }
 
   parts.push(headingXml("7. Categorías explicativas para tu problema concreto", 2));
   const categorias = resultado.categoriasExplicativas || [];

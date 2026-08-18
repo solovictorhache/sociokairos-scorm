@@ -299,3 +299,56 @@ describe("detectarErratasSospechosas (pop-up de corrección)", () => {
     assert.deepEqual(e, []);
   });
 });
+
+describe("transparencia de detección (por qué se sugirió cada VD/VI/área/marco)", () => {
+  const texto = "cuales son las causas familiares del alto indice de delincuencia en zaragoza en el 2025?";
+
+  test("detectarVariables devuelve motivosVi/motivosVd con la palabra que activó cada variable", () => {
+    const { vd, vi, motivosVd, motivosVi } = eng.detectarVariables(texto.toLowerCase());
+    assert.equal(vd[0], "la delincuencia");
+    assert.equal(motivosVd[vd[0]], "delincuencia");
+    assert.ok(motivosVi[vi[0]], "debe existir un motivo para la VI detectada");
+  });
+
+  test("una VI candidata (no textual) se marca explícitamente como tal, no como una coincidencia inventada", () => {
+    const { vi, motivosVi, viEsCandidato } = eng.detectarVariables("¿por qué se produce la violencia de género entre hombres en zaragoza en 2025?");
+    assert.ok(viEsCandidato);
+    assert.match(motivosVi[vi[0]], /candidata sugerida/);
+  });
+
+  test("analizarProblema incluye explicacionDeteccion con bloques VD/VI/área/marcos y la nota de determinismo", () => {
+    const r = eng.analizarProblema(texto);
+    assert.match(r.explicacionDeteccion, /VARIABLE DEPENDIENTE \(VD\):/);
+    assert.match(r.explicacionDeteccion, /"la delincuencia" ← detectado a partir de "delincuencia"/);
+    assert.match(r.explicacionDeteccion, /ÁREA SOCIOLÓGICA:/);
+    assert.match(r.explicacionDeteccion, /MARCOS TEÓRICOS SUGERIDOS:/);
+    assert.match(r.explicacionDeteccion, /SOCIOKAIROS es determinista/);
+  });
+
+  test("texto vacío no rompe y devuelve explicacionDeteccion vacía", () => {
+    const r = eng.analizarProblema("");
+    assert.equal(r.explicacionDeteccion, "");
+  });
+});
+
+describe("selector manual de dirección VI/VD (intercambiarViVd)", () => {
+  const texto = "cuales son las causas familiares del alto indice de delincuencia en zaragoza en el 2025?";
+
+  test("intercambia VD y VI sin alterar área ni marcos teóricos", () => {
+    const normal = eng.analizarProblema(texto);
+    const swap = eng.analizarProblema(texto, { intercambiarViVd: true });
+    assert.deepEqual(swap.vd, normal.vi);
+    assert.deepEqual(swap.vi, normal.vd);
+    assert.equal(swap.area, normal.area);
+    assert.deepEqual(swap.marcos, normal.marcos);
+    assert.equal(normal.intercambiado, false);
+    assert.equal(swap.intercambiado, true);
+  });
+
+  test("recalcula preguntas y correlaciones con la nueva dirección, no solo la etiqueta", () => {
+    const normal = eng.analizarProblema(texto);
+    const swap = eng.analizarProblema(texto, { intercambiarViVd: true });
+    assert.notEqual(swap.p2, normal.p2);
+    assert.ok(swap.p2.includes(normal.vd[0]), "la VD original debe aparecer como factor explicativo en la versión intercambiada");
+  });
+});

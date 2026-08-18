@@ -482,5 +482,58 @@ body.sk-dark .version-selector label:hover {
   background: rgba(95,199,255,.14) !important;
 }
 
+.sk-historial-lista{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin:8px 0 4px;
+}
+.sk-historial-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  text-align:left;
+  padding:8px 12px;
+  border-radius:14px;
+  border:1px solid rgba(12,63,105,.14);
+  background:rgba(255,255,255,.72);
+  color:var(--sk-text);
+  font-size:12.5px;
+  line-height:1.4;
+  cursor:pointer;
+  width:100%;
+}
+.sk-historial-item:hover{
+  background:rgba(11,101,177,.08);
+}
+.sk-historial-item .sk-historial-texto{
+  flex:1;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.sk-historial-item .sk-historial-fecha{
+  flex-shrink:0;
+  font-size:11px;
+  color:var(--sk-muted);
+}
+.sk-historial-vacio{
+  font-size:12.5px;
+  color:var(--sk-muted);
+  font-style:italic;
+}
+body.sk-dark .sk-historial-item{
+  background:rgba(255,255,255,.08);
+  color:#f5f9ff;
+  border-color:rgba(255,255,255,.14);
+}
+body.sk-dark .sk-historial-item:hover{
+  background:rgba(95,199,255,.14);
+}
+body.sk-dark .sk-historial-item .sk-historial-fecha{
+  color:#9fb6cf;
+}
+
 </style>
 </head>

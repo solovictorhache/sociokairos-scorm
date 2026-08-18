@@ -81,6 +81,11 @@
           <span class="badge">#unidad_de_análisis</span>
           <span class="badge">#fuentes_de_datos</span>
         </div>
+
+        <h3 style="margin-top:22px;">Historial de problemas trabajados (en este dispositivo)</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS guarda tus últimos problemas analizados en este navegador para que puedas retomarlos y comparar versiones sucesivas mientras los vas puliendo. No se envía a ningún servidor: vive solo en este dispositivo.</p>
+        <div id="sk_historial_lista" class="sk-historial-lista"></div>
+        <button id="btn_historial_borrar" class="secondary" type="button" style="display:none;">Borrar historial</button>
       </section>
       <section class="panel">
         <h2>2. Salida SOCIOKAIROS</h2>
@@ -108,40 +113,49 @@
         </div>
 
         <h3>2.3 Variables sugeridas (VI / VD)</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS asigna VI/VD por convención léxica (ver la nota al final de este bloque); esa dirección causal es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí: se recalculan las preguntas, correlaciones, hipótesis y operacionalización, no solo la etiqueta.</p>
         <pre id="out_variables"></pre>
+        <button id="btn_swap_vivd" class="secondary" type="button" disabled>⇄ Intercambiar VI ↔ VD</button>
 
         <h3>2.4 Correlaciones, hipótesis y marcos teóricos</h3>
         <pre id="out_notas"></pre>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Los marcos de arriba los propone SOCIOKAIROS por afinidad léxica con tu texto; que un marco sea pertinente es una decisión teórica tuya, no del motor. Escribe aquí por qué el marco que elijas explica tu problema concreto — este texto se inserta literalmente en el informe Word exportado.</p>
+        <textarea id="txt_justificacion_marco" style="min-height:110px;" placeholder="Ej.: elijo la violencia simbólica de Bourdieu porque el problema describe una relación de dominación aceptada, no solo impuesta por la fuerza..."></textarea>
 
-        <h3>2.5 Categorías explicativas para tu problema concreto</h3>
+
+        <h3>2.5 Por qué SOCIOKAIROS sugirió esto (transparencia del análisis)</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS es determinista, no una caja negra: aquí se explica, VD por VD, VI por VI, área por área y marco por marco, qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto. Útil para detectar falsos positivos léxicos por ti mismo/a.</p>
+        <pre id="out_transparencia"></pre>
+
+        <h3>2.6 Categorías explicativas para tu problema concreto</h3>
         <p class="meta sk-tutor" style="font-size:0.78rem;">Más allá de una lista de autores: si tu problema describe una dinámica que cuesta explicar a primera vista (por ejemplo, por qué alguien permanece, calla o no cambia de opinión pese a la evidencia), aquí SOCIOKAIROS propone un concepto teórico concreto que puede explicarla, con el razonamiento aplicado a tu caso — no solo el nombre del autor.</p>
         <pre id="out_categorias_explicativas"></pre>
 
-        <h3>2.6 Unidad de análisis, diseño de estudio y enfoque metodológico</h3>
+        <h3>2.7 Unidad de análisis, diseño de estudio y enfoque metodológico</h3>
         <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS decide si tu problema pide un abordaje cualitativo, cuantitativo o mixto, y adapta a partir de ahí el diseño, el software de apoyo y el tipo de muestreo sugeridos.</p>
         <pre id="out_diseno"></pre>
 
-        <h3>2.7 Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
+        <h3>2.8 Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
         <p class="meta sk-tutor" style="font-size:0.78rem;">Un punto de partida para trabajo cualitativo, pensado para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real, o para usarse directamente en análisis manual o en la redacción de tesis.</p>
         <pre id="out_guia_codigos"></pre>
         <pre id="out_guia_preguntas"></pre>
 
-        <h3>2.8 Fuentes de datos / bases recomendadas</h3>
+        <h3>2.9 Fuentes de datos / bases recomendadas</h3>
         <pre id="out_fuentes"></pre>
 
-        <h3>2.9 Alertas metodológicas</h3>
+        <h3>2.10 Alertas metodológicas</h3>
         <pre id="out_alertas"></pre>
 
-        <h3>2.10 Tradiciones sociológicas compatibles</h3>
+        <h3>2.11 Tradiciones sociológicas compatibles</h3>
         <pre id="out_tradiciones"></pre>
 
-        <h3>2.11 Mapa lógico del problema</h3>
+        <h3>2.12 Mapa lógico del problema</h3>
         <pre id="out_mapa"></pre>
 
-        <h3>2.12 Diseños metodológicos sugeridos</h3>
+        <h3>2.13 Diseños metodológicos sugeridos</h3>
         <pre id="out_disenos_plus"></pre>
 
-        <h3>2.13 Visualización heurística del problema</h3>
+        <h3>2.14 Visualización heurística del problema</h3>
         <div class="visual-controls" style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px 0;">
           <button id="btn_visual_causal" class="secondary" type="button">Modo 1 · Mapa causal</button>
           <button id="btn_visual_red" class="secondary" type="button">Modo 2 · Red sociológica</button>

@@ -109,12 +109,25 @@ function skContieneAlguno(texto, patrones) {
   return (patrones || []).some(p => skContienePatron(texto, p));
 }
 
+// Igual que skContieneAlguno, pero además devuelve CUÁL de los patrones fue
+// el que hizo coincidir (o null si ninguno). Se usa exclusivamente para la
+// función de transparencia ("por qué SOCIOKAIROS sugirió esto"): permite
+// mostrarle al estudiante la palabra o frase concreta de su problema que
+// activó cada VI/VD/área/marco teórico, sin cambiar en nada la lógica de
+// detección en sí (mismo criterio, mismo resultado booleano).
+function skContieneAlgunoTrack(texto, patrones) {
+  for (const p of (patrones || [])) {
+    if (skContienePatron(texto, p)) return p;
+  }
+  return null;
+}
+
 /* ================= detección de erratas sospechosas (sugerencias) ================= */
 /**
  * Vocabulario de dominio de SOCIOKAIROS: extraído de las palabras clave que
  * el propio motor usa en toda la detección de variables, áreas y marcos.
  * Se usa solo para SUGERIR una corrección al estudiante (nunca para
- * corregir nada en silencio) cuando escribe una palabra parecida mais no
+ * corregir nada en silencio) cuando escribe una palabra parecida pero no
  * idéntica a un término de dominio importante.
  */
 const VOCABULARIO_DOMINIO = [
@@ -342,17 +355,36 @@ function detectarVariables(lower) {
   let vi = [];
   let vd = [];
 
-  const addVi = (x) => {
+  // Transparencia: por cada VI/VD guardamos qué palabra o frase del propio
+  // problema activó su detección (o, si es una candidata sugerida por el
+  // dominio y no aparece literalmente en el texto, un aviso honesto de eso).
+  const motivosVi = {};
+  const motivosVd = {};
+  let ultimoMotivo = null;
+
+  const addVi = (x, motivoExplicito) => {
     x = (x || "").trim();
     if (x && !vi.includes(x) && !vd.includes(x)) vi.push(x);
+    if (x && !motivosVi[x]) {
+      const m = motivoExplicito || ultimoMotivo;
+      if (m) motivosVi[x] = m;
+    }
   };
-  const addVd = (x) => {
+  const addVd = (x, motivoExplicito) => {
     x = (x || "").trim();
     if (x && !vd.includes(x)) vd.push(x);
     const idx = vi.indexOf(x);
     if (idx !== -1) vi.splice(idx, 1);
+    if (x && !motivosVd[x]) {
+      const m = motivoExplicito || ultimoMotivo || "ningún término de dominio reconocible en el texto; variable genérica por defecto";
+      motivosVd[x] = m;
+    }
   };
-  const hasAny = (words) => skContieneAlguno(l, words);
+  const hasAny = (words) => {
+    const m = skContieneAlgunoTrack(l, words);
+    ultimoMotivo = m;
+    return !!m;
+  };
 
   // 1) Objeto sociológico central / VD explícitas
   if (hasAny(["pobreza energética", "pobreza energetica", "vulnerabilidad energética", "vulnerabilidad energetica"])) {
@@ -667,19 +699,20 @@ function detectarVariables(lower) {
     else if (hasAny(["cultura", "identidad"])) addVd("la construcción identitaria");
     else addVd("el fenómeno social estudiado");
   }
+  const MOTIVO_CANDIDATA = "candidata sugerida por la literatura sobre este dominio — no aparece literalmente en tu texto; revísala y adáptala";
   let viEsCandidato = false;
   if (vi.length === 0) {
-    for (const c of candidatosViPorDominio(vd.length ? vd[0] : "")) addVi(c);
+    for (const c of candidatosViPorDominio(vd.length ? vd[0] : "")) addVi(c, MOTIVO_CANDIDATA);
     viEsCandidato = true;
   }
 
   // Limpieza final: eliminar comodines heredados si hay variables reales.
   vi = vi.filter(x => !["las desigualdades estructurales", "las condiciones sociales explicativas"].includes(x));
   vd = vd.filter(x => x !== "el problema social formulado");
-  if (vi.length === 0) { for (const c of candidatosViPorDominio(vd.length ? vd[0] : "")) addVi(c); viEsCandidato = true; }
+  if (vi.length === 0) { for (const c of candidatosViPorDominio(vd.length ? vd[0] : "")) addVi(c, MOTIVO_CANDIDATA); viEsCandidato = true; }
   if (vd.length === 0) addVd("el fenómeno social estudiado");
 
-  return { vi, vd, viEsCandidato };
+  return { vi, vd, viEsCandidato, motivosVi, motivosVd };
 }
 
 /**
@@ -777,39 +810,56 @@ function candidatosViPorDominio(vd0) {
 
 /* ================= área sociológica y subdominios ================= */
 
-function detectarAreaSociologica(lower, vi, vd) {
+function detectarAreaSociologica(lower, vi, vd, motivosOut) {
   const l0 = lower || "";
   const l = l0 + " " + vi.concat(vd).join(" ").toLowerCase();
   const areas = [];
-  const add = (a) => { if (!areas.includes(a)) areas.push(a); };
+  const motivos = motivosOut || {};
+  const add = (a) => {
+    if (!areas.includes(a)) areas.push(a);
+    if (!motivos[a] && ultimoMotivo) motivos[a] = ultimoMotivo;
+  };
+  let ultimoMotivo = null;
+  const hasAny = (words) => {
+    const m = skContieneAlgunoTrack(l, words);
+    ultimoMotivo = m;
+    return !!m;
+  };
 
-  if (skContieneAlguno(l, ["pobreza energética", "pobreza energetica", "pobreza", "exclusión social", "exclusion social", "condiciones económicas", "condiciones economicas"])) add("Sociología de la pobreza y la desigualdad");
-  if (skContieneAlguno(l, ["energética", "energetica", "vivienda", "residencial", "habitacional", "suministro energético", "suministro energetico"])) add("Sociología de la vivienda y la energía");
-  if (skContieneAlguno(l, ["jóvenes", "jovenes", "juventud", "juvenil", "adolescentes", "18 a 25"])) add("Sociología de la juventud");
-  if (skContieneAlguno(l, ["violencia de género", "violencia de genero", "género", "genero", "mujer", "mujeres", "hombres", "varones", "masculinidad", "masculinidades", "machismo", "patriarcado"])) add("Sociología de género");
-  if (skContieneAlguno(l, ["familia", "familiares", "hogar", "dinámicas familiares", "dinamicas familiares", "padres", "madres"])) add("Sociología de la familia");
-  if (skContieneAlguno(l, ["educación", "educacion", "escuela", "abandono escolar", "deserción", "desercion", "fracaso escolar", "nivel de instrucción", "nivel de instruccion", "nivel educativo", "capital cultural"])) add("Sociología de la educación");
-  if (skContieneAlguno(l, ["trabajo", "empleo", "laboral", "paro", "desempleo", "salario", "oportunidades laborales", "precariedad laboral"])) add("Sociología del trabajo");
-  if (skContieneAlguno(l, ["salud", "enfermedad", "ansiedad", "depresión", "depresion", "malestar emocional"])) add("Sociología de la salud");
-  if (skContieneAlguno(l, ["emociones", "afectos", "miedo", "ira", "soledad"])) add("Sociología de las emociones");
-  if (skContieneAlguno(l, ["cultura", "identidad", "representaciones", "valores", "etnia", "étnica", "etnica", "gitano", "gitana", "gitanos", "gitanas", "romaní", "romani", "minoría étnica", "minoria etnica", "grupo étnico", "grupo etnico", "tribu étnica", "tribu etnica", "indígena", "indigena", "afrodescendiente", "racializad", "grupo cultural"])) add("Sociología de la cultura");
-  if (skContieneAlguno(l, ["política", "politica", "voto", "partido", "hegemonía", "hegemonia", "radicalización", "radicalizacion"])) add("Sociología política");
-  if (skContieneAlguno(l, ["conocimiento", "normalidad", "sentido común", "sentido comun", "cognitivo"])) add("Sociología del conocimiento");
-  if (["barrio", "barrios", "vecindario", "segregación territorial", "segregacion territorial", "segregación urbana", "segregacion urbana", "gentrificación", "gentrificacion", "desigualdad urbana", "estigma territorial", "periferia", "periférico", "periferico", "periféricos", "perifericos"].some(x => l0.includes(x))) add("Sociología urbana");
-  if (skContieneAlguno(l, ["digital", "internet", "algoritmo", "redes sociales", "brecha digital", "tiktok"])) add("Sociología digital y algorítmica");
-  if (skContieneAlguno(l, ["migración", "migracion", "inmigración", "inmigracion", "migrante", "migrantes", "refugiados", "refugiadas", "asilo"])) add("Sociología de las migraciones");
-  if (skContieneAlguno(l, ["discapacidad", "diversidad funcional", "accesibilidad", "dependencia funcional"])) add("Sociología de la discapacidad");
-  if (skContieneAlguno(l, ["cambio climático", "cambio climatico", "medio ambiente", "sostenibilidad", "contaminación", "contaminacion", "crisis climática", "crisis climatica"])) add("Sociología ambiental");
-  if (skContieneAlguno(l, ["rural", "ruralidad", "despoblación", "despoblacion", "éxodo rural", "exodo rural"])) add("Sociología rural");
-  if (skContieneAlguno(l, ["religión", "religion", "religiosidad", "secularización", "secularizacion", "creencias religiosas"])) add("Sociología de la religión");
-  if (skContieneAlguno(l, ["lgtbi", "lgtbiq", "lgbt", "diversidad sexual", "orientación sexual", "orientacion sexual", "identidad de género", "identidad de genero", "homofobia", "transfobia", "personas trans", "bisexual", "homosexual", "queer"])) add("Sociología de la sexualidad y la diversidad sexual");
-  if (skContieneAlguno(l, ["envejecimiento", "vejez", "personas mayores", "tercera edad", "adultos mayores", "edadismo", "gerontología", "gerontologia"])) add("Sociología del envejecimiento");
-  if (skContieneAlguno(l, ["delincuencia", "criminalidad", "conducta desviada", "desviación social", "desviacion social", "reincidencia"])) add("Criminología y sociología de la desviación");
-  if (skContieneAlguno(l, ["medios de comunicación", "medios de comunicacion", "desinformación", "desinformacion", "fake news", "bulos", "opinión pública", "opinion publica", "framing", "agenda mediática", "agenda mediatica"])) add("Sociología de la comunicación y los medios");
-  if (skContieneAlguno(l, ["consumo", "consumismo", "estilo de vida", "estilos de vida", "publicidad", "marca", "marcas"])) add("Sociología del consumo");
-  if (skContieneAlguno(l, ["organización", "organizacion", "organizaciones", "burocracia", "cultura organizacional", "clima organizacional", "gestión empresarial", "gestion empresarial"])) add("Sociología de las organizaciones");
+  if (hasAny(["pobreza energética", "pobreza energetica", "pobreza", "exclusión social", "exclusion social", "condiciones económicas", "condiciones economicas"])) add("Sociología de la pobreza y la desigualdad");
+  if (hasAny(["energética", "energetica", "vivienda", "residencial", "habitacional", "suministro energético", "suministro energetico"])) add("Sociología de la vivienda y la energía");
+  if (hasAny(["jóvenes", "jovenes", "juventud", "juvenil", "adolescentes", "18 a 25"])) add("Sociología de la juventud");
+  if (hasAny(["violencia de género", "violencia de genero", "género", "genero", "mujer", "mujeres", "hombres", "varones", "masculinidad", "masculinidades", "machismo", "patriarcado"])) add("Sociología de género");
+  if (hasAny(["familia", "familiares", "hogar", "dinámicas familiares", "dinamicas familiares", "padres", "madres"])) add("Sociología de la familia");
+  if (hasAny(["educación", "educacion", "escuela", "abandono escolar", "deserción", "desercion", "fracaso escolar", "nivel de instrucción", "nivel de instruccion", "nivel educativo", "capital cultural"])) add("Sociología de la educación");
+  if (hasAny(["trabajo", "empleo", "laboral", "paro", "desempleo", "salario", "oportunidades laborales", "precariedad laboral"])) add("Sociología del trabajo");
+  if (hasAny(["salud", "enfermedad", "ansiedad", "depresión", "depresion", "malestar emocional"])) add("Sociología de la salud");
+  if (hasAny(["emociones", "afectos", "miedo", "ira", "soledad"])) add("Sociología de las emociones");
+  if (hasAny(["cultura", "identidad", "representaciones", "valores", "etnia", "étnica", "etnica", "gitano", "gitana", "gitanos", "gitanas", "romaní", "romani", "minoría étnica", "minoria etnica", "grupo étnico", "grupo etnico", "tribu étnica", "tribu etnica", "indígena", "indigena", "afrodescendiente", "racializad", "grupo cultural"])) add("Sociología de la cultura");
+  if (hasAny(["política", "politica", "voto", "partido", "hegemonía", "hegemonia", "radicalización", "radicalizacion"])) add("Sociología política");
+  if (hasAny(["conocimiento", "normalidad", "sentido común", "sentido comun", "cognitivo"])) add("Sociología del conocimiento");
+  {
+    const palabrasBarrio = ["barrio", "barrios", "vecindario", "segregación territorial", "segregacion territorial", "segregación urbana", "segregacion urbana", "gentrificación", "gentrificacion", "desigualdad urbana", "estigma territorial", "periferia", "periférico", "periferico", "periféricos", "perifericos"];
+    const encontrada = palabrasBarrio.find(x => l0.includes(x));
+    if (encontrada) { ultimoMotivo = encontrada; add("Sociología urbana"); }
+  }
+  if (hasAny(["digital", "internet", "algoritmo", "redes sociales", "brecha digital", "tiktok"])) add("Sociología digital y algorítmica");
+  if (hasAny(["migración", "migracion", "inmigración", "inmigracion", "migrante", "migrantes", "refugiados", "refugiadas", "asilo"])) add("Sociología de las migraciones");
+  if (hasAny(["discapacidad", "diversidad funcional", "accesibilidad", "dependencia funcional"])) add("Sociología de la discapacidad");
+  if (hasAny(["cambio climático", "cambio climatico", "medio ambiente", "sostenibilidad", "contaminación", "contaminacion", "crisis climática", "crisis climatica"])) add("Sociología ambiental");
+  if (hasAny(["rural", "ruralidad", "despoblación", "despoblacion", "éxodo rural", "exodo rural"])) add("Sociología rural");
+  if (hasAny(["religión", "religion", "religiosidad", "secularización", "secularizacion", "creencias religiosas"])) add("Sociología de la religión");
+  if (hasAny(["lgtbi", "lgtbiq", "lgbt", "diversidad sexual", "orientación sexual", "orientacion sexual", "identidad de género", "identidad de genero", "homofobia", "transfobia", "personas trans", "bisexual", "homosexual", "queer"])) add("Sociología de la sexualidad y la diversidad sexual");
+  if (hasAny(["envejecimiento", "vejez", "personas mayores", "tercera edad", "adultos mayores", "edadismo", "gerontología", "gerontologia"])) add("Sociología del envejecimiento");
+  if (hasAny(["delincuencia", "criminalidad", "conducta desviada", "desviación social", "desviacion social", "reincidencia"])) add("Criminología y sociología de la desviación");
+  if (hasAny(["medios de comunicación", "medios de comunicacion", "desinformación", "desinformacion", "fake news", "bulos", "opinión pública", "opinion publica", "framing", "agenda mediática", "agenda mediatica"])) add("Sociología de la comunicación y los medios");
+  if (hasAny(["consumo", "consumismo", "estilo de vida", "estilos de vida", "publicidad", "marca", "marcas"])) add("Sociología del consumo");
+  if (hasAny(["organización", "organizacion", "organizaciones", "burocracia", "cultura organizacional", "clima organizacional", "gestión empresarial", "gestion empresarial"])) add("Sociología de las organizaciones");
 
-  if (areas.length === 0) add("Sociología general / del cambio social");
+  if (areas.length === 0) {
+    ultimoMotivo = "ningún término de dominio reconocible en el texto; área general por defecto";
+    add("Sociología general / del cambio social");
+  }
   return areas.slice(0, 5);
 }
 
@@ -1222,49 +1272,59 @@ function sugerirDisenoEstudio(lower) {
 
 /* ================= marcos teóricos ================= */
 
-function sugerirMarcosTeoricos(lower, vi, vd) {
+function sugerirMarcosTeoricos(lower, vi, vd, motivosOut) {
   const marcos = [];
   const total = (lower || "") + " " + vi.concat(vd).join(" ").toLowerCase();
-  const add = (x) => { if (!marcos.includes(x)) marcos.push(x); };
+  const motivos = motivosOut || {};
+  let ultimoMotivo = null;
+  const add = (x) => {
+    if (!marcos.includes(x)) marcos.push(x);
+    if (!motivos[x] && ultimoMotivo) motivos[x] = ultimoMotivo;
+  };
+  const hasAny = (words) => {
+    const m = skContieneAlgunoTrack(total, words);
+    ultimoMotivo = m;
+    return !!m;
+  };
 
-  if (skContieneAlguno(total, ["violencia de género", "violencia de genero", "género", "genero", "masculinidad", "masculinidades", "hombres", "machismo"])) {
+  if (hasAny(["violencia de género", "violencia de genero", "género", "genero", "masculinidad", "masculinidades", "hombres", "machismo"])) {
     add("Connell: masculinidades, masculinidad hegemónica y relaciones de género");
     add("Butler: performatividad de género y normas corporales/sociales");
     add("Bourdieu: dominación masculina y violencia simbólica");
   }
-  if (skContieneAlguno(total, ["familia", "familiares", "hogar"])) {
+  if (hasAny(["familia", "familiares", "hogar"])) {
     add("Berger y Luckmann: socialización primaria, construcción social de la realidad");
     add("Bourdieu: habitus familiar, capital cultural y reproducción");
   }
-  if (skContieneAlguno(total, ["educación", "educacion", "abandono escolar", "deserción", "desercion", "fracaso escolar"])) {
+  if (hasAny(["educación", "educacion", "abandono escolar", "deserción", "desercion", "fracaso escolar"])) {
     add("Bourdieu y Passeron: reproducción educativa, capital cultural y desigualdad escolar");
     add("Bernstein: códigos lingüísticos y desigualdad educativa");
   }
-  if (skContieneAlguno(total, ["trabajo", "empleo", "laboral", "precariedad"])) {
+  if (hasAny(["trabajo", "empleo", "laboral", "precariedad"])) {
     add("Marx: trabajo, explotación y relaciones de clase");
     add("Standing: precariado y nuevas formas de inseguridad laboral");
   }
-  if (skContieneAlguno(total, ["salud", "enfermedad", "salud mental", "ansiedad", "depresión", "depresion"])) {
+  if (hasAny(["salud", "enfermedad", "salud mental", "ansiedad", "depresión", "depresion"])) {
     add("Marmot: determinantes sociales de la salud");
     add("Foucault: biopolítica, cuerpos e instituciones");
   }
-  if (skContieneAlguno(total, ["digital", "algoritmo", "internet", "redes sociales"])) {
+  if (hasAny(["digital", "algoritmo", "internet", "redes sociales"])) {
     add("Zuboff: capitalismo de la vigilancia");
     add("Couldry y Mejias: colonialismo de datos y mediaciones digitales");
   }
-  if (skContieneAlguno(total, ["barrio", "territorio", "urbano", "zaragoza"])) {
+  if (hasAny(["barrio", "territorio", "urbano", "zaragoza"])) {
     add("Lefebvre: producción social del espacio");
     add("Wacquant: marginalidad urbana y estigma territorial");
   }
-  if (skContieneAlguno(total, ["migración", "migracion", "inmigración", "inmigracion", "migrante", "refugiados", "asilo"])) {
+  if (hasAny(["migración", "migracion", "inmigración", "inmigracion", "migrante", "refugiados", "asilo"])) {
     add("Portes: capital social y asimilación segmentada");
     add("Sayad: la doble ausencia del inmigrante");
   }
-  if (skContieneAlguno(total, ["etnia", "étnica", "etnica", "gitano", "gitana", "gitanos", "gitanas", "romaní", "romani", "minoría étnica", "minoria etnica", "grupo étnico", "grupo etnico", "tribu étnica", "tribu etnica", "indígena", "indigena", "afrodescendiente", "racializad"])) {
+  if (hasAny(["etnia", "étnica", "etnica", "gitano", "gitana", "gitanos", "gitanas", "romaní", "romani", "minoría étnica", "minoria etnica", "grupo étnico", "grupo etnico", "tribu étnica", "tribu etnica", "indígena", "indigena", "afrodescendiente", "racializad"])) {
     add("San Román: antropología y sociología del pueblo gitano en España");
     add("Wieviorka: racismo, diferencialismo cultural y minorías étnicas");
   }
-  if (skContieneAlguno(total, ["lgtbi", "lgtbiq", "lgbt", "diversidad sexual", "orientación sexual", "orientacion sexual", "identidad de género", "identidad de genero", "homofobia", "transfobia", "personas trans", "bisexual", "homosexual", "queer"])) {
+  if (hasAny(["lgtbi", "lgtbiq", "lgbt", "diversidad sexual", "orientación sexual", "orientacion sexual", "identidad de género", "identidad de genero", "homofobia", "transfobia", "personas trans", "bisexual", "homosexual", "queer"])) {
     add("Foucault: historia de la sexualidad, biopoder, dispositivo de sexualidad");
     add("Rubin: sistema sexo/género, jerarquías sexuales");
     add("Rich: heterosexualidad obligatoria");
@@ -1272,7 +1332,7 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
     add("Sedgwick: epistemología del armario");
     add("Puar: homonacionalismo, ensamblajes de sexualidad y raza");
   }
-  if (skContieneAlguno(total, ["envejecimiento", "vejez", "personas mayores", "tercera edad", "adultos mayores", "edadismo", "gerontología", "gerontologia"])) {
+  if (hasAny(["envejecimiento", "vejez", "personas mayores", "tercera edad", "adultos mayores", "edadismo", "gerontología", "gerontologia"])) {
     add("Cumming y Henry: teoría de la desvinculación");
     add("Erikson: integridad del yo frente a la desesperación");
     add("Beauvoir: construcción social de la vejez");
@@ -1280,7 +1340,7 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
     add("Phillipson: economía política del envejecimiento");
     add("Carstensen: teoría de la selectividad socioemocional");
   }
-  if (skContieneAlguno(total, ["delincuencia", "criminalidad", "conducta desviada", "desviación social", "desviacion social", "reincidencia"])) {
+  if (hasAny(["delincuencia", "criminalidad", "conducta desviada", "desviación social", "desviacion social", "reincidencia"])) {
     add("Merton: anomia y tensión estructural");
     add("Sutherland: asociación diferencial");
     add("Becker: etiquetado social (labeling theory)");
@@ -1289,7 +1349,7 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
     add("Garland: cultura del control penal");
     add("Clarke: prevención situacional del delito (reducir oportunidades, no solo sancionar)");
   }
-  if (skContieneAlguno(total, ["medios de comunicación", "medios de comunicacion", "desinformación", "desinformacion", "fake news", "bulos", "opinión pública", "opinion publica", "framing", "agenda mediática", "agenda mediatica"])) {
+  if (hasAny(["medios de comunicación", "medios de comunicacion", "desinformación", "desinformacion", "fake news", "bulos", "opinión pública", "opinion publica", "framing", "agenda mediática", "agenda mediatica"])) {
     add("Lippmann: opinión pública y estereotipos");
     add("Lazarsfeld: flujo de dos pasos, líderes de opinión");
     add("McLuhan: el medio es el mensaje");
@@ -1297,7 +1357,7 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
     add("Castells: sociedad red, autocomunicación de masas");
     add("Sunstein: cámaras de eco y polarización de grupo");
   }
-  if (skContieneAlguno(total, ["consumo", "consumismo", "estilo de vida", "estilos de vida", "publicidad", "marca", "marcas"])) {
+  if (hasAny(["consumo", "consumismo", "estilo de vida", "estilos de vida", "publicidad", "marca", "marcas"])) {
     add("Veblen: consumo conspicuo (ostentoso)");
     add("Simmel: moda y diferenciación social");
     add("Bourdieu: distinción y gustos de clase");
@@ -1305,7 +1365,7 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
     add("Bauman: consumismo líquido");
     add("Featherstone: cultura de consumo posmoderna");
   }
-  if (skContieneAlguno(total, ["organización", "organizacion", "organizaciones", "burocracia", "cultura organizacional", "clima organizacional", "gestión empresarial", "gestion empresarial"])) {
+  if (hasAny(["organización", "organizacion", "organizaciones", "burocracia", "cultura organizacional", "clima organizacional", "gestión empresarial", "gestion empresarial"])) {
     add("Weber: burocracia y dominación racional-legal");
     add("Taylor: organización científica del trabajo");
     add("Mayo: relaciones humanas, efecto Hawthorne");
@@ -1313,24 +1373,25 @@ function sugerirMarcosTeoricos(lower, vi, vd) {
     add("Kanter: estructura de oportunidad y tokenismo");
     add("Alvesson: cultura organizacional desde la teoría crítica");
   }
-  if (skContieneAlguno(total, ["discapacidad", "diversidad funcional", "accesibilidad", "dependencia funcional"])) {
+  if (hasAny(["discapacidad", "diversidad funcional", "accesibilidad", "dependencia funcional"])) {
     add("Oliver: modelo social de la discapacidad");
     add("Goffman: estigma e identidad deteriorada");
   }
-  if (skContieneAlguno(total, ["cambio climático", "cambio climatico", "medio ambiente", "sostenibilidad", "crisis climática", "crisis climatica"])) {
+  if (hasAny(["cambio climático", "cambio climatico", "medio ambiente", "sostenibilidad", "crisis climática", "crisis climatica"])) {
     add("Beck: sociedad del riesgo");
     add("Norgaard: negación social del cambio climático");
   }
-  if (skContieneAlguno(total, ["rural", "ruralidad", "despoblación", "despoblacion", "éxodo rural", "exodo rural"])) {
+  if (hasAny(["rural", "ruralidad", "despoblación", "despoblacion", "éxodo rural", "exodo rural"])) {
     add("Tönnies: comunidad y sociedad");
     add("Camarero: ruralidad, género y despoblación en España");
   }
-  if (skContieneAlguno(total, ["religión", "religion", "religiosidad", "secularización", "secularizacion"])) {
+  if (hasAny(["religión", "religion", "religiosidad", "secularización", "secularizacion"])) {
     add("Durkheim: formas elementales de la vida religiosa");
     add("Berger: el dosel sagrado y la secularización");
   }
 
   if (marcos.length === 0) {
+    ultimoMotivo = "ningún término de dominio reconocible en el texto; marcos generales por defecto";
     add("Durkheim: hechos sociales y explicación sociológica");
     add("Weber: acción social, sentido y comprensión");
     add("Bourdieu: campo, habitus y capital");
@@ -1500,7 +1561,7 @@ function sugerirFuentesDatos(lower, area, contexto) {
 
 /* ================= notas metodológicas transversales ================= */
 
-const NOTA_DIRECCIONALIDAD_VIVD = "Nota metodológica: SOCIOKAIROS asume por defecto que las VI son factores explicativos (causas) y las VD el fenómeno a explicar (efectos). Es una simplificación heurística: revísala contra tu propio marco teórico, porque en otros planteamientos estas mismas variables podrían intercambiar su rol (p. ej., el «clima familiar» puede ser VD si tu pregunta es qué lo determina).";
+const NOTA_DIRECCIONALIDAD_VIVD = "Nota metodológica: SOCIOKAIROS asume por defecto que las VI son factores explicativos (causas) y las VD el fenómeno a explicar (efectos). Es una simplificación heurística: revísala contra tu propio marco teórico, porque en otros planteamientos estas mismas variables podrían intercambiar su rol (p. ej., el «clima familiar» puede ser VD si tu pregunta es qué lo determina). Si decides que la dirección real es la contraria, usa el botón «Intercambiar VI ↔ VD»: no solo cambia la etiqueta, recalcula preguntas, correlaciones, hipótesis y operacionalización con la nueva dirección.";
 
 const NOTA_JUSTIFICAR_MARCOS = "Nota: estos marcos se sugieren por coincidencia léxica con tu problema. Justifica en tu trabajo por qué cada uno es realmente pertinente para tu caso concreto, no solo que haya aparecido aquí.";
 
@@ -1508,7 +1569,49 @@ const NOTA_VI_CANDIDATA = "Nota metodológica: tu problema no nombra explícitam
 
 /* ================= análisis principal ================= */
 
-function analizarProblema(texto) {
+/**
+ * Transparencia del análisis: SOCIOKAIROS es determinista (sin caja negra),
+ * así que en vez de solo entregar VD/VI/área/marcos como un resultado dado,
+ * se explica CADA UNO con la palabra o frase concreta del problema que lo
+ * activó (o, si es una candidata sugerida por el dominio, se dice
+ * explícitamente que no viene del texto). Ayuda al estudiante a entender el
+ * razonamiento y a detectar falsos positivos léxicos por sí mismo.
+ */
+function construirExplicacionDeteccion(vi, vd, areas, marcos, motivosVi, motivosVd, motivosArea, motivosMarcos) {
+  const esGenerico = (m) => /^(candidata sugerida|ningún término)/.test(m || "");
+  const linea = (item, motivo) => {
+    if (!motivo) return `• "${item}"`;
+    if (esGenerico(motivo)) return `• "${item}" — ${motivo}.`;
+    return `• "${item}" ← detectado a partir de "${motivo}" en tu texto.`;
+  };
+
+  const bloques = [];
+  if (vd.length) {
+    bloques.push("VARIABLE DEPENDIENTE (VD):");
+    bloques.push(...vd.map(x => linea(x, (motivosVd || {})[x])));
+  }
+  if (vi.length) {
+    bloques.push("");
+    bloques.push("VARIABLES INDEPENDIENTES (VI):");
+    bloques.push(...vi.map(x => linea(x, (motivosVi || {})[x])));
+  }
+  if (areas.length) {
+    bloques.push("");
+    bloques.push("ÁREA SOCIOLÓGICA:");
+    bloques.push(...areas.map(x => linea(x, (motivosArea || {})[x])));
+  }
+  if (marcos.length) {
+    bloques.push("");
+    bloques.push("MARCOS TEÓRICOS SUGERIDOS:");
+    bloques.push(...marcos.map(x => linea(x, (motivosMarcos || {})[x])));
+  }
+  bloques.push("");
+  bloques.push("SOCIOKAIROS es determinista: cada sugerencia nace de una coincidencia textual con tu problema (o, cuando se indica así, de una candidata propuesta por el dominio, no de tu texto). Si algo no encaja, revisa la palabra que lo activó — puede ser una coincidencia léxica que no refleja lo que quisiste decir.");
+  return bloques.join("\n");
+}
+
+function analizarProblema(texto, opts) {
+  opts = opts || {};
   texto = (texto || "").trim();
   if (!texto) {
     return {
@@ -1525,21 +1628,38 @@ function analizarProblema(texto) {
       enfoque: "mixto",
       operacionalizacion: [], fuentes: [], viEsCandidato: false,
       guiaCualitativa: { codigos: [], preguntas: [] },
-      categoriasExplicativas: []
+      categoriasExplicativas: [],
+      explicacionDeteccion: "",
+      intercambiado: false
     };
   }
 
   const lower = texto.toLowerCase();
   const { contexto, poblacion } = detectarContextoYPoblacion(lower, texto);
-  const { vi, vd, viEsCandidato } = detectarVariables(lower);
-  const areas = detectarAreaSociologica(lower, vi, vd);
+  // eslint-disable-next-line prefer-const
+  let { vi, vd, viEsCandidato, motivosVi, motivosVd } = detectarVariables(lower);
+  // Selector manual de dirección VI/VD: la asignación léxica del motor es
+  // una convención, no una verdad teórica (ver NOTA_DIRECCIONALIDAD_VIVD) —
+  // si el estudiante decide que la dirección real es la contraria, se
+  // intercambian AQUÍ, antes de calcular nada que dependa de vi/vd, para que
+  // preguntas, correlaciones, hipótesis y operacionalización sean coherentes
+  // con la nueva dirección elegida (área y marcos no cambian: se construyen
+  // sobre el texto combinado de ambas listas, sin importar el orden).
+  if (opts.intercambiarViVd) {
+    [vi, vd] = [vd, vi];
+    [motivosVi, motivosVd] = [motivosVd, motivosVi];
+    viEsCandidato = false;
+  }
+  const motivosArea = {};
+  const areas = detectarAreaSociologica(lower, vi, vd, motivosArea);
   const area = areas.join(" · ");
   const subdoms = detectarSubdominios(areas, vi, vd, lower);
 
   const [p1, p2, p3] = construirPreguntas(vi, vd, contexto, poblacion, areas);
   const correlaciones = construirCorrelaciones(vi, vd, contexto);
   const hipotesis = construirHipotesis(vi, vd, contexto, poblacion);
-  const marcos = sugerirMarcosTeoricos(lower, vi, vd);
+  const motivosMarcos = {};
+  const marcos = sugerirMarcosTeoricos(lower, vi, vd, motivosMarcos);
   const operacionalizacion = construirOperacionalizacion(vi, vd);
   const disenoInfo = sugerirDisenoEstudio(lower);
   const fuentes = sugerirFuentesDatos(lower, area, contexto);
@@ -1549,10 +1669,11 @@ function analizarProblema(texto) {
     subdominios: subdoms,
     mecanismos: generarMecanismos(areas, subdoms, vi, vd, contexto),
     diseno: disenoInfo.texto, unidad: disenoInfo.unidad, enfoque: disenoInfo.enfoque,
-    operacionalizacion, fuentes, viEsCandidato
+    operacionalizacion, fuentes, viEsCandidato, intercambiado: !!opts.intercambiarViVd
   };
   resultadoParcial.guiaCualitativa = construirGuiaCualitativa(resultadoParcial);
   resultadoParcial.categoriasExplicativas = construirCategoriasExplicativas(lower, resultadoParcial);
+  resultadoParcial.explicacionDeteccion = construirExplicacionDeteccion(vi, vd, areas, marcos, motivosVi, motivosVd, motivosArea, motivosMarcos);
   return resultadoParcial;
 }
 
@@ -2088,5 +2209,6 @@ if (typeof module !== "undefined") {
     construirHipotesis, construirCorrelaciones,
     construirCategoriasExplicativas, NOTA_CATEGORIAS_EXPLICATIVAS,
     detectarErratasSospechosas, VOCABULARIO_DOMINIO,
+    construirExplicacionDeteccion, skContieneAlgunoTrack,
   };
 }

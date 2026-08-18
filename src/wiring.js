@@ -179,12 +179,120 @@ async function resolverErratasAntesDeReformular(txtEl) {
   return texto;
 }
 
+/* ================= Historial local de problemas trabajados ================= */
+/**
+ * Guarda en localStorage (solo en este dispositivo, nunca se envía a
+ * ningún servidor) los últimos problemas analizados con éxito, para que
+ * el estudiante pueda retomarlos y comparar versiones sucesivas mientras
+ * los va puliendo. Si localStorage no está disponible (p. ej. algunos
+ * iframes de LMS con almacenamiento restringido), el historial
+ * simplemente no persiste entre sesiones, sin romper el resto de la app.
+ */
+const SK_HISTORIAL_KEY = "sk_historial";
+const SK_HISTORIAL_MAX = 8;
+
+function cargarHistorial() {
+  try {
+    const raw = localStorage.getItem(SK_HISTORIAL_KEY);
+    const lista = raw ? JSON.parse(raw) : [];
+    return Array.isArray(lista) ? lista : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function guardarEnHistorial(texto, resultado) {
+  const t = (texto || "").trim();
+  if (!t) return;
+  try {
+    let lista = cargarHistorial().filter(item => item.texto !== t);
+    lista.unshift({
+      texto: t,
+      fecha: Date.now(),
+      vd: (resultado.vd && resultado.vd[0]) || "",
+      area: resultado.area || ""
+    });
+    lista = lista.slice(0, SK_HISTORIAL_MAX);
+    localStorage.setItem(SK_HISTORIAL_KEY, JSON.stringify(lista));
+  } catch (e) { /* localStorage no disponible: el historial no persiste */ }
+}
+
+function borrarHistorialGuardado() {
+  try { localStorage.removeItem(SK_HISTORIAL_KEY); } catch (e) { /* no disponible */ }
+}
+
+function formatearFechaHistorial(ts) {
+  try {
+    return new Date(ts).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  } catch (e) {
+    return "";
+  }
+}
+
+function renderizarHistorial() {
+  const cont = document.getElementById("sk_historial_lista");
+  const btnBorrar = document.getElementById("btn_historial_borrar");
+  if (!cont) return;
+  const lista = cargarHistorial();
+
+  if (!lista.length) {
+    cont.innerHTML = "";
+    const vacio = document.createElement("p");
+    vacio.className = "sk-historial-vacio";
+    vacio.textContent = "Todavía no has analizado ningún problema en este dispositivo.";
+    cont.appendChild(vacio);
+    if (btnBorrar) btnBorrar.style.display = "none";
+    return;
+  }
+
+  cont.innerHTML = "";
+  lista.forEach(item => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "sk-historial-item";
+
+    const txtSpan = document.createElement("span");
+    txtSpan.className = "sk-historial-texto";
+    txtSpan.textContent = item.texto;
+    btn.appendChild(txtSpan);
+
+    const fechaSpan = document.createElement("span");
+    fechaSpan.className = "sk-historial-fecha";
+    fechaSpan.textContent = formatearFechaHistorial(item.fecha);
+    btn.appendChild(fechaSpan);
+
+    btn.title = "VD: " + (item.vd || "—") + " · Área: " + (item.area || "—");
+    btn.addEventListener("click", function () {
+      const txtEl = document.getElementById("txt_problema");
+      const btnReformular = document.getElementById("btn_reformular");
+      if (!txtEl || !btnReformular) return;
+      txtEl.value = item.texto;
+      btnReformular.click();
+      txtEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    cont.appendChild(btn);
+  });
+
+  if (btnBorrar) btnBorrar.style.display = "";
+}
+
 /* ================= Wiring de la interfaz ================= */
 
 let ultimoResultado = null;
+let ultimoTextoAnalizado = "";
+let viVdIntercambiado = false;
 
 function actualizarInterfazConResultado(resultado) {
   ultimoResultado = resultado;
+
+  const btnSwap = document.getElementById("btn_swap_vivd");
+  if (btnSwap) {
+    btnSwap.disabled = false;
+    btnSwap.textContent = resultado.intercambiado
+      ? "⇄ Deshacer intercambio (volver a la dirección original)"
+      : "⇄ Intercambiar VI ↔ VD";
+  }
 
   const badge = document.getElementById("badge_area");
   if (badge) {
@@ -210,7 +318,8 @@ function actualizarInterfazConResultado(resultado) {
     const viTxt = resultado.vi.length ? "- " + resultado.vi.join("\n- ") : "Pendiente de especificar.";
     const vdTxt = resultado.vd.length ? "- " + resultado.vd.join("\n- ") : "Pendiente de especificar.";
     const notaCandidata = resultado.viEsCandidato ? "\n\n" + NOTA_VI_CANDIDATA : "";
-    outVars.textContent = "VI sugeridas (factores explicativos):\n" + viTxt + notaCandidata + "\n\nVD sugeridas (fenómenos a explicar):\n" + vdTxt + "\n\n" + NOTA_DIRECCIONALIDAD_VIVD;
+    const notaIntercambio = resultado.intercambiado ? "⇄ Dirección VI/VD intercambiada manualmente respecto a la convención léxica del motor.\n\n" : "";
+    outVars.textContent = notaIntercambio + "VI sugeridas (factores explicativos):\n" + viTxt + notaCandidata + "\n\nVD sugeridas (fenómenos a explicar):\n" + vdTxt + "\n\n" + NOTA_DIRECCIONALIDAD_VIVD;
   }
 
   const outNotas = document.getElementById("out_notas");
@@ -219,6 +328,11 @@ function actualizarInterfazConResultado(resultado) {
     const hipTxt = resultado.hipotesis.length ? "- " + resultado.hipotesis.join("\n- ") : "Pendiente de formular.";
     const marTxt = resultado.marcos.length ? "- " + resultado.marcos.join("\n- ") : "Pendiente de sugerir marcos.";
     outNotas.textContent = "Correlaciones a explorar:\n" + corrTxt + "\n\nHipótesis de trabajo:\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS;
+  }
+
+  const outTransparencia = document.getElementById("out_transparencia");
+  if (outTransparencia) {
+    outTransparencia.textContent = resultado.explicacionDeteccion || "—";
   }
 
   const outCategorias = document.getElementById("out_categorias_explicativas");
@@ -273,7 +387,7 @@ function actualizarInterfazConResultado(resultado) {
 }
 
 function limpiarSalidasPorErrorEdu() {
-  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) el.textContent = "—";
@@ -285,6 +399,8 @@ function limpiarSalidasPorErrorEdu() {
   const selector = document.getElementById("selector_version");
   if (selector) selector.style.display = "none";
   ultimoResultado = null;
+  const btnSwap = document.getElementById("btn_swap_vivd");
+  if (btnSwap) { btnSwap.disabled = true; btnSwap.textContent = "⇄ Intercambiar VI ↔ VD"; }
 }
 
 function activarSalidasValidasEdu() {
@@ -332,8 +448,18 @@ window.addEventListener("load", function () {
     if (localStorage.getItem("sk_theme") === "dark") document.body.classList.add("sk-dark");
   } catch (e) { /* localStorage no disponible */ }
 
+  renderizarHistorial();
+  const btnHistorialBorrar = document.getElementById("btn_historial_borrar");
+  if (btnHistorialBorrar) {
+    btnHistorialBorrar.addEventListener("click", function () {
+      borrarHistorialGuardado();
+      renderizarHistorial();
+    });
+  }
+
   const btnReformular = document.getElementById("btn_reformular");
   const btnClear = document.getElementById("btn_clear");
+  const btnSwapViVd = document.getElementById("btn_swap_vivd");
   const btnExportWord = document.getElementById("btn_export_word");
   const btnExportCsv = document.getElementById("btn_export_csv");
   const btnVisualCausal = document.getElementById("btn_visual_causal");
@@ -368,8 +494,12 @@ window.addEventListener("load", function () {
       activarSalidasValidasEdu();
 
       try {
-        const resultado = analizarProblema(txt);
+        ultimoTextoAnalizado = txt;
+        viVdIntercambiado = false;
+        const resultado = analizarProblema(txt, { intercambiarViVd: false });
         actualizarInterfazConResultado(resultado);
+        guardarEnHistorial(txt, resultado);
+        renderizarHistorial();
         if (statusEl) statusEl.textContent = "Análisis completado. Puedes exportar a Word o CSV.";
         scormMarkCompleted();
       } catch (e) {
@@ -380,9 +510,25 @@ window.addEventListener("load", function () {
     });
   }
 
+  if (btnSwapViVd) {
+    btnSwapViVd.addEventListener("click", function () {
+      if (!ultimoTextoAnalizado) return;
+      try {
+        viVdIntercambiado = !viVdIntercambiado;
+        const resultado = analizarProblema(ultimoTextoAnalizado, { intercambiarViVd: viVdIntercambiado });
+        actualizarInterfazConResultado(resultado);
+        if (statusEl) statusEl.textContent = viVdIntercambiado
+          ? "Dirección VI/VD intercambiada: preguntas, correlaciones e hipótesis recalculadas."
+          : "Dirección VI/VD restaurada a la sugerida por el motor.";
+      } catch (e) {
+        if (statusEl) statusEl.textContent = "Error interno del motor: " + e.message;
+      }
+    });
+  }
+
   if (btnClear) {
     btnClear.addEventListener("click", function () {
-      const ids = ["txt_problema", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
       ids.forEach(function (id) {
         const e = document.getElementById(id);
         if (!e) return;
@@ -394,6 +540,10 @@ window.addEventListener("load", function () {
       const selector = document.getElementById("selector_version");
       if (selector) selector.style.display = "none";
       ultimoResultado = null;
+      ultimoTextoAnalizado = "";
+      viVdIntercambiado = false;
+      const btnSwap = document.getElementById("btn_swap_vivd");
+      if (btnSwap) { btnSwap.disabled = true; btnSwap.textContent = "⇄ Intercambiar VI ↔ VD"; }
       if (statusEl) statusEl.textContent = "Problema borrado. Introduce un nuevo problema científico.";
     });
   }
@@ -429,7 +579,9 @@ window.addEventListener("load", function () {
       try {
         const resultado = ultimoResultado;
         const { problemaTrabajo, versionLabel } = obtenerVersionSeleccionada(resultado, txt);
-        const zipBytes = construirInformeWord(resultado, problemaTrabajo, versionLabel, txt);
+        const txtJustificacion = document.getElementById("txt_justificacion_marco");
+        const justificacionMarcos = txtJustificacion ? txtJustificacion.value : "";
+        const zipBytes = construirInformeWord(resultado, problemaTrabajo, versionLabel, txt, justificacionMarcos);
         const blob = new Blob([zipBytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
         const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12);
         descargarBlob(blob, `Informe_SOCIOKAIROS_${ts}.docx`);
