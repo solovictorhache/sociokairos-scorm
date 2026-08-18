@@ -42,10 +42,29 @@ struct SociokairosWebView: NSViewRepresentable {
             )
         }
 
+        // Al incrustar un WKWebView dentro de SwiftUI (NSViewRepresentable),
+        // nadie le pide el foco del teclado automáticamente: se ve todo bien
+        // pero no se puede escribir en el textarea del problema. Se fuerza
+        // aquí, una vez que la vista ya está insertada en la jerarquía de
+        // ventanas (por eso el async, no funciona todavía en este mismo
+        // punto de makeNSView).
+        DispatchQueue.main.async {
+            webView.window?.makeFirstResponder(webView)
+        }
+
         return webView
     }
 
-    func updateNSView(_ nsView: WKWebView, context: Context) {}
+    func updateNSView(_ nsView: WKWebView, context: Context) {
+        // Refuerzo: si por cualquier motivo (reaparición de la ventana,
+        // cambios de foco de SwiftUI) el primer respondedor deja de ser el
+        // WKWebView, se recupera aquí también.
+        if nsView.window?.firstResponder !== nsView {
+            DispatchQueue.main.async {
+                nsView.window?.makeFirstResponder(nsView)
+            }
+        }
+    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
