@@ -8,8 +8,10 @@ Autor: Dr. Víctor Hugo Pérez Gallo · Universidad de Zaragoza.
 
 ```
 scorm_plugin/          Paquete SCORM 1.2 listo para importar en Moodle (index.html, imsmanifest.xml, logo.png, licencia)
-native-app/             App de escritorio (Tauri, Mac/Windows) — reutiliza scorm_plugin/index.html tal cual,
-                          solo cambia la exportación Word/CSV a guardado nativo. Ver native-app/README.md
+native-app/             App de escritorio multiplataforma (Tauri, Mac/Windows, con instalador .dmg/.msi) —
+                          reutiliza scorm_plugin/index.html tal cual. Ver native-app/README.md
+mac-app/                 Alternativa solo-Mac: abrir directo en Xcode y pulsar ▶ Run, sin terminal ni Rust
+                          (SwiftUI + WKWebView). Ver mac-app/README.md
 src/                    Fuentes del motor y la interfaz, en módulos separados
   engine.js             Motor heurístico puro (sin dependencias de DOM): detección de variables,
                           validación pedagógica SOCIOKAIROS EDU, alertas metodológicas, tradiciones
