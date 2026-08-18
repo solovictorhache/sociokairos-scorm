@@ -10,6 +10,5 @@ struct SociokairosEduMacApp: App {
             SociokairosWebView()
                 .frame(minWidth: 960, minHeight: 640)
         }
-        .windowResizability(.contentSize)
     }
 }
