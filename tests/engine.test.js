@@ -394,3 +394,55 @@ describe("selector manual de dirección VI/VD (intercambiarViVd)", () => {
     assert.ok(swap.p2.includes(normal.vd[0]), "la VD original debe aparecer como factor explicativo en la versión intercambiada");
   });
 });
+
+describe("terminología adaptada al enfoque metodológico (cualitativo vs cuantitativo/mixto)", () => {
+  const textoCualitativo = "¿qué sentido y significado le dan las mujeres migrantes a su experiencia de precariedad laboral en zaragoza en 2025?";
+  const textoMixto = "cuales son las causas familiares del alto indice de delincuencia en zaragoza en el 2025?";
+
+  test("un problema cualitativo se clasifica como tal y usa etiquetas no estadísticas", () => {
+    const r = eng.analizarProblema(textoCualitativo);
+    assert.equal(r.enfoque, "cualitativo");
+    assert.ok(r.etiquetas.esCualitativo);
+    assert.equal(r.etiquetas.vi, "condición explicativa");
+    assert.equal(r.etiquetas.vd, "fenómeno central");
+    assert.equal(r.etiquetas.correlacionesTitulo, "Relaciones a explorar");
+    assert.equal(r.etiquetas.hipotesisTitulo, "Proposiciones orientadoras");
+  });
+
+  test("un problema cualitativo no contiene lenguaje VI/VD ni hipótesis estadísticas en p1/p2/p3/correlaciones/hipótesis", () => {
+    const r = eng.analizarProblema(textoCualitativo);
+    const bloque = [r.p1, r.p2, r.p3, ...r.correlaciones, ...r.hipotesis].join("\n");
+    assert.doesNotMatch(bloque, /\bVI\b/);
+    assert.doesNotMatch(bloque, /\bVD\b/);
+    assert.doesNotMatch(bloque, /variable independiente/i);
+    assert.doesNotMatch(bloque, /variable dependiente/i);
+    assert.doesNotMatch(bloque, /se asociará con cambios significativos/i);
+    assert.doesNotMatch(bloque, /^H1\./m);
+  });
+
+  test("la operacionalización cualitativa usa 'Condición'/'Fenómeno', no 'VI'/'VD', como tipo", () => {
+    const r = eng.analizarProblema(textoCualitativo);
+    const tipos = new Set(r.operacionalizacion.map(f => f.tipo));
+    for (const t of tipos) {
+      assert.doesNotMatch(t, /^VI$|^VD$/);
+    }
+  });
+
+  test("la explicación de detección usa 'FENÓMENO CENTRAL'/'CONDICIONES EXPLICATIVAS' en un problema cualitativo", () => {
+    const r = eng.analizarProblema(textoCualitativo);
+    assert.match(r.explicacionDeteccion, /FENÓMENO CENTRAL:/);
+    assert.match(r.explicacionDeteccion, /CONDICIONES EXPLICATIVAS:/);
+    assert.doesNotMatch(r.explicacionDeteccion, /VARIABLE DEPENDIENTE \(VD\):/);
+    assert.doesNotMatch(r.explicacionDeteccion, /VARIABLES INDEPENDIENTES \(VI\):/);
+  });
+
+  test("un problema mixto/cuantitativo existente mantiene exactamente el comportamiento VI/VD previo", () => {
+    const r = eng.analizarProblema(textoMixto);
+    assert.notEqual(r.enfoque, "cualitativo");
+    assert.equal(r.etiquetas.esCualitativo, false);
+    assert.match(r.explicacionDeteccion, /VARIABLE DEPENDIENTE \(VD\):/);
+    assert.match(r.explicacionDeteccion, /VARIABLES INDEPENDIENTES \(VI\):/);
+    const tipos = new Set(r.operacionalizacion.map(f => f.tipo));
+    assert.ok([...tipos].every(t => t === "VI" || t === "VD"));
+  });
+});

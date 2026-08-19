@@ -1048,6 +1048,102 @@ function construirHipotesis(vi, vd, contexto, poblacion) {
   return hips;
 }
 
+/* ================= versión cualitativa de preguntas/relaciones/proposiciones =================
+ * VI/VD, "correlaciones" e "hipótesis" (H1, "se asociará con cambios
+ * significativos") son vocabulario del paradigma cuantitativo — ligado a
+ * medir asociaciones entre variables operacionalizadas. La tradición
+ * cualitativa (teoría fundamentada, fenomenología, etnografía interpretativa)
+ * no habla de variables en ese sentido, sino de un fenómeno central,
+ * condiciones (causales, contextuales), procesos y significados — el
+ * "modelo de paradigma" de Strauss & Corbin. Estas tres funciones son el
+ * equivalente cualitativo de construirPreguntas/construirCorrelaciones/
+ * construirHipotesis: mismo vi/vd de entrada (siguen siendo lo que el motor
+ * detectó), pero sin lenguaje relacional-causal ni de hipótesis estadística.
+ * analizarProblema() elige unas u otras según resultado.enfoque; cuantitativo
+ * y mixto no cambian. */
+
+function construirPreguntasCualitativas(vi, vd, contexto, poblacion, areas) {
+  const viReales = vi.filter(x => !["las desigualdades estructurales", "las condiciones sociales explicativas"].includes(x));
+  const condStr = viReales.length ? viReales.join(", ") : "las condiciones del contexto";
+  const fenomenoStr = vd.length ? vd[0] : "el fenómeno social estudiado";
+  const sujeto = poblacion || "las personas participantes";
+  const ctx = contexto || "el contexto de estudio";
+
+  return [
+    `¿Cómo experimentan y dan sentido ${sujeto} a ${fenomenoStr} en ${ctx}?`,
+    `¿Qué significados atribuyen ${sujeto} a la relación entre ${condStr} y ${fenomenoStr} en ${ctx}?`,
+    `¿Qué procesos o mecanismos vinculan ${condStr} con ${fenomenoStr}, desde la perspectiva de ${sujeto} en ${ctx}?`
+  ];
+}
+
+function construirRelacionesCualitativas(vi, vd, contexto) {
+  const vd0 = vd.length ? vd[0] : "el fenómeno social estudiado";
+  const ctx = contexto || "el contexto de estudio";
+  const out = [];
+  const add = (x) => { if (!out.includes(x)) out.push(x); };
+
+  for (const x of vi) {
+    add(`- Explorar la relación entre ${x} y ${vd0}, desde la experiencia de las personas participantes, en ${ctx}.`);
+  }
+  if (vi.length >= 2) {
+    add(`- Indagar cómo interactúan ${vi[0]} y ${vi[1]} en la configuración de ${vd0} para las personas participantes.`);
+  }
+  if (out.length === 0) add(`- Explorar los significados y procesos sociales asociados a ${vd0} en ${ctx}.`);
+  return out.slice(0, 5);
+}
+
+function construirProposicionesCualitativas(vi, vd, contexto, poblacion) {
+  const sujeto = poblacion || "las personas participantes";
+  const vd0 = vd.length ? vd[0] : "el fenómeno social estudiado";
+  const ctx = contexto || "el contexto de estudio";
+  const props = [];
+
+  if (vi.length) {
+    props.push(`P1. Es previsible que ${sujeto} en ${ctx} construyan el sentido de ${vd0} en relación con ${vi[0]}, aunque el análisis debe permanecer abierto a categorías emergentes no anticipadas por esta proposición.`);
+  } else {
+    props.push(`P1. Es previsible que ${sujeto} en ${ctx} atribuyan a ${vd0} significados diversos, vinculados a su propia trayectoria y posición social.`);
+  }
+  props.push(`P2. Los procesos que vinculan las condiciones identificadas con ${vd0} probablemente varíen según la trayectoria biográfica, la posición social o el contexto institucional de ${sujeto}.`);
+  if (vi.length >= 2) {
+    props.push(`P3. La combinación de ${vi[0]} y ${vi[1]} podría configurar experiencias de ${vd0} que un análisis centrado en un solo factor no captaría.`);
+  }
+  return props;
+}
+
+/**
+ * Vocabulario y títulos de sección que cambian según el enfoque
+ * metodológico detectado — sobre todo para no forzar lenguaje de VI/VD y
+ * asociación estadística sobre un diseño cualitativo (ver las tres
+ * funciones de arriba). Cuantitativo y mixto usan el vocabulario de
+ * siempre; solo cualitativo diverge.
+ */
+function etiquetasEnfoque(enfoque) {
+  if (enfoque === "cualitativo") {
+    return {
+      esCualitativo: true,
+      vi: "condición explicativa", vd: "fenómeno central",
+      viTitulo: "Condiciones explicativas", vdTitulo: "Fenómeno central",
+      viListaTitulo: "Condiciones explicativas sugeridas:", vdListaTitulo: "Fenómeno central sugerido:",
+      seccionVariables: "Fenómeno central y condiciones explicativas",
+      correlacionesTitulo: "Relaciones a explorar",
+      hipotesisTitulo: "Proposiciones orientadoras",
+      p2Etiqueta: "Comprensiva / interpretativa",
+      notaVariables: "En un diseño cualitativo no se habla de variable independiente/dependiente en sentido estadístico: SOCIOKAIROS distingue igualmente un fenómeno central (lo que se busca comprender) de las condiciones que lo explican, pero ambos se entienden como categorías a explorar en profundidad, no como magnitudes a medir.",
+    };
+  }
+  return {
+    esCualitativo: false,
+    vi: "variable independiente (VI)", vd: "variable dependiente (VD)",
+    viTitulo: "Variables independientes (VI)", vdTitulo: "Variables dependientes (VD)",
+    viListaTitulo: "VI sugeridas (factores explicativos):", vdListaTitulo: "VD sugeridas (fenómenos a explicar):",
+    seccionVariables: "Variables (VI / VD)",
+    correlacionesTitulo: "Correlaciones a explorar",
+    hipotesisTitulo: "Hipótesis de trabajo",
+    p2Etiqueta: "Relacional / explicativa",
+    notaVariables: "",
+  };
+}
+
 /* ================= operacionalización (con nivel de medición) ================= */
 
 function indicadoresParaVariable(nombre, tipo) {
@@ -1168,10 +1264,17 @@ function indicadoresParaVariable(nombre, tipo) {
   return { variable: nombre, tipo, indicador: `Indicador observable de «${nombre}» definido para el contexto del estudio`, unidad: "Índice / escala / proporción", nivel: "Ordinal o de razón, según el indicador concreto elegido", fuente: "Encuestas, registros administrativos o datos secundarios" };
 }
 
-function construirOperacionalizacion(vi, vd) {
+function construirOperacionalizacion(vi, vd, esCualitativo) {
+  // El contenido de cada fila (indicador/unidad/nivel de medición) no
+  // cambia según el enfoque — sigue siendo información orientativa útil
+  // incluso en un diseño cualitativo — pero la etiqueta de tipo sí, para no
+  // llamar "VI"/"VD" a algo que en un diseño cualitativo es una condición o
+  // un fenómeno, no una variable a medir.
+  const tipoVi = esCualitativo ? "Condición" : "VI";
+  const tipoVd = esCualitativo ? "Fenómeno" : "VD";
   const filas = [];
-  for (const v of vi) filas.push(indicadoresParaVariable(v, "VI"));
-  for (const v of vd) filas.push(indicadoresParaVariable(v, "VD"));
+  for (const v of vi) filas.push(indicadoresParaVariable(v, tipoVi));
+  for (const v of vd) filas.push(indicadoresParaVariable(v, tipoVd));
   if (filas.length === 0) {
     filas.push({ variable: "Variable a definir", tipo: "N/D", indicador: "Indicador observable asociado", unidad: "Unidad de medida", nivel: "Por determinar", fuente: "Fuente de datos" });
   }
@@ -1611,12 +1714,12 @@ const NOTA_JUSTIFICAR_MARCOS = "Nota: estos marcos se sugieren por coincidencia 
 const PAUTAS_MARCO_TEORICO =
   "Pautas para redactar tu marco teórico (a partir de los marcos sugeridos arriba):\n" +
   "1. Define los conceptos clave con el vocabulario propio del marco elegido, no con lenguaje coloquial — si el marco habla de «capital social», no lo sustituyas por «apoyo».\n" +
-  "2. Explica el mecanismo, no solo el nombre: ¿qué relación concreta predice el marco entre tu VI y tu VD? No basta con citar al autor.\n" +
+  "2. Explica el mecanismo, no solo el nombre: ¿qué relación concreta predice el marco entre tus factores explicativos y el fenómeno que estudias? No basta con citar al autor.\n" +
   "3. Combina al menos una fuente clásica (el autor que formuló el marco) con una fuente reciente (una revisión o aplicación empírica de los últimos 10 años).\n" +
   "4. Señala al menos una crítica o límite conocido del marco aplicado a tu caso — un marco teórico maduro reconoce también dónde no explica bien el fenómeno.\n" +
   "5. Cierra conectando el marco con tus hipótesis: ¿qué predicción concreta se deriva de él para tu problema, y qué esperarías observar si el marco es correcto?";
 
-const NOTA_VI_CANDIDATA = "Nota metodológica: tu problema no nombra explícitamente ningún factor explicativo (VI), así que las de abajo son candidatas típicas en la literatura sobre este fenómeno — no están extraídas de tu texto. Sustitúyelas por las que realmente vayas a estudiar, o añade el factor explicativo directamente en el problema inicial para que SOCIOKAIROS lo detecte.";
+const NOTA_VI_CANDIDATA = "Nota metodológica: tu problema no nombra explícitamente ningún factor explicativo, así que las de abajo son candidatas típicas en la literatura sobre este fenómeno — no están extraídas de tu texto. Sustitúyelas por las que realmente vayas a estudiar, o añade el factor explicativo directamente en el problema inicial para que SOCIOKAIROS lo detecte.";
 
 /* ================= análisis principal ================= */
 
@@ -1628,22 +1731,25 @@ const NOTA_VI_CANDIDATA = "Nota metodológica: tu problema no nombra explícitam
  * explícitamente que no viene del texto). Ayuda al estudiante a entender el
  * razonamiento y a detectar falsos positivos léxicos por sí mismo.
  */
-function construirExplicacionDeteccion(vi, vd, areas, marcos, motivosVi, motivosVd, motivosArea, motivosMarcos) {
+function construirExplicacionDeteccion(vi, vd, areas, marcos, motivosVi, motivosVd, motivosArea, motivosMarcos, etiquetas) {
   const esGenerico = (m) => /^(candidata sugerida|ningún término)/.test(m || "");
   const linea = (item, motivo) => {
     if (!motivo) return `• "${item}"`;
     if (esGenerico(motivo)) return `• "${item}" — ${motivo}.`;
     return `• "${item}" ← detectado a partir de "${motivo}" en tu texto.`;
   };
+  const et = etiquetas || etiquetasEnfoque("");
+  const tituloVd = et.esCualitativo ? "FENÓMENO CENTRAL:" : "VARIABLE DEPENDIENTE (VD):";
+  const tituloVi = et.esCualitativo ? "CONDICIONES EXPLICATIVAS:" : "VARIABLES INDEPENDIENTES (VI):";
 
   const bloques = [];
   if (vd.length) {
-    bloques.push("VARIABLE DEPENDIENTE (VD):");
+    bloques.push(tituloVd);
     bloques.push(...vd.map(x => linea(x, (motivosVd || {})[x])));
   }
   if (vi.length) {
     bloques.push("");
-    bloques.push("VARIABLES INDEPENDIENTES (VI):");
+    bloques.push(tituloVi);
     bloques.push(...vi.map(x => linea(x, (motivosVi || {})[x])));
   }
   if (areas.length) {
@@ -1681,7 +1787,8 @@ function analizarProblema(texto, opts) {
       guiaCualitativa: { codigos: [], preguntas: [] },
       categoriasExplicativas: [],
       explicacionDeteccion: "",
-      intercambiado: false
+      intercambiado: false,
+      etiquetas: etiquetasEnfoque("mixto")
     };
   }
 
@@ -1706,13 +1813,27 @@ function analizarProblema(texto, opts) {
   const area = areas.join(" · ");
   const subdoms = detectarSubdominios(areas, vi, vd, lower);
 
-  const [p1, p2, p3] = construirPreguntas(vi, vd, contexto, poblacion, areas);
-  const correlaciones = construirCorrelaciones(vi, vd, contexto);
-  const hipotesis = construirHipotesis(vi, vd, contexto, poblacion);
+  // El enfoque (sugerido por SOCIOKAIROS a partir del propio vocabulario del
+  // texto, nunca elegido de antemano por el estudiante) se calcula ANTES de
+  // construir preguntas/correlaciones/hipótesis porque, si es cualitativo,
+  // esas tres cosas usan un vocabulario distinto (sin VI/VD ni lenguaje de
+  // asociación estadística) — ver construirPreguntasCualitativas y compañía.
+  const disenoInfo = sugerirDisenoEstudio(lower);
+  const esCualitativo = disenoInfo.enfoque === "cualitativo";
+  const etiquetas = etiquetasEnfoque(disenoInfo.enfoque);
+
+  const [p1, p2, p3] = esCualitativo
+    ? construirPreguntasCualitativas(vi, vd, contexto, poblacion, areas)
+    : construirPreguntas(vi, vd, contexto, poblacion, areas);
+  const correlaciones = esCualitativo
+    ? construirRelacionesCualitativas(vi, vd, contexto)
+    : construirCorrelaciones(vi, vd, contexto);
+  const hipotesis = esCualitativo
+    ? construirProposicionesCualitativas(vi, vd, contexto, poblacion)
+    : construirHipotesis(vi, vd, contexto, poblacion);
   const motivosMarcos = {};
   const marcos = sugerirMarcosTeoricos(lower, vi, vd, motivosMarcos);
-  const operacionalizacion = construirOperacionalizacion(vi, vd);
-  const disenoInfo = sugerirDisenoEstudio(lower);
+  const operacionalizacion = construirOperacionalizacion(vi, vd, esCualitativo);
   const fuentes = sugerirFuentesDatos(lower, area, contexto);
 
   const resultadoParcial = {
@@ -1720,11 +1841,12 @@ function analizarProblema(texto, opts) {
     subdominios: subdoms,
     mecanismos: generarMecanismos(areas, subdoms, vi, vd, contexto),
     diseno: disenoInfo.texto, unidad: disenoInfo.unidad, enfoque: disenoInfo.enfoque,
-    operacionalizacion, fuentes, viEsCandidato, intercambiado: !!opts.intercambiarViVd
+    operacionalizacion, fuentes, viEsCandidato, intercambiado: !!opts.intercambiarViVd,
+    etiquetas
   };
   resultadoParcial.guiaCualitativa = construirGuiaCualitativa(resultadoParcial);
   resultadoParcial.categoriasExplicativas = construirCategoriasExplicativas(lower, resultadoParcial);
-  resultadoParcial.explicacionDeteccion = construirExplicacionDeteccion(vi, vd, areas, marcos, motivosVi, motivosVd, motivosArea, motivosMarcos);
+  resultadoParcial.explicacionDeteccion = construirExplicacionDeteccion(vi, vd, areas, marcos, motivosVi, motivosVd, motivosArea, motivosMarcos, etiquetas);
   return resultadoParcial;
 }
 
@@ -1976,6 +2098,7 @@ function generarAlertasMetodologicas(txt, resultado) {
   const vi = resultado.vi || [];
   const vd = resultado.vd || [];
   const areas = (resultado.areas || [resultado.area || ""]).join(" ").toLowerCase();
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
   const alertas = [];
 
   if (!/\b(19|20)\d{2}\b/.test(txt || "")) {
@@ -1983,7 +2106,9 @@ function generarAlertasMetodologicas(txt, resultado) {
   }
 
   if (vd.length === 0) {
-    alertas.push("• Precisar la VD: indicar con claridad qué fenómeno se quiere explicar o medir.");
+    alertas.push(et.esCualitativo
+      ? "• Precisar el fenómeno central: indicar con claridad qué se quiere comprender o explorar en profundidad."
+      : "• Precisar la VD: indicar con claridad qué fenómeno se quiere explicar o medir.");
   } else {
     const vdTxt = skJoin(vd);
     if (skHas(vdTxt, ["precar", "trabajo", "empleo", "laboral"])) alertas.push("• Operacionalizar la precariedad laboral: distinguir temporalidad, parcialidad involuntaria, salario bajo, informalidad e inestabilidad contractual.");
@@ -1993,7 +2118,9 @@ function generarAlertasMetodologicas(txt, resultado) {
   }
 
   if (vi.length === 0) {
-    alertas.push("• Precisar las VI: el problema aún no muestra factores explicativos suficientemente observables.");
+    alertas.push(et.esCualitativo
+      ? "• Precisar las condiciones explicativas: el problema aún no muestra condiciones o factores suficientemente observables."
+      : "• Precisar las VI: el problema aún no muestra factores explicativos suficientemente observables.");
   } else {
     for (const v of vi.slice(0, 4)) {
       const vl = v.toLowerCase();
@@ -2015,7 +2142,9 @@ function generarAlertasMetodologicas(txt, resultado) {
   }
 
   if (alertas.length === 0) {
-    return "• El problema presenta una estructura heurística adecuada. Mantener la coherencia entre VI, VD, población, territorio e indicadores.";
+    return et.esCualitativo
+      ? "• El problema presenta una estructura heurística adecuada. Mantener la coherencia entre condiciones explicativas, fenómeno central, población, territorio e indicadores."
+      : "• El problema presenta una estructura heurística adecuada. Mantener la coherencia entre VI, VD, población, territorio e indicadores.";
   }
   return uniq(alertas).join("\n");
 }
@@ -2069,7 +2198,10 @@ function generarMapaLogico(resultado) {
     return viTxt + "\n        ↓\n" + mecanismos.slice(0, 4).join(" + ") + "\n        ↓\n" + vdTxt;
   }
   if (vi.length && vd.length) return viTxt + "\n        ↓\n" + vdTxt;
-  return "Problema científico\n        ↓\nDefinición de VI/VD\n        ↓\nMecanismo sociológico\n        ↓\nFenómeno observable";
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
+  return et.esCualitativo
+    ? "Problema científico\n        ↓\nDefinición de condiciones explicativas / fenómeno central\n        ↓\nMecanismo sociológico\n        ↓\nFenómeno observable"
+    : "Problema científico\n        ↓\nDefinición de VI/VD\n        ↓\nMecanismo sociológico\n        ↓\nFenómeno observable";
 }
 
 function generarDisenos(txt, resultado) {
@@ -2078,10 +2210,15 @@ function generarDisenos(txt, resultado) {
   const vi = resultado.vi || [];
   const vd = resultado.vd || [];
   const areas = (resultado.areas || [resultado.area || ""]).join(" ").toLowerCase();
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
   const total = t + " " + vi.concat(vd).join(" ").toLowerCase() + " " + areas;
   const salidas = [];
 
-  if (skHas(total, ["relación", "relacion", "influye", "asocia", "correl", "probabilidad"])) salidas.push("• Encuesta transversal analítica → adecuada para estimar asociaciones entre VI y VD en la población definida.");
+  if (skHas(total, ["relación", "relacion", "influye", "asocia", "correl", "probabilidad"])) {
+    salidas.push(et.esCualitativo
+      ? "• Estudio de casos comparado → adecuado para explorar en profundidad cómo se relacionan las condiciones explicativas con el fenómeno central en la población definida."
+      : "• Encuesta transversal analítica → adecuada para estimar asociaciones entre VI y VD en la población definida.");
+  }
   if (skHas(total, ["trabajo", "empleo", "laboral", "precar"])) salidas.push("• Análisis secundario de datos laborales → EPA/INE, registros administrativos o fuentes municipales para contrastar empleo, temporalidad y ocupación.");
   if (skHas(total, ["educ", "instrucción", "instruccion", "formación"])) salidas.push("• Cruce educación–resultado social → matriz entre nivel formativo alcanzado y el fenómeno dependiente observado.");
   if (skHas(total, ["género", "genero", "hombres", "mujeres", "masculinidad"])) salidas.push("• Entrevistas semiestructuradas por perfiles → permiten reconstruir trayectorias, mandatos de género y significados atribuidos al fenómeno.");
@@ -2108,16 +2245,21 @@ function generarPreguntasSocraticas(txt, resultado) {
   const t = (txt || "").toLowerCase();
   const vi = resultado.vi || [];
   const vd = resultado.vd || [];
-  const viTxt = skJoin(vi, "tu variable independiente");
-  const vdTxt = skJoin(vd, "tu variable dependiente");
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
+  const viTxt = skJoin(vi, et.esCualitativo ? "tu condición explicativa" : "tu variable independiente");
+  const vdTxt = skJoin(vd, et.esCualitativo ? "tu fenómeno central" : "tu variable dependiente");
   const diseno = (resultado.diseno || "").toLowerCase();
   const preguntas = [];
 
   preguntas.push("• ¿Por qué esta población, este territorio y este periodo, y no otro comparable? ¿Qué cambiaría en tus conclusiones si compararas con otro grupo, ciudad o momento?");
-  preguntas.push(`• Más allá de ${viTxt}, ¿qué explicación rival podría producir el mismo efecto sobre ${vdTxt}? ¿Cómo la vas a descartar o controlar, y no solo mencionar?`);
+  preguntas.push(et.esCualitativo
+    ? `• Más allá de ${viTxt}, ¿qué otra condición o significado alternativo podría dar cuenta de ${vdTxt}? ¿Cómo lo vas a explorar en el análisis, y no solo mencionar?`
+    : `• Más allá de ${viTxt}, ¿qué explicación rival podría producir el mismo efecto sobre ${vdTxt}? ¿Cómo la vas a descartar o controlar, y no solo mencionar?`);
 
   if (diseno.includes("transversal") || skHas(t, ["transversal"])) {
     preguntas.push(`• Tu diseño es transversal — una sola medición en el tiempo. Si el tribunal pregunta cómo sabes que ${viTxt} precede a ${vdTxt} y no al revés, ¿qué vas a responder?`);
+  } else if (et.esCualitativo) {
+    preguntas.push(`• Si observas una relación entre ${viTxt} y ${vdTxt}, ¿qué evidencia adicional (más casos, más voces, triangulación de fuentes) necesitarías para defender que es un patrón consistente y no una interpretación apresurada de unos pocos casos?`);
   } else {
     preguntas.push(`• Si encuentras una asociación entre ${viTxt} y ${vdTxt}, ¿qué evidencia adicional necesitarías para defender que es una relación causal y no una coincidencia estadística?`);
   }
@@ -2133,6 +2275,7 @@ function generarPuntosDebilesADefender(txt, resultado) {
   resultado = resultado || {};
   const vi = resultado.vi || [];
   const vd = resultado.vd || [];
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
   const diseno = (resultado.diseno || "").toLowerCase();
   const debiles = [];
 
@@ -2145,7 +2288,9 @@ function generarPuntosDebilesADefender(txt, resultado) {
   }
 
   if (vi.length > 1) {
-    debiles.push(`• Con más de una VI (${skJoin(vi)}), hay riesgo de confusión entre ellas: si no las mides ni controlas por separado, no podrás atribuir el efecto sobre ${skJoin(vd, "la VD")} a una en concreto.`);
+    debiles.push(et.esCualitativo
+      ? `• Con más de una condición explicativa (${skJoin(vi)}), hay riesgo de confundir su peso relativo: si no las distingues con cuidado en el análisis, no podrás precisar cómo se relaciona cada una con ${skJoin(vd, "el fenómeno central")}.`
+      : `• Con más de una VI (${skJoin(vi)}), hay riesgo de confusión entre ellas: si no las mides ni controlas por separado, no podrás atribuir el efecto sobre ${skJoin(vd, "la VD")} a una en concreto.`);
   }
 
   if ((resultado.enfoque || "") === "cuantitativo") {
@@ -2353,5 +2498,7 @@ if (typeof module !== "undefined") {
     detectarErratasSospechosas, VOCABULARIO_DOMINIO,
     construirExplicacionDeteccion, skContieneAlgunoTrack,
     generarPreguntasSocraticas, generarPuntosDebilesADefender, generarGuiaBusquedaBibliografica,
+    construirPreguntasCualitativas, construirRelacionesCualitativas, construirProposicionesCualitativas,
+    etiquetasEnfoque,
   };
 }

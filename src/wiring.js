@@ -285,13 +285,41 @@ let viVdIntercambiado = false;
 
 function actualizarInterfazConResultado(resultado) {
   ultimoResultado = resultado;
+  const etGlobal = resultado.etiquetas || {};
 
   const btnSwap = document.getElementById("btn_swap_vivd");
   if (btnSwap) {
     btnSwap.disabled = false;
+    const textoIntercambio = etGlobal.esCualitativo ? "⇄ Intercambiar condición ↔ fenómeno" : "⇄ Intercambiar VI ↔ VD";
     btnSwap.textContent = resultado.intercambiado
       ? "⇄ Deshacer intercambio (volver a la dirección original)"
-      : "⇄ Intercambiar VI ↔ VD";
+      : textoIntercambio;
+  }
+
+  const lblP2 = document.getElementById("lbl_p2_etiqueta");
+  if (lblP2) lblP2.textContent = etGlobal.p2Etiqueta || "relacional / explicativa";
+  const lblP2Hint = document.getElementById("lbl_p2_etiqueta_hint");
+  if (lblP2Hint) lblP2Hint.textContent = etGlobal.esCualitativo ? "comprensiva" : "relacional";
+
+  const hVariables = document.getElementById("h_seccion_variables");
+  if (hVariables) hVariables.textContent = "2.3 " + (etGlobal.seccionVariables || "Variables (VI / VD)");
+  const txtIntroVariables = document.getElementById("txt_intro_variables");
+  if (txtIntroVariables) {
+    txtIntroVariables.textContent = etGlobal.esCualitativo
+      ? "SOCIOKAIROS distingue el fenómeno central de las condiciones explicativas por convención léxica (ver la nota al final de este bloque); esa distinción es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí: se recalculan las preguntas, relaciones, proposiciones y operacionalización, no solo la etiqueta."
+      : "SOCIOKAIROS asigna VI/VD por convención léxica (ver la nota al final de este bloque); esa dirección causal es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí: se recalculan las preguntas, correlaciones, hipótesis y operacionalización, no solo la etiqueta.";
+  }
+
+  const hCorrelaciones = document.getElementById("h_seccion_correlaciones");
+  if (hCorrelaciones) {
+    hCorrelaciones.textContent = "2.4 " + (etGlobal.correlacionesTitulo || "Correlaciones") + ", " + (etGlobal.hipotesisTitulo || "hipótesis").toLowerCase() + " y marcos teóricos";
+  }
+
+  const txtIntroTransparencia = document.getElementById("txt_intro_transparencia");
+  if (txtIntroTransparencia) {
+    txtIntroTransparencia.textContent = etGlobal.esCualitativo
+      ? "SOCIOKAIROS es determinista, no una caja negra: aquí se explica, fenómeno por fenómeno, condición por condición, área por área y marco por marco, qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto. Útil para detectar falsos positivos léxicos por ti mismo/a."
+      : "SOCIOKAIROS es determinista, no una caja negra: aquí se explica, VD por VD, VI por VI, área por área y marco por marco, qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto. Útil para detectar falsos positivos léxicos por ti mismo/a.";
   }
 
   const badge = document.getElementById("badge_area");
@@ -302,32 +330,41 @@ function actualizarInterfazConResultado(resultado) {
 
   const outPerfecto = document.getElementById("out_problema_perfecto");
   if (outPerfecto) {
-    outPerfecto.textContent = construirProblemaPerfecto(resultado, "P2 – relacional / explicativa (por defecto)", resultado.p2);
+    const etPerfecto = resultado.etiquetas || {};
+    outPerfecto.textContent = construirProblemaPerfecto(resultado, "P2 – " + (etPerfecto.p2Etiqueta || "Relacional / explicativa") + " (por defecto)", resultado.p2);
   }
 
   const outRef = document.getElementById("out_reformulacion");
   if (outRef) {
+    const et = resultado.etiquetas || {};
     outRef.textContent =
       "Pregunta 1 – Descriptiva:\n" + resultado.p1 +
-      "\n\nPregunta 2 – Relacional / explicativa:\n" + resultado.p2 +
+      "\n\nPregunta 2 – " + (et.p2Etiqueta || "Relacional / explicativa") + ":\n" + resultado.p2 +
       "\n\nPregunta 3 – Crítica / estratégica:\n" + resultado.p3;
   }
 
   const outVars = document.getElementById("out_variables");
   if (outVars) {
+    const et = resultado.etiquetas || {};
     const viTxt = resultado.vi.length ? "- " + resultado.vi.join("\n- ") : "Pendiente de especificar.";
     const vdTxt = resultado.vd.length ? "- " + resultado.vd.join("\n- ") : "Pendiente de especificar.";
     const notaCandidata = resultado.viEsCandidato ? "\n\n" + NOTA_VI_CANDIDATA : "";
-    const notaIntercambio = resultado.intercambiado ? "⇄ Dirección VI/VD intercambiada manualmente respecto a la convención léxica del motor.\n\n" : "";
-    outVars.textContent = notaIntercambio + "VI sugeridas (factores explicativos):\n" + viTxt + notaCandidata + "\n\nVD sugeridas (fenómenos a explicar):\n" + vdTxt + "\n\n" + NOTA_DIRECCIONALIDAD_VIVD;
+    const notaIntercambio = resultado.intercambiado
+      ? (et.esCualitativo
+        ? "⇄ Distinción condición/fenómeno intercambiada manualmente respecto a la convención léxica del motor.\n\n"
+        : "⇄ Dirección VI/VD intercambiada manualmente respecto a la convención léxica del motor.\n\n")
+      : "";
+    const notaEnfoque = et.notaVariables ? "\n\n" + et.notaVariables : "";
+    outVars.textContent = notaIntercambio + (et.viListaTitulo || "VI sugeridas:") + "\n" + viTxt + notaCandidata + "\n\n" + (et.vdListaTitulo || "VD sugeridas:") + "\n" + vdTxt + notaEnfoque + (et.esCualitativo ? "" : "\n\n" + NOTA_DIRECCIONALIDAD_VIVD);
   }
 
   const outNotas = document.getElementById("out_notas");
   if (outNotas) {
-    const corrTxt = resultado.correlaciones.length ? resultado.correlaciones.join("\n") : "Formula al menos una relación hipotética entre VI y VD.";
+    const et = resultado.etiquetas || {};
+    const corrTxt = resultado.correlaciones.length ? resultado.correlaciones.join("\n") : "Formula al menos una relación entre " + (et.vi || "VI") + " y " + (et.vd || "VD") + ".";
     const hipTxt = resultado.hipotesis.length ? "- " + resultado.hipotesis.join("\n- ") : "Pendiente de formular.";
     const marTxt = resultado.marcos.length ? "- " + resultado.marcos.join("\n- ") : "Pendiente de sugerir marcos.";
-    outNotas.textContent = "Correlaciones a explorar:\n" + corrTxt + "\n\nHipótesis de trabajo:\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS + "\n\n" + PAUTAS_MARCO_TEORICO;
+    outNotas.textContent = (et.correlacionesTitulo || "Correlaciones a explorar") + ":\n" + corrTxt + "\n\n" + (et.hipotesisTitulo || "Hipótesis de trabajo") + ":\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS + "\n\n" + PAUTAS_MARCO_TEORICO;
   }
 
   const outTransparencia = document.getElementById("out_transparencia");
@@ -451,17 +488,19 @@ async function descargarBlob(blob, filename) {
 }
 
 function obtenerVersionSeleccionada(resultado, txtOriginal) {
+  const etVersion = resultado.etiquetas || {};
+  const p2Label = "P2 – " + (etVersion.p2Etiqueta || "Relacional / explicativa");
   let problemaTrabajo = txtOriginal;
-  let versionLabel = "P2 – relacional / explicativa (por defecto)";
+  let versionLabel = p2Label + " (por defecto)";
   const sel = document.querySelector('input[name="vers_sel"]:checked');
   if (sel) {
     const val = sel.value;
     if (val === "1") { problemaTrabajo = resultado.p1 || txtOriginal; versionLabel = "P1 – descriptiva"; }
-    else if (val === "2") { problemaTrabajo = resultado.p2 || txtOriginal; versionLabel = "P2 – relacional / explicativa"; }
+    else if (val === "2") { problemaTrabajo = resultado.p2 || txtOriginal; versionLabel = p2Label; }
     else if (val === "3") { problemaTrabajo = resultado.p3 || txtOriginal; versionLabel = "P3 – crítica / estratégica"; }
   } else if (resultado.p2) {
     problemaTrabajo = resultado.p2;
-    versionLabel = "P2 – relacional / explicativa (por defecto)";
+    versionLabel = p2Label + " (por defecto)";
   }
   const hint = document.getElementById("version_elegida_hint");
   if (hint) {

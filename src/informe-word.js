@@ -22,6 +22,7 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   // informe de la línea SCORM/EDU, que sigue usando el diseño anterior.
   const disenoCabeceraPie = !!opciones.disenoCabeceraPie;
   const subtituloInforme = opciones.subtituloInforme || "";
+  const et = resultado.etiquetas || {};
 
   const now = new Date();
   const fechaStr = now.toLocaleDateString("es-ES");
@@ -66,30 +67,34 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   parts.push(headingXml("4. Reformulación del problema en forma de preguntas", 2));
   parts.push(paragraphXml("Pregunta 1 – Descriptiva:"));
   parts.push(paragraphXml(resultado.p1));
-  parts.push(paragraphXml("Pregunta 2 – Relacional / explicativa:"));
+  parts.push(paragraphXml(`Pregunta 2 – ${et.p2Etiqueta || "Relacional / explicativa"}:`));
   parts.push(paragraphXml(resultado.p2));
   parts.push(paragraphXml("Pregunta 3 – Crítica / estratégica:"));
   parts.push(paragraphXml(resultado.p3));
 
-  parts.push(headingXml("5. Variables (VI / VD)", 2));
-  parts.push(paragraphXml("Variables independientes (VI) sugeridas:"));
+  parts.push(headingXml(`5. ${et.seccionVariables || "Variables (VI / VD)"}`, 2));
+  parts.push(paragraphXml(et.viListaTitulo || "VI sugeridas:"));
   if (resultado.vi.length) resultado.vi.forEach(v => parts.push(paragraphXml(v, { bullet: true })));
   else parts.push(paragraphXml("Pendiente de especificar.", { bullet: true }));
   if (resultado.viEsCandidato) parts.push(paragraphXml(NOTA_VI_CANDIDATA, { italic: true }));
 
-  parts.push(paragraphXml("Variables dependientes (VD) sugeridas:"));
+  parts.push(paragraphXml(et.vdListaTitulo || "VD sugeridas:"));
   if (resultado.vd.length) resultado.vd.forEach(v => parts.push(paragraphXml(v, { bullet: true })));
   else parts.push(paragraphXml("Pendiente de especificar.", { bullet: true }));
 
-  parts.push(paragraphXml(NOTA_DIRECCIONALIDAD_VIVD, { italic: true }));
+  if (et.esCualitativo) {
+    if (et.notaVariables) parts.push(paragraphXml(et.notaVariables, { italic: true }));
+  } else {
+    parts.push(paragraphXml(NOTA_DIRECCIONALIDAD_VIVD, { italic: true }));
+  }
 
-  parts.push(headingXml("6. Correlaciones, hipótesis y marcos teóricos", 2));
-  parts.push(paragraphXml("Correlaciones a explorar:"));
-  parts.push(paragraphXml(`Nota: las hipótesis y marcos que se detallan a continuación toman como referencia la ${versionLabel} del problema.`, { italic: true }));
+  parts.push(headingXml(`6. ${et.correlacionesTitulo || "Correlaciones"}, ${(et.hipotesisTitulo || "hipótesis").toLowerCase()} y marcos teóricos`, 2));
+  parts.push(paragraphXml((et.correlacionesTitulo || "Correlaciones a explorar") + ":"));
+  parts.push(paragraphXml(`Nota: ${(et.hipotesisTitulo || "las hipótesis").toLowerCase()} y los marcos que se detallan a continuación toman como referencia la ${versionLabel} del problema.`, { italic: true }));
   if (resultado.correlaciones.length) resultado.correlaciones.forEach(c => parts.push(paragraphXml(c, { bullet: true })));
-  else parts.push(paragraphXml("Formula al menos una relación hipotética entre VI y VD.", { bullet: true }));
+  else parts.push(paragraphXml(`Formula al menos una relación entre ${et.vi || "VI"} y ${et.vd || "VD"}.`, { bullet: true }));
 
-  parts.push(paragraphXml("Hipótesis de trabajo:"));
+  parts.push(paragraphXml((et.hipotesisTitulo || "Hipótesis de trabajo") + ":"));
   resultado.hipotesis.forEach(h => parts.push(paragraphXml(h, { bullet: true })));
 
   parts.push(paragraphXml("Marcos teóricos sugeridos:"));

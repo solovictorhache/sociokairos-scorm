@@ -135,19 +135,19 @@
               Selecciona la versión que quieres usar como problema de trabajo para la exportación (Word/CSV):
             </p>
             <label><input type="radio" name="vers_sel" value="1"> Versión descriptiva (P1)</label><br>
-            <label><input type="radio" name="vers_sel" value="2"> Versión relacional / explicativa (P2)</label><br>
+            <label><input type="radio" name="vers_sel" value="2"> Versión <span id="lbl_p2_etiqueta">relacional / explicativa</span> (P2)</label><br>
             <label><input type="radio" name="vers_sel" value="3"> Versión crítica / estratégica (P3)</label>
             <p id="version_elegida_hint" class="meta" style="font-size:0.75rem; margin-top:4px;">
-              Si no seleccionas ninguna, SOCIOKAIROS usará por defecto la versión relacional (P2).
+              Si no seleccionas ninguna, SOCIOKAIROS usará por defecto la versión <span id="lbl_p2_etiqueta_hint">relacional</span> (P2).
             </p>
           </div>
 
-          <h3>2.3 Variables sugeridas (VI / VD)</h3>
-          <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS asigna VI/VD por convención léxica (ver la nota al final de este bloque); esa dirección causal es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí.</p>
+          <h3 id="h_seccion_variables">2.3 Variables sugeridas (VI / VD)</h3>
+          <p id="txt_intro_variables" class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS asigna VI/VD por convención léxica (ver la nota al final de este bloque); esa dirección causal es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí.</p>
           <pre id="out_variables"></pre>
           <button id="btn_swap_vivd" class="secondary" type="button" disabled>⇄ Intercambiar VI ↔ VD</button>
 
-          <h3>2.4 Correlaciones, hipótesis y marcos teóricos</h3>
+          <h3 id="h_seccion_correlaciones">2.4 Correlaciones, hipótesis y marcos teóricos</h3>
           <pre id="out_notas"></pre>
           <p class="meta sk-tutor" style="font-size:0.78rem;">Los marcos de arriba se proponen por afinidad léxica con tu texto; que un marco sea pertinente es una decisión teórica tuya. Escribe aquí por qué el marco que elijas explica tu problema concreto — este texto se inserta literalmente en el informe Word exportado.</p>
           <textarea id="txt_justificacion_marco" style="min-height:110px;" placeholder="Ej.: elijo la violencia simbólica de Bourdieu porque el problema describe una relación de dominación aceptada, no solo impuesta por la fuerza..."></textarea>
