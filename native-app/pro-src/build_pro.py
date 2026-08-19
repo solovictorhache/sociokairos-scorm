@@ -16,7 +16,6 @@ import re
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 SRC = ROOT / "src"
 PRO_SRC = ROOT / "native-app" / "pro-src"
-PLUGIN = ROOT / "scorm_plugin"
 OUT_DIR = ROOT / "native-app" / "dist_pro"
 
 
@@ -27,7 +26,11 @@ def strip_module_exports(js: str) -> str:
 def main() -> None:
     head = (PRO_SRC / "head.html").read_text(encoding="utf-8")
     body = (PRO_SRC / "body.html").read_text(encoding="utf-8")
-    logo_b64 = base64.b64encode((PLUGIN / "logo.png").read_bytes()).decode("ascii")
+    # Logo propio de la línea Profesional (monograma azul institucional),
+    # distinto del logo de scorm_plugin/ (línea EDU) — cada línea tiene su
+    # propia identidad visual, igual que ya divergen el correo de contacto
+    # y el pie del informe Word.
+    logo_b64 = base64.b64encode((PRO_SRC / "logo.png").read_bytes()).decode("ascii")
 
     geo_data = (SRC / "geo-data.js").read_text(encoding="utf-8")
     engine = strip_module_exports((SRC / "engine.js").read_text(encoding="utf-8"))
@@ -47,7 +50,7 @@ def main() -> None:
     full = "<!DOCTYPE html>\n<html lang=\"es\">\n" + head + "\n" + body_final
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    (OUT_DIR / "logo.png").write_bytes((PLUGIN / "logo.png").read_bytes())
+    (OUT_DIR / "logo.png").write_bytes((PRO_SRC / "logo.png").read_bytes())
     out_path = OUT_DIR / "index.html"
     out_path.write_text(full, encoding="utf-8")
     print(f"Escrito {out_path} ({len(full)} bytes)")

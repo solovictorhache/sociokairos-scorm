@@ -327,7 +327,7 @@ function actualizarInterfazConResultado(resultado) {
     const corrTxt = resultado.correlaciones.length ? resultado.correlaciones.join("\n") : "Formula al menos una relación hipotética entre VI y VD.";
     const hipTxt = resultado.hipotesis.length ? "- " + resultado.hipotesis.join("\n- ") : "Pendiente de formular.";
     const marTxt = resultado.marcos.length ? "- " + resultado.marcos.join("\n- ") : "Pendiente de sugerir marcos.";
-    outNotas.textContent = "Correlaciones a explorar:\n" + corrTxt + "\n\nHipótesis de trabajo:\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS;
+    outNotas.textContent = "Correlaciones a explorar:\n" + corrTxt + "\n\nHipótesis de trabajo:\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS + "\n\n" + PAUTAS_MARCO_TEORICO;
   }
 
   const outTransparencia = document.getElementById("out_transparencia");

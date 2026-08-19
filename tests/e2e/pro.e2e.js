@@ -121,7 +121,10 @@ async function main() {
   const xml = fs.readFileSync(path.join(unzipDir, "word", "document.xml"), "utf-8");
   assert(xml.includes("contacto@sociokairos.com"), "docx contiene el nuevo correo de contacto en el pie");
   assert(!xml.includes("unizar.es"), "docx sin el correo antiguo de unizar.es");
-  assert(xml.includes("Informe SOCIOKAIROS") && !xml.includes("Informe SOCIOKAIROS EDU"), "título del informe sin 'EDU'");
+  assert(xml.includes("SOCIOKAIROS Research") && !xml.includes("SOCIOKAIROS EDU"), "título de la nueva cabecera, sin 'EDU'");
+  assert(xml.includes("INFORME") && xml.includes("RESEARCH SUITE"), "subtítulo de la cabecera presente");
+  assert(xml.includes('w:val="dashed"'), "la cabecera y el pie usan la línea discontinua del nuevo patrón visual");
+  assert(xml.includes("Heuristic software developed by Victor Hugo Pérez Gallo"), "crédito del pie en inglés presente");
   assert(!xml.includes("Universidad de Zaragoza: consulta"), "docx sin la nota específica de la Universidad de Zaragoza");
 
   console.log("OK: informe profesional en", docxPath);

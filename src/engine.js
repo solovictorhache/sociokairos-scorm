@@ -1566,6 +1566,20 @@ const NOTA_DIRECCIONALIDAD_VIVD = "Nota metodológica: SOCIOKAIROS asume por def
 
 const NOTA_JUSTIFICAR_MARCOS = "Nota: estos marcos se sugieren por coincidencia léxica con tu problema. Justifica en tu trabajo por qué cada uno es realmente pertinente para tu caso concreto, no solo que haya aparecido aquí.";
 
+// Guía breve, en el tono de un profesor senior de metodología de la
+// investigación: no se limita a nombrar marcos teóricos (eso ya lo hace
+// sugerirMarcosTeoricos), sino que da pautas concretas de CÓMO desarrollar
+// el apartado de marco teórico a partir de lo sugerido — la parte que un
+// estudiante suele hacer peor: describir el marco en vez de USARLO para
+// explicar su problema concreto.
+const PAUTAS_MARCO_TEORICO =
+  "Pautas para redactar tu marco teórico (a partir de los marcos sugeridos arriba):\n" +
+  "1. Define los conceptos clave con el vocabulario propio del marco elegido, no con lenguaje coloquial — si el marco habla de «capital social», no lo sustituyas por «apoyo».\n" +
+  "2. Explica el mecanismo, no solo el nombre: ¿qué relación concreta predice el marco entre tu VI y tu VD? No basta con citar al autor.\n" +
+  "3. Combina al menos una fuente clásica (el autor que formuló el marco) con una fuente reciente (una revisión o aplicación empírica de los últimos 10 años).\n" +
+  "4. Señala al menos una crítica o límite conocido del marco aplicado a tu caso — un marco teórico maduro reconoce también dónde no explica bien el fenómeno.\n" +
+  "5. Cierra conectando el marco con tus hipótesis: ¿qué predicción concreta se deriva de él para tu problema, y qué esperarías observar si el marco es correcto?";
+
 const NOTA_VI_CANDIDATA = "Nota metodológica: tu problema no nombra explícitamente ningún factor explicativo (VI), así que las de abajo son candidatas típicas en la literatura sobre este fenómeno — no están extraídas de tu texto. Sustitúyelas por las que realmente vayas a estudiar, o añade el factor explicativo directamente en el problema inicial para que SOCIOKAIROS lo detecte.";
 
 /* ================= análisis principal ================= */
@@ -2206,7 +2220,7 @@ if (typeof module !== "undefined") {
     validarProblemaEdu, construirFeedbackValidacionEdu,
     generarAlertasMetodologicas, generarTradiciones, generarMapaLogico, generarDisenos,
     generarSvgVisual, operacionalizacionTexto,
-    NOTA_DIRECCIONALIDAD_VIVD, NOTA_JUSTIFICAR_MARCOS, NOTA_VI_CANDIDATA,
+    NOTA_DIRECCIONALIDAD_VIVD, NOTA_JUSTIFICAR_MARCOS, NOTA_VI_CANDIDATA, PAUTAS_MARCO_TEORICO,
     geoDetectar, geoFuentes, detectarVariables, detectarAreaSociologica, sugerirMarcosTeoricos,
     candidatosViPorDominio,
     clasificarEnfoqueMetodologico, sugerirDisenoEstudio,

@@ -2577,6 +2577,20 @@ const NOTA_DIRECCIONALIDAD_VIVD = "Nota metodológica: SOCIOKAIROS asume por def
 
 const NOTA_JUSTIFICAR_MARCOS = "Nota: estos marcos se sugieren por coincidencia léxica con tu problema. Justifica en tu trabajo por qué cada uno es realmente pertinente para tu caso concreto, no solo que haya aparecido aquí.";
 
+// Guía breve, en el tono de un profesor senior de metodología de la
+// investigación: no se limita a nombrar marcos teóricos (eso ya lo hace
+// sugerirMarcosTeoricos), sino que da pautas concretas de CÓMO desarrollar
+// el apartado de marco teórico a partir de lo sugerido — la parte que un
+// estudiante suele hacer peor: describir el marco en vez de USARLO para
+// explicar su problema concreto.
+const PAUTAS_MARCO_TEORICO =
+  "Pautas para redactar tu marco teórico (a partir de los marcos sugeridos arriba):\n" +
+  "1. Define los conceptos clave con el vocabulario propio del marco elegido, no con lenguaje coloquial — si el marco habla de «capital social», no lo sustituyas por «apoyo».\n" +
+  "2. Explica el mecanismo, no solo el nombre: ¿qué relación concreta predice el marco entre tu VI y tu VD? No basta con citar al autor.\n" +
+  "3. Combina al menos una fuente clásica (el autor que formuló el marco) con una fuente reciente (una revisión o aplicación empírica de los últimos 10 años).\n" +
+  "4. Señala al menos una crítica o límite conocido del marco aplicado a tu caso — un marco teórico maduro reconoce también dónde no explica bien el fenómeno.\n" +
+  "5. Cierra conectando el marco con tus hipótesis: ¿qué predicción concreta se deriva de él para tu problema, y qué esperarías observar si el marco es correcto?";
+
 const NOTA_VI_CANDIDATA = "Nota metodológica: tu problema no nombra explícitamente ningún factor explicativo (VI), así que las de abajo son candidatas típicas en la literatura sobre este fenómeno — no están extraídas de tu texto. Sustitúyelas por las que realmente vayas a estudiar, o añade el factor explicativo directamente en el problema inicial para que SOCIOKAIROS lo detecte.";
 
 /* ================= análisis principal ================= */
@@ -3379,8 +3393,13 @@ function tableXml(headers, rows) {
   return `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${borders}</w:tblPr><w:tblGrid>${gridCols}</w:tblGrid>${headerRow}${bodyRows}</w:tbl>`;
 }
 
-function imageParagraphXml(cxEmu, cyEmu) {
-  return `<w:p><w:r><w:drawing>` +
+/** El <w:r><w:drawing>...</w:drawing></w:r> a solas, sin el <w:p> que lo
+ * envuelve — para poder combinarlo con texto en el MISMO párrafo (p. ej.
+ * logo + título de cabecera en una sola línea). imageParagraphXml() de
+ * abajo es solo este run metido en su propio párrafo, para el uso normal
+ * de "imagen sola en su línea". */
+function imageRunXml(cxEmu, cyEmu) {
+  return `<w:r><w:drawing>` +
     `<wp:inline distT="0" distB="0" distL="0" distR="0">` +
     `<wp:extent cx="${cxEmu}" cy="${cyEmu}"/>` +
     `<wp:effectExtent l="0" t="0" r="0" b="0"/>` +
@@ -3394,7 +3413,31 @@ function imageParagraphXml(cxEmu, cyEmu) {
     `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
     `</pic:pic>` +
     `</a:graphicData></a:graphic>` +
-    `</wp:inline></w:drawing></w:r></w:p>`;
+    `</wp:inline></w:drawing></w:r>`;
+}
+
+function imageParagraphXml(cxEmu, cyEmu) {
+  return `<w:p>${imageRunXml(cxEmu, cyEmu)}</w:p>`;
+}
+
+/** Párrafo vacío con un borde inferior discontinuo — se usa como línea
+ * horizontal de separación (p. ej. bajo la cabecera y sobre el pie). */
+function dashedRuleXml() {
+  return `<w:p><w:pPr><w:pBdr><w:bottom w:val="dashed" w:sz="6" w:space="1" w:color="9AA0A6"/></w:pBdr>` +
+    `<w:spacing w:before="0" w:after="160" ${LINEA_1_5}/></w:pPr></w:p>`;
+}
+
+/** Párrafo compuesto por varios "runs" ya construidos (runXml/imageRunXml),
+ * útil para combinar texto e imagen en la misma línea — cosa que
+ * paragraphXml() no admite, al tomar un único texto de entrada. */
+function multiRunParagraphXml(runsXml, opts) {
+  opts = opts || {};
+  const ppr = [];
+  if (opts.spacingBefore || opts.spacingAfter) {
+    ppr.push(`<w:spacing w:before="${opts.spacingBefore || 0}" w:after="${opts.spacingAfter || 120}" ${LINEA_1_5}/>`);
+  }
+  const pprXml = ppr.length ? `<w:pPr>${ppr.join("")}</w:pPr>` : "";
+  return `<w:p>${pprXml}${runsXml.join("")}</w:p>`;
 }
 
 // word/styles.xml: fija Times New Roman 12pt (sz="24", en medios puntos) e
@@ -3497,24 +3540,50 @@ function base64ToBytes(b64) {
   return bytes;
 }
 
+// Azul institucional de la línea Profesional (mismo hex que el monograma).
+const SK_AZUL_MARCA = "102D59";
+// Acento rojo, usado con moderación (solo el correo de contacto del pie),
+// como en el patrón de cabecera/pie que pidió el usuario.
+const SK_ROJO_ACENTO = "A6392E";
+
 function construirInformeWord(resultado, problema, versionLabel, textoOriginal, justificacionMarcos, opciones) {
   opciones = opciones || {};
   const piePagina = opciones.piePagina || "© Víctor Hugo Pérez Gallo – Universidad de Zaragoza – victorhugo.perez@unizar.es";
   const tituloInforme = opciones.tituloInforme || "Informe SOCIOKAIROS EDU – Research Suite";
   const incluirNotaUnizar = opciones.incluirNotaUnizar !== false;
+  // Cabecera/pie con logo + título + subtítulo arriba (separados por una
+  // línea discontinua) y el crédito + correo de contacto abajo, en vez del
+  // bloque plano de siempre — opt-in explícito para no tocar en nada el
+  // informe de la línea SCORM/EDU, que sigue usando el diseño anterior.
+  const disenoCabeceraPie = !!opciones.disenoCabeceraPie;
+  const subtituloInforme = opciones.subtituloInforme || "";
 
   const now = new Date();
   const fechaStr = now.toLocaleDateString("es-ES");
   const horaStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 
   const parts = [];
-  piePagina.split("\n").forEach(linea => parts.push(paragraphXml(linea, { italic: true, sz: 16, sinSangria: true })));
-  parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 16, sinSangria: true }));
-  try {
-    if (LOGO_BASE64) parts.push(imageParagraphXml(502920, 502920));
-  } catch (e) { /* logo opcional */ }
 
-  parts.push(headingXml(tituloInforme, 1));
+  if (disenoCabeceraPie) {
+    parts.push(dashedRuleXml());
+    const runsCabecera = [];
+    try {
+      if (LOGO_BASE64) runsCabecera.push(imageRunXml(280035, 280035));
+    } catch (e) { /* logo opcional */ }
+    runsCabecera.push(runXml((runsCabecera.length ? "   " : "") + tituloInforme, { bold: true, sz: 32, color: SK_AZUL_MARCA }));
+    parts.push(multiRunParagraphXml(runsCabecera, { spacingAfter: subtituloInforme ? 20 : 160 }));
+    if (subtituloInforme) {
+      parts.push(paragraphXml(subtituloInforme, { sz: 18, color: "6B7280", sinSangria: true }));
+    }
+    parts.push(dashedRuleXml());
+  } else {
+    piePagina.split("\n").forEach(linea => parts.push(paragraphXml(linea, { italic: true, sz: 16, sinSangria: true })));
+    parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 16, sinSangria: true }));
+    try {
+      if (LOGO_BASE64) parts.push(imageParagraphXml(502920, 502920));
+    } catch (e) { /* logo opcional */ }
+    parts.push(headingXml(tituloInforme, 1));
+  }
 
   if (problema.trim()) {
     parts.push(headingXml("1. Problema científico inicial", 2));
@@ -3561,6 +3630,9 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   parts.push(paragraphXml("Marcos teóricos sugeridos:"));
   resultado.marcos.forEach(m => parts.push(paragraphXml(m, { bullet: true })));
   parts.push(paragraphXml(NOTA_JUSTIFICAR_MARCOS, { italic: true }));
+
+  parts.push(paragraphXml("Pautas para redactar tu marco teórico:", { bold: true }));
+  PAUTAS_MARCO_TEORICO.split("\n").slice(1).forEach(linea => parts.push(paragraphXml(linea, { bullet: true })));
 
   parts.push(paragraphXml("Justificación teórica propia del estudiante:", { bold: true }));
   const justificacion = (justificacionMarcos || "").trim();
@@ -3640,6 +3712,18 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
 
   parts.push(headingXml("18. Advertencia académica", 2));
   parts.push(paragraphXml("SOCIOKAIROS es una herramienta heurística de apoyo a la formulación de problemas científicos. No sustituye la revisión bibliográfica sistemática, el trabajo teórico propio del investigador ni la discusión metodológica detallada. El uso responsable de sus sugerencias exige contrastarlas con la literatura, los datos disponibles y las condiciones concretas del campo de estudio."));
+
+  if (disenoCabeceraPie) {
+    parts.push(dashedRuleXml());
+    const lineasPie = piePagina.split("\n");
+    lineasPie.forEach((linea, i) => {
+      const esUltima = i === lineasPie.length - 1;
+      parts.push(paragraphXml(linea, esUltima
+        ? { bold: true, sz: 18, color: SK_ROJO_ACENTO, sinSangria: true }
+        : { sz: 18, sinSangria: true }));
+    });
+    parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 15, color: "9AA0A6", sinSangria: true }));
+  }
 
   let logoBytes = null;
   try { if (LOGO_BASE64) logoBytes = base64ToBytes(LOGO_BASE64); } catch (e) { logoBytes = null; }
@@ -3976,7 +4060,7 @@ function actualizarInterfazConResultado(resultado) {
     const corrTxt = resultado.correlaciones.length ? resultado.correlaciones.join("\n") : "Formula al menos una relación hipotética entre VI y VD.";
     const hipTxt = resultado.hipotesis.length ? "- " + resultado.hipotesis.join("\n- ") : "Pendiente de formular.";
     const marTxt = resultado.marcos.length ? "- " + resultado.marcos.join("\n- ") : "Pendiente de sugerir marcos.";
-    outNotas.textContent = "Correlaciones a explorar:\n" + corrTxt + "\n\nHipótesis de trabajo:\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS;
+    outNotas.textContent = "Correlaciones a explorar:\n" + corrTxt + "\n\nHipótesis de trabajo:\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS + "\n\n" + PAUTAS_MARCO_TEORICO;
   }
 
   const outTransparencia = document.getElementById("out_transparencia");

@@ -165,8 +165,13 @@ function tableXml(headers, rows) {
   return `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${borders}</w:tblPr><w:tblGrid>${gridCols}</w:tblGrid>${headerRow}${bodyRows}</w:tbl>`;
 }
 
-function imageParagraphXml(cxEmu, cyEmu) {
-  return `<w:p><w:r><w:drawing>` +
+/** El <w:r><w:drawing>...</w:drawing></w:r> a solas, sin el <w:p> que lo
+ * envuelve — para poder combinarlo con texto en el MISMO párrafo (p. ej.
+ * logo + título de cabecera en una sola línea). imageParagraphXml() de
+ * abajo es solo este run metido en su propio párrafo, para el uso normal
+ * de "imagen sola en su línea". */
+function imageRunXml(cxEmu, cyEmu) {
+  return `<w:r><w:drawing>` +
     `<wp:inline distT="0" distB="0" distL="0" distR="0">` +
     `<wp:extent cx="${cxEmu}" cy="${cyEmu}"/>` +
     `<wp:effectExtent l="0" t="0" r="0" b="0"/>` +
@@ -180,7 +185,31 @@ function imageParagraphXml(cxEmu, cyEmu) {
     `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
     `</pic:pic>` +
     `</a:graphicData></a:graphic>` +
-    `</wp:inline></w:drawing></w:r></w:p>`;
+    `</wp:inline></w:drawing></w:r>`;
+}
+
+function imageParagraphXml(cxEmu, cyEmu) {
+  return `<w:p>${imageRunXml(cxEmu, cyEmu)}</w:p>`;
+}
+
+/** Párrafo vacío con un borde inferior discontinuo — se usa como línea
+ * horizontal de separación (p. ej. bajo la cabecera y sobre el pie). */
+function dashedRuleXml() {
+  return `<w:p><w:pPr><w:pBdr><w:bottom w:val="dashed" w:sz="6" w:space="1" w:color="9AA0A6"/></w:pBdr>` +
+    `<w:spacing w:before="0" w:after="160" ${LINEA_1_5}/></w:pPr></w:p>`;
+}
+
+/** Párrafo compuesto por varios "runs" ya construidos (runXml/imageRunXml),
+ * útil para combinar texto e imagen en la misma línea — cosa que
+ * paragraphXml() no admite, al tomar un único texto de entrada. */
+function multiRunParagraphXml(runsXml, opts) {
+  opts = opts || {};
+  const ppr = [];
+  if (opts.spacingBefore || opts.spacingAfter) {
+    ppr.push(`<w:spacing w:before="${opts.spacingBefore || 0}" w:after="${opts.spacingAfter || 120}" ${LINEA_1_5}/>`);
+  }
+  const pprXml = ppr.length ? `<w:pPr>${ppr.join("")}</w:pPr>` : "";
+  return `<w:p>${pprXml}${runsXml.join("")}</w:p>`;
 }
 
 // word/styles.xml: fija Times New Roman 12pt (sz="24", en medios puntos) e
@@ -276,5 +305,8 @@ function buildDocx(bodyParts, logoPngBytes) {
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { buildZip, buildDocx, headingXml, paragraphXml, tableXml, imageParagraphXml, xmlEscape };
+  module.exports = {
+    buildZip, buildDocx, headingXml, paragraphXml, tableXml, imageParagraphXml, xmlEscape,
+    runXml, imageRunXml, dashedRuleXml, multiRunParagraphXml,
+  };
 }

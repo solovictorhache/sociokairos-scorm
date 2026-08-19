@@ -236,7 +236,7 @@ function actualizarInterfazConResultado(resultado) {
     const corrTxt = resultado.correlaciones.length ? resultado.correlaciones.join("\n") : "Formula al menos una relación hipotética entre VI y VD.";
     const hipTxt = resultado.hipotesis.length ? "- " + resultado.hipotesis.join("\n- ") : "Pendiente de formular.";
     const marTxt = resultado.marcos.length ? "- " + resultado.marcos.join("\n- ") : "Pendiente de sugerir marcos.";
-    outNotas.textContent = "Correlaciones a explorar:\n" + corrTxt + "\n\nHipótesis de trabajo:\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS;
+    outNotas.textContent = "Correlaciones a explorar:\n" + corrTxt + "\n\nHipótesis de trabajo:\n" + hipTxt + "\n\nMarcos teóricos sugeridos:\n" + marTxt + "\n" + NOTA_JUSTIFICAR_MARCOS + "\n\n" + PAUTAS_MARCO_TEORICO;
   }
 
   const outTransparencia = document.getElementById("out_transparencia");
@@ -642,8 +642,10 @@ window.addEventListener("load", function () {
         const justificacionMarcos = txtJustificacion ? txtJustificacion.value : "";
         const zipBytes = construirInformeWord(resultado, problemaTrabajo, versionLabel, txt, justificacionMarcos, {
           piePagina: "Heuristic software developed by Victor Hugo Pérez Gallo, PhD\ncontacto@sociokairos.com",
-          tituloInforme: "Informe SOCIOKAIROS – Research Suite",
-          incluirNotaUnizar: false
+          tituloInforme: "SOCIOKAIROS Research",
+          subtituloInforme: "INFORME · RESEARCH SUITE",
+          incluirNotaUnizar: false,
+          disenoCabeceraPie: true
         });
         const blob = new Blob([zipBytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
         const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12);

@@ -5,24 +5,50 @@ function base64ToBytes(b64) {
   return bytes;
 }
 
+// Azul institucional de la línea Profesional (mismo hex que el monograma).
+const SK_AZUL_MARCA = "102D59";
+// Acento rojo, usado con moderación (solo el correo de contacto del pie),
+// como en el patrón de cabecera/pie que pidió el usuario.
+const SK_ROJO_ACENTO = "A6392E";
+
 function construirInformeWord(resultado, problema, versionLabel, textoOriginal, justificacionMarcos, opciones) {
   opciones = opciones || {};
   const piePagina = opciones.piePagina || "© Víctor Hugo Pérez Gallo – Universidad de Zaragoza – victorhugo.perez@unizar.es";
   const tituloInforme = opciones.tituloInforme || "Informe SOCIOKAIROS EDU – Research Suite";
   const incluirNotaUnizar = opciones.incluirNotaUnizar !== false;
+  // Cabecera/pie con logo + título + subtítulo arriba (separados por una
+  // línea discontinua) y el crédito + correo de contacto abajo, en vez del
+  // bloque plano de siempre — opt-in explícito para no tocar en nada el
+  // informe de la línea SCORM/EDU, que sigue usando el diseño anterior.
+  const disenoCabeceraPie = !!opciones.disenoCabeceraPie;
+  const subtituloInforme = opciones.subtituloInforme || "";
 
   const now = new Date();
   const fechaStr = now.toLocaleDateString("es-ES");
   const horaStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 
   const parts = [];
-  piePagina.split("\n").forEach(linea => parts.push(paragraphXml(linea, { italic: true, sz: 16, sinSangria: true })));
-  parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 16, sinSangria: true }));
-  try {
-    if (LOGO_BASE64) parts.push(imageParagraphXml(502920, 502920));
-  } catch (e) { /* logo opcional */ }
 
-  parts.push(headingXml(tituloInforme, 1));
+  if (disenoCabeceraPie) {
+    parts.push(dashedRuleXml());
+    const runsCabecera = [];
+    try {
+      if (LOGO_BASE64) runsCabecera.push(imageRunXml(280035, 280035));
+    } catch (e) { /* logo opcional */ }
+    runsCabecera.push(runXml((runsCabecera.length ? "   " : "") + tituloInforme, { bold: true, sz: 32, color: SK_AZUL_MARCA }));
+    parts.push(multiRunParagraphXml(runsCabecera, { spacingAfter: subtituloInforme ? 20 : 160 }));
+    if (subtituloInforme) {
+      parts.push(paragraphXml(subtituloInforme, { sz: 18, color: "6B7280", sinSangria: true }));
+    }
+    parts.push(dashedRuleXml());
+  } else {
+    piePagina.split("\n").forEach(linea => parts.push(paragraphXml(linea, { italic: true, sz: 16, sinSangria: true })));
+    parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 16, sinSangria: true }));
+    try {
+      if (LOGO_BASE64) parts.push(imageParagraphXml(502920, 502920));
+    } catch (e) { /* logo opcional */ }
+    parts.push(headingXml(tituloInforme, 1));
+  }
 
   if (problema.trim()) {
     parts.push(headingXml("1. Problema científico inicial", 2));
@@ -69,6 +95,9 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   parts.push(paragraphXml("Marcos teóricos sugeridos:"));
   resultado.marcos.forEach(m => parts.push(paragraphXml(m, { bullet: true })));
   parts.push(paragraphXml(NOTA_JUSTIFICAR_MARCOS, { italic: true }));
+
+  parts.push(paragraphXml("Pautas para redactar tu marco teórico:", { bold: true }));
+  PAUTAS_MARCO_TEORICO.split("\n").slice(1).forEach(linea => parts.push(paragraphXml(linea, { bullet: true })));
 
   parts.push(paragraphXml("Justificación teórica propia del estudiante:", { bold: true }));
   const justificacion = (justificacionMarcos || "").trim();
@@ -148,6 +177,18 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
 
   parts.push(headingXml("18. Advertencia académica", 2));
   parts.push(paragraphXml("SOCIOKAIROS es una herramienta heurística de apoyo a la formulación de problemas científicos. No sustituye la revisión bibliográfica sistemática, el trabajo teórico propio del investigador ni la discusión metodológica detallada. El uso responsable de sus sugerencias exige contrastarlas con la literatura, los datos disponibles y las condiciones concretas del campo de estudio."));
+
+  if (disenoCabeceraPie) {
+    parts.push(dashedRuleXml());
+    const lineasPie = piePagina.split("\n");
+    lineasPie.forEach((linea, i) => {
+      const esUltima = i === lineasPie.length - 1;
+      parts.push(paragraphXml(linea, esUltima
+        ? { bold: true, sz: 18, color: SK_ROJO_ACENTO, sinSangria: true }
+        : { sz: 18, sinSangria: true }));
+    });
+    parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 15, color: "9AA0A6", sinSangria: true }));
+  }
 
   let logoBytes = null;
   try { if (LOGO_BASE64) logoBytes = base64ToBytes(LOGO_BASE64); } catch (e) { logoBytes = null; }
