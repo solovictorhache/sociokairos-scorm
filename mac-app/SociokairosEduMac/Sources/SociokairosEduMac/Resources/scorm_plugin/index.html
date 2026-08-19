@@ -8,7 +8,7 @@
 
     :root{
       --sk-bg:#f4f8f4;
-      --sk-card:rgba(255,255,255,.86);
+      --sk-card:rgba(255,255,255,.88);
       --sk-card-solid:#ffffff;
       --sk-text:#122016;
       --sk-muted:#5a6b5e;
@@ -18,10 +18,17 @@
       --sk-border:rgba(20,60,38,.13);
       --sk-shadow:0 14px 38px rgba(20,60,38,.10);
       --sk-radius:16px;
-      --sk-toolbar-bg:rgba(250,252,250,.78);
+      --sk-toolbar-bg:rgba(250,252,250,.86);
       --sk-toolbar-border:rgba(20,60,38,.10);
+      --sk-sidebar-bg:rgba(255,255,255,.55);
+      --sk-glow: rgba(46,174,114,.30);
+      --sk-glow-strong: rgba(46,174,114,.55);
+      --sk-mesh-1: rgba(62,207,142,.16);
+      --sk-mesh-2: rgba(28,122,76,.10);
+      --sk-grid-line: rgba(28,122,76,.05);
     }
     *{ box-sizing:border-box; }
+    html, body{ height:100%; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
       margin: 0;
@@ -31,74 +38,167 @@
       min-height:100vh;
     }
 
-    /* --- Toolbar estilo macOS: translúcida, clara, sin gradiente pesado --- */
-    header {
+    /* --- Fondo tipo "sala de control": mesh de luz verde + retícula fina,
+       fijo y decorativo, sin afectar la legibilidad del contenido --- */
+    .sk-mesh-bg{
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      background-image:
+        radial-gradient(650px 420px at 8% -6%, var(--sk-mesh-1), transparent 60%),
+        radial-gradient(620px 460px at 108% 12%, var(--sk-mesh-2), transparent 60%),
+        radial-gradient(520px 420px at 50% 118%, var(--sk-mesh-2), transparent 65%),
+        repeating-linear-gradient(0deg, var(--sk-grid-line) 0 1px, transparent 1px 42px),
+        repeating-linear-gradient(90deg, var(--sk-grid-line) 0 1px, transparent 1px 42px);
+      transition: background-image .25s ease;
+    }
+
+    .sk-app{
+      position:relative;
+      z-index:1;
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+    }
+
+    /* --- Topbar: translúcida, clara, con stepper central --- */
+    .sk-topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      padding:10px 20px;
       background: var(--sk-toolbar-bg);
-      color: var(--sk-text);
-      padding: 14px 22px;
       border-bottom:1px solid var(--sk-toolbar-border);
       backdrop-filter: blur(20px) saturate(1.4);
       -webkit-backdrop-filter: blur(20px) saturate(1.4);
       position: sticky;
       top: 0;
-      z-index: 20;
-    }
-    .sk-toolbar{
-      max-width: 1320px;
-      margin: 0 auto;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:20px;
+      z-index: 30;
       flex-wrap:wrap;
     }
-    .sk-toolbar-brand{
+    .sk-topbar-brand{
       display:flex;
       align-items:center;
-      gap:14px;
+      gap:12px;
+      flex-shrink:0;
     }
-    header img {
-      height:44px;
-      width:44px;
-      border-radius:12px;
-      box-shadow:0 4px 14px rgba(20,60,38,.16);
+    .sk-topbar-logo{
+      height:38px;
+      width:38px;
+      border-radius:10px;
+      box-shadow:0 4px 14px rgba(20,60,38,.16), 0 0 0 1px var(--sk-border), 0 0 22px var(--sk-glow);
       background:white;
       padding:3px;
     }
-    header h1 {
-      margin: 0;
-      font-size: 19px;
+    .sk-topbar-title{
+      font-size:16px;
+      font-weight:800;
       letter-spacing:.01em;
-      font-weight:750;
-      color: var(--sk-text);
+      background: linear-gradient(100deg, var(--sk-text) 30%, var(--sk-primary-2) 65%, var(--sk-accent) 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color: transparent;
     }
-    header p {
-      margin: 2px 0 0 0;
-      font-size: 12.5px;
-      color: var(--sk-muted);
-      line-height:1.4;
-    }
-    .sk-author-top{
-      margin-top:3px;
-      font-size:11.5px;
+    .sk-topbar-title .sk-topbar-sub{
+      font-weight:500;
       color:var(--sk-muted);
+      -webkit-text-fill-color: var(--sk-muted);
     }
-    .sk-author-top a{
-      color: var(--sk-primary);
-      text-decoration:none;
-      font-weight:650;
+    .sk-topbar-tagline{
+      font-size:9.5px;
+      letter-spacing:.14em;
+      color:var(--sk-primary);
+      font-weight:700;
+      position:relative;
     }
-    .sk-author-top a:hover{ text-decoration:underline; }
+    .sk-topbar-tagline::before{
+      content:"";
+      display:inline-block;
+      width:5px; height:5px;
+      border-radius:50%;
+      background: var(--sk-accent);
+      margin-right:5px;
+      box-shadow:0 0 6px 1px var(--sk-glow-strong);
+      animation: sk-live-pulse 2.4s ease-in-out infinite;
+      vertical-align:middle;
+    }
+    @keyframes sk-live-pulse{
+      0%,100%{ opacity:1; transform:scale(1); }
+      50%{ opacity:.45; transform:scale(.72); }
+    }
+    /* Línea de escaneo sutil bajo la topbar, refuerza la sensación de panel
+       de control "vivo" sin animar nada que transmita datos falsos */
+    .sk-topbar::after{
+      content:"";
+      position:absolute;
+      left:0; right:0; bottom:-1px;
+      height:1px;
+      background: linear-gradient(90deg, transparent, var(--sk-accent), transparent);
+      background-size:220% 100%;
+      opacity:.55;
+      animation: sk-scan 7s linear infinite;
+    }
+    @keyframes sk-scan{
+      0%{ background-position: 220% 0; }
+      100%{ background-position: -20% 0; }
+    }
 
-    .sk-controls-clean{
+    .sk-stepper{
       display:flex;
-      gap:10px;
       align-items:center;
+      gap:2px;
+      background: rgba(28,122,76,.06);
+      border:1px solid var(--sk-border);
+      border-radius:999px;
+      padding:4px;
+    }
+    .sk-step{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      border:none;
+      background:transparent;
+      color:var(--sk-muted);
+      font-size:12.5px;
+      font-weight:650;
+      padding:7px 13px;
+      border-radius:999px;
+      cursor:pointer;
+      margin:0;
+      box-shadow:none;
+    }
+    .sk-step:hover{ background:rgba(28,122,76,.10); color:var(--sk-text); }
+    .sk-step.active{
+      background: linear-gradient(135deg, var(--sk-primary), var(--sk-primary-2));
+      color:#fff;
+      box-shadow: 0 2px 10px rgba(20,60,38,.22), 0 0 0 1px rgba(255,255,255,.14) inset, 0 0 16px var(--sk-glow);
+    }
+    .sk-step-num{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:rgba(255,255,255,.30);
+      font-size:10.5px;
+    }
+    .sk-step:not(.active) .sk-step-num{
+      background:rgba(28,122,76,.14);
+      color:var(--sk-primary);
+    }
+
+    .sk-topbar-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
       flex-shrink:0;
     }
     .sk-theme-toggle-clean{
-      height:34px;
-      min-width:76px;
+      height:32px;
+      min-width:70px;
       border-radius:999px;
       border:1px solid var(--sk-border);
       background:rgba(28,122,76,.08);
@@ -107,13 +207,15 @@
       align-items:center;
       justify-content:space-around;
       gap:6px;
-      padding:0 10px;
+      padding:0 9px;
       cursor:pointer;
+      margin:0;
+      box-shadow:none;
     }
     .sk-track{
       position:relative;
-      width:32px;
-      height:18px;
+      width:30px;
+      height:17px;
       border-radius:999px;
       background:rgba(28,122,76,.20);
       display:inline-block;
@@ -122,49 +224,243 @@
       position:absolute;
       left:2px;
       top:2px;
-      width:14px;
-      height:14px;
+      width:13px;
+      height:13px;
       border-radius:50%;
       background: var(--sk-primary);
       box-shadow:0 1px 3px rgba(0,0,0,.25);
       transition:left .18s ease;
     }
-    body.sk-dark .sk-knob{ left:16px; }
-    .sk-sun,.sk-moon{
-      font-size:12px;
-      line-height:1;
-    }
+    body.sk-dark .sk-knob{ left:15px; }
+    .sk-sun,.sk-moon{ font-size:11px; line-height:1; }
     .sk-icon-btn-clean{
-      width:34px;
-      height:34px;
-      border-radius:10px;
+      width:32px;
+      height:32px;
+      border-radius:9px;
       border:1px solid var(--sk-border);
       background:rgba(28,122,76,.08);
       color:var(--sk-text);
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:15px;
+      font-size:14px;
       cursor:pointer;
+      margin:0;
+      box-shadow:none;
+      position:relative;
     }
     .sk-icon-btn-clean:hover,.sk-theme-toggle-clean:hover{
       background:rgba(28,122,76,.16);
     }
+    .sk-badge-count{
+      position:absolute;
+      top:-4px;
+      right:-4px;
+      min-width:15px;
+      height:15px;
+      padding:0 3px;
+      border-radius:999px;
+      background:#d64545;
+      color:#fff;
+      font-size:9px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      line-height:1;
+      box-shadow:0 0 0 0 rgba(214,69,69,.55);
+      animation: sk-badge-ring 2.2s ease-out infinite;
+    }
+    @keyframes sk-badge-ring{
+      0%{ box-shadow:0 0 0 0 rgba(214,69,69,.5); }
+      70%{ box-shadow:0 0 0 6px rgba(214,69,69,0); }
+      100%{ box-shadow:0 0 0 0 rgba(214,69,69,0); }
+    }
 
-    main {
-      padding: 24px 24px 48px;
-      max-width: 1320px;
-      margin: 0 auto;
+    /* --- Barra de estado, siempre visible bajo la topbar --- */
+    .sk-statusbar{
+      padding:6px 20px;
+      font-size:12px;
+      color:var(--sk-muted);
+      background:rgba(28,122,76,.05);
+      border-bottom:1px solid var(--sk-toolbar-border);
     }
-    .grid {
-      display: grid;
-      grid-template-columns: minmax(360px,.95fr) minmax(420px,1.35fr);
-      gap: 20px;
-      align-items:start;
+
+    /* --- Cuerpo: sidebar + main + panel derecho --- */
+    .sk-body{
+      display:grid;
+      grid-template-columns: 220px minmax(0,1fr) 280px;
+      flex:1;
+      min-height:0;
     }
+    .sk-sidebar{
+      background: var(--sk-sidebar-bg);
+      border-right:1px solid var(--sk-border);
+      padding:16px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+    .sk-sidebar-footer{
+      margin-top:auto;
+      padding:10px 4px 2px;
+      border-top:1px solid var(--sk-border);
+      font-size:10.5px;
+      line-height:1.5;
+      color:var(--sk-muted);
+    }
+    .sk-sidebar-footer .sk-author-top a{
+      color: var(--sk-primary);
+      text-decoration:none;
+      font-weight:650;
+    }
+    .sk-sidebar-footer .sk-author-top a:hover{ text-decoration:underline; }
+    .sk-sidebar-nav{
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+    }
+    .sk-sidebar-item{
+      display:block;
+      text-align:left;
+      border:none;
+      border-left:2px solid transparent;
+      background:transparent;
+      color:var(--sk-muted);
+      font-size:13px;
+      font-weight:600;
+      padding:9px 12px;
+      border-radius:9px;
+      cursor:pointer;
+      margin:0;
+      box-shadow:none;
+      width:100%;
+      transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .sk-sidebar-item:hover{ background:rgba(28,122,76,.08); color:var(--sk-text); }
+    .sk-sidebar-item.active{
+      background:rgba(28,122,76,.14);
+      color:var(--sk-primary);
+      border-left-color: var(--sk-accent);
+      box-shadow: -1px 0 8px var(--sk-glow);
+    }
+    .sk-sidebar-section h3{
+      margin:0 0 8px;
+      font-size:11.5px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      color:var(--sk-muted);
+      font-weight:750;
+      padding:0 4px;
+    }
+    .sk-search-input{
+      width:100%;
+      padding:7px 10px;
+      font-size:12.5px;
+      border-radius:9px;
+      border:1px solid var(--sk-border);
+      background:#ffffff;
+      color:var(--sk-text);
+      margin-bottom:8px;
+      outline:none;
+    }
+    .sk-search-input:focus{ border-color:var(--sk-primary-2); }
+
+    .sk-main{
+      padding:20px;
+      overflow-x:hidden;
+      min-width:0;
+    }
+    .sk-rightpanel{
+      background: var(--sk-sidebar-bg);
+      border-left:1px solid var(--sk-border);
+      padding:18px 16px;
+    }
+    .sk-rightpanel h3{
+      margin:18px 0 10px;
+      font-size:11.5px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      color:var(--sk-muted);
+      font-weight:750;
+    }
+    .sk-rightpanel h3:first-child{ margin-top:0; }
+    .sk-stats-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    .sk-stat{
+      position:relative;
+      background:#ffffff;
+      border:1px solid var(--sk-border);
+      border-radius:12px;
+      padding:12px 10px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      overflow:hidden;
+      transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+    }
+    .sk-stat::before{
+      content:"";
+      position:absolute;
+      top:0; left:0; right:0;
+      height:2px;
+      background: linear-gradient(90deg, var(--sk-primary), var(--sk-accent));
+      opacity:.75;
+    }
+    .sk-stat:hover{
+      transform: translateY(-1px);
+      border-color: rgba(46,174,114,.4);
+      box-shadow: 0 6px 18px var(--sk-glow);
+    }
+    .sk-stat-num{
+      font-size:21px;
+      font-weight:800;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings:"tnum";
+      background: linear-gradient(120deg, var(--sk-primary), var(--sk-primary-2));
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .sk-stat-num.sk-stat-pulse{ animation: sk-stat-pop .5s ease; }
+    @keyframes sk-stat-pop{
+      0%{ transform:scale(1); text-shadow:0 0 0 rgba(62,207,142,0); }
+      35%{ transform:scale(1.14); text-shadow:0 0 12px var(--sk-glow-strong); }
+      100%{ transform:scale(1); text-shadow:0 0 0 rgba(62,207,142,0); }
+    }
+    .sk-stat-label{
+      font-size:10px;
+      color:var(--sk-muted);
+      line-height:1.3;
+    }
+    .sk-fuentes-preview{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .sk-fuente-item{
+      position:relative;
+      font-size:11.5px;
+      line-height:1.4;
+      padding:8px 10px 8px 13px;
+      background:#ffffff;
+      border:1px solid var(--sk-border);
+      border-left:2px solid var(--sk-primary-2);
+      border-radius:10px;
+      color:var(--sk-text);
+      word-break:break-word;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    .sk-fuente-item:hover{ box-shadow:0 0 0 1px var(--sk-border), 0 4px 14px var(--sk-glow); }
+    .sk-fuente-item a{ color:var(--sk-primary); text-decoration:none; }
+    .sk-fuente-item a:hover{ text-decoration:underline; }
+
     textarea {
       width: 100%;
-      min-height: 220px;
+      min-height: 200px;
       resize: vertical;
       padding: 14px 16px;
       font-family: inherit;
@@ -182,6 +478,7 @@
       box-shadow:0 0 0 3px rgba(62,207,142,.20);
     }
     .panel {
+      position:relative;
       background: var(--sk-card);
       border-radius: var(--sk-radius);
       border: 1px solid var(--sk-border);
@@ -190,6 +487,16 @@
       font-size: 14px;
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
+      margin-bottom:18px;
+      overflow:hidden;
+    }
+    .panel::before{
+      content:"";
+      position:absolute;
+      top:0; left:0; right:0;
+      height:2px;
+      background: linear-gradient(90deg, transparent, var(--sk-accent), transparent);
+      opacity:.6;
     }
     .panel h2 {
       margin-top: 0;
@@ -226,38 +533,25 @@
       padding: 9px 15px;
       font-size: 13px;
       cursor: pointer;
-      background: var(--sk-primary);
+      background: linear-gradient(135deg, var(--sk-primary), var(--sk-primary-2));
       color: #fff;
       margin-top: 8px;
       margin-right: 8px;
       font-weight:600;
-      transition: background .15s ease, opacity .15s ease, transform .1s ease;
+      box-shadow: 0 2px 8px rgba(20,60,38,.18);
+      transition: background .15s ease, opacity .15s ease, transform .1s ease, box-shadow .15s ease;
     }
-    button:hover{
-      background: var(--sk-primary-2);
-    }
-    button:active{
-      transform: scale(.98);
-    }
+    button:hover{ box-shadow: 0 4px 16px var(--sk-glow-strong); }
+    button:active{ transform: scale(.98); }
     button.secondary {
       background: rgba(28,122,76,.10);
       color: var(--sk-primary);
       border-color: var(--sk-border);
     }
-    button.secondary:hover{
-      background: rgba(28,122,76,.18);
-    }
-    button:disabled {
-      opacity: 0.5;
-      cursor: default;
-      transform:none;
-    }
-    .tags {
-      margin-top: 12px;
-      font-size: 11.5px;
-      color: var(--sk-muted);
-      line-height:1.9;
-    }
+    button.secondary:hover{ background: rgba(28,122,76,.18); }
+    button:disabled { opacity: 0.5; cursor: default; transform:none; }
+
+    .tags { margin-top: 12px; font-size: 11.5px; color: var(--sk-muted); line-height:1.9; }
     .badge {
       display: inline-block;
       padding: 4px 9px;
@@ -268,16 +562,6 @@
       background:rgba(28,122,76,.07);
       color:var(--sk-primary);
       font-weight:600;
-    }
-    .status {
-      margin-top: 10px;
-      font-size: 12px;
-      color: var(--sk-muted);
-      padding:6px 10px;
-      border-radius:999px;
-      background:rgba(28,122,76,.06);
-      display:inline-block;
-      border:1px solid var(--sk-border);
     }
     .badge-area {
       display: inline-block;
@@ -298,22 +582,9 @@
       margin:8px 0 12px;
       line-height:1.7;
     }
-    .version-selector label{
-      cursor:pointer;
-      display:block;
-      padding:4px 6px;
-      border-radius:8px;
-      font-weight:600;
-    }
-    .version-selector label:hover{
-      background: rgba(28,122,76,.07);
-    }
-    input[type="radio"]{
-      accent-color: var(--sk-primary);
-      transform:scale(1.05);
-      margin-right:6px;
-      vertical-align:middle;
-    }
+    .version-selector label{ cursor:pointer; display:block; padding:4px 6px; border-radius:8px; font-weight:600; }
+    .version-selector label:hover{ background: rgba(28,122,76,.07); }
+    input[type="radio"]{ accent-color: var(--sk-primary); transform:scale(1.05); margin-right:6px; vertical-align:middle; }
 
     body.sk-dark{
       --sk-bg:#0d1712;
@@ -322,9 +593,17 @@
       --sk-text:#eaf5ee;
       --sk-muted:#93a89b;
       --sk-border:rgba(120,200,150,.16);
-      --sk-toolbar-bg:rgba(13,23,18,.72);
+      --sk-toolbar-bg:rgba(13,23,18,.78);
       --sk-toolbar-border:rgba(120,200,150,.12);
+      --sk-sidebar-bg:rgba(15,27,20,.6);
+      --sk-glow: rgba(62,207,142,.28);
+      --sk-glow-strong: rgba(62,207,142,.55);
+      --sk-mesh-1: rgba(62,207,142,.14);
+      --sk-mesh-2: rgba(46,174,114,.10);
+      --sk-grid-line: rgba(120,200,150,.05);
     }
+    body.sk-dark .sk-stat::before,
+    body.sk-dark .panel::before{ opacity:.9; }
     body.sk-dark textarea{ background:#12201a; color:var(--sk-text); }
     body.sk-dark .panel pre{ background:#0f1c15; color:var(--sk-text); }
     body.sk-dark .version-selector{ background:#0f1c15; }
@@ -332,54 +611,34 @@
     body.sk-dark .sk-icon-btn-clean{ background:rgba(62,207,142,.10); }
     body.sk-dark .sk-theme-toggle-clean:hover,
     body.sk-dark .sk-icon-btn-clean:hover{ background:rgba(62,207,142,.18); }
+    body.sk-dark .sk-search-input,
+    body.sk-dark .sk-stat,
+    body.sk-dark .sk-fuente-item{ background:#12201a; }
+    body.sk-dark .sk-step:not(.active) .sk-step-num{ background:rgba(62,207,142,.14); color:var(--sk-accent); }
 
-    .sk-historial-lista{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      margin:8px 0 4px;
-    }
+    .sk-historial-lista{ display:flex; flex-direction:column; gap:6px; margin:0 0 4px; }
     .sk-historial-item{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
+      gap:8px;
       text-align:left;
-      padding:8px 12px;
+      padding:8px 10px;
       border-radius:10px;
       border:1px solid var(--sk-border);
       background:#ffffff;
       color:var(--sk-text);
-      font-size:12.5px;
+      font-size:11.5px;
       line-height:1.4;
       cursor:pointer;
       width:100%;
     }
-    .sk-historial-item:hover{
-      background: rgba(28,122,76,.06);
-    }
-    .sk-historial-item .sk-historial-texto{
-      flex:1;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-    .sk-historial-item .sk-historial-fecha{
-      flex-shrink:0;
-      font-size:11px;
-      color:var(--sk-muted);
-    }
-    .sk-historial-vacio{
-      font-size:12.5px;
-      color:var(--sk-muted);
-      font-style:italic;
-    }
-    body.sk-dark .sk-historial-item{
-      background:#12201a;
-    }
-    body.sk-dark .sk-historial-item:hover{
-      background: rgba(62,207,142,.10);
-    }
+    .sk-historial-item:hover{ background: rgba(28,122,76,.06); }
+    .sk-historial-item .sk-historial-texto{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .sk-historial-item .sk-historial-fecha{ flex-shrink:0; font-size:10px; color:var(--sk-muted); }
+    .sk-historial-vacio{ font-size:12px; color:var(--sk-muted); font-style:italic; }
+    body.sk-dark .sk-historial-item{ background:#12201a; }
+    body.sk-dark .sk-historial-item:hover{ background: rgba(62,207,142,.10); }
 
     .visual-svg-box{
       overflow-x:auto;
@@ -387,13 +646,19 @@
       border-radius:12px;
       padding:10px;
       background:#f7faf7;
+      margin-bottom:14px;
     }
     body.sk-dark .visual-svg-box{ background:#0f1c15; }
 
-    @media (max-width: 980px) {
-      .grid { grid-template-columns: 1fr; }
-      header h1{ font-size:17px; }
-      main{ padding:18px; }
+    @media (max-width: 1180px) {
+      .sk-body{ grid-template-columns: 190px minmax(0,1fr); }
+      .sk-rightpanel{ display:none; }
+    }
+    @media (max-width: 820px) {
+      .sk-body{ grid-template-columns: 1fr; }
+      .sk-sidebar{ display:none; }
+      .sk-stepper{ order:3; width:100%; justify-content:center; }
+      .sk-topbar{ flex-direction:column; align-items:stretch; }
     }
 
   </style>
@@ -422,140 +687,216 @@
   </div>
 </div>
 
-  <header>
-<div class="sk-toolbar">
-<div class="sk-toolbar-brand">
-<img src="logo.png" alt="SOCIOKAIROS">
-<div>
-<h1>SOCIOKAIROS</h1>
-<p>Research Suite · Reformulación dinámica de problemas científicos</p>
-<div class="sk-author-top">
-  Dr. Víctor Hugo Pérez Gallo ·
-  <a href="mailto:contacto@sociokairos.com?subject=SOCIOKAIROS&body=Hola%2C%0A%0ALe%20escribo%20sobre%20SOCIOKAIROS.%0A%0AUn%20saludo%2C">contacto@sociokairos.com</a>
-</div>
-</div>
-</div>
+<div class="sk-mesh-bg" aria-hidden="true"></div>
+<div class="sk-app">
 
-<div class="sk-controls-clean">
-  <button class="sk-theme-toggle-clean" onclick="toggleSKTheme()" title="Alternar modo claro/oscuro" type="button">
-    <span class="sk-sun">☀</span>
-    <span class="sk-track"><span class="sk-knob"></span></span>
-    <span class="sk-moon">☾</span>
-  </button>
-  <button class="sk-icon-btn-clean" onclick="document.documentElement.requestFullscreen()" title="Pantalla completa" type="button">⛶</button>
-  <button class="sk-icon-btn-clean" onclick="salirPantallaCompleta()" title="Salir de pantalla completa" type="button">↗</button>
-</div>
-</div>
-</header>
+  <header class="sk-topbar">
+    <div class="sk-topbar-brand">
+      <img src="logo.png" class="sk-topbar-logo" alt="SOCIOKAIROS">
+      <div>
+        <div class="sk-topbar-title">SOCIOKAIROS <span class="sk-topbar-sub">Research</span></div>
+        <div class="sk-topbar-tagline">RESEARCH SUITE</div>
+      </div>
+    </div>
 
-  <main>
-    <div class="grid">
-      <section class="panel">
-        <h2>1. Problema científico inicial</h2>
-        <textarea id="txt_problema" placeholder="Escribe aquí el problema científico tal como lo formularías en un proyecto de investigación..."></textarea>
-        <div>
-          <button id="btn_reformular">Reformular problema y sugerir VI/VD</button>
-          <button id="btn_clear" class="secondary">Borrar problema</button>
-        </div>
-        <div>
-          <button id="btn_export_word" class="secondary">Exportar informe Word</button>
-          <button id="btn_export_csv" class="secondary">Exportar operacionalización (CSV)</button>
-        </div>
-        <div id="status" class="status">Listo.</div>
-        <div class="tags">
-          <span class="badge">#preguntas_de_investigación</span>
-          <span class="badge">#VI_VD</span>
-          <span class="badge">#hipótesis</span>
-          <span class="badge">#operacionalización</span>
-          <span class="badge">#área_sociológica</span>
-          <span class="badge">#unidad_de_análisis</span>
-          <span class="badge">#fuentes_de_datos</span>
-        </div>
+    <nav class="sk-stepper" id="sk_stepper">
+      <button class="sk-step active" type="button" data-stage="definir"><span class="sk-step-num">1</span><span class="sk-step-label">Definir</span></button>
+      <button class="sk-step" type="button" data-stage="analizar"><span class="sk-step-num">2</span><span class="sk-step-label">Analizar</span></button>
+      <button class="sk-step" type="button" data-stage="disenar"><span class="sk-step-num">3</span><span class="sk-step-label">Diseñar</span></button>
+      <button class="sk-step" type="button" data-stage="ejecutar"><span class="sk-step-num">4</span><span class="sk-step-label">Ejecutar</span></button>
+      <button class="sk-step" type="button" data-stage="comunicar"><span class="sk-step-num">5</span><span class="sk-step-label">Comunicar</span></button>
+    </nav>
 
-        <h3 style="margin-top:22px;">Historial de problemas trabajados (en este dispositivo)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS guarda tus últimos problemas analizados en este dispositivo para que puedas retomarlos y comparar versiones sucesivas mientras los vas puliendo. No se envía a ningún servidor.</p>
+    <div class="sk-topbar-actions">
+      <button class="sk-icon-btn-clean" id="sk_btn_alertas" title="Alertas metodológicas del problema actual" type="button">
+        🔔<span id="sk_alertas_badge" class="sk-badge-count" style="display:none;">0</span>
+      </button>
+      <button class="sk-theme-toggle-clean" onclick="toggleSKTheme()" title="Alternar modo claro/oscuro" type="button">
+        <span class="sk-sun">☀</span>
+        <span class="sk-track"><span class="sk-knob"></span></span>
+        <span class="sk-moon">☾</span>
+      </button>
+      <button class="sk-icon-btn-clean" onclick="document.documentElement.requestFullscreen()" title="Pantalla completa" type="button">⛶</button>
+      <button class="sk-icon-btn-clean" onclick="salirPantallaCompleta()" title="Salir de pantalla completa" type="button">↗</button>
+    </div>
+  </header>
+
+  <div id="sk_statusbar" class="sk-statusbar">
+    <span id="status">Listo.</span>
+  </div>
+
+  <div class="sk-body">
+
+    <aside class="sk-sidebar">
+      <nav class="sk-sidebar-nav">
+        <button class="sk-sidebar-item active" type="button" data-stage="definir" data-scrollto="panel_problema">📋 Workspace</button>
+        <button class="sk-sidebar-item" type="button" data-scrollto="sk_historial_panel">🗂 Problemas</button>
+        <button class="sk-sidebar-item" type="button" data-stage="analizar" data-scrollto="out_variables">🔤 Variables</button>
+        <button class="sk-sidebar-item" type="button" data-stage="analizar" data-scrollto="out_notas">🧩 Conceptos</button>
+        <button class="sk-sidebar-item" type="button" data-stage="disenar" data-scrollto="out_fuentes">📚 Fuentes</button>
+        <button class="sk-sidebar-item" type="button" data-stage="comunicar" data-scrollto="btn_export_word">📤 Exportar</button>
+      </nav>
+
+      <div class="sk-sidebar-section" id="sk_historial_panel">
+        <h3>Historial de problemas</h3>
+        <input id="sk_historial_buscar" class="sk-search-input" type="search" placeholder="Buscar en tu historial…">
         <div id="sk_historial_lista" class="sk-historial-lista"></div>
         <button id="btn_historial_borrar" class="secondary" type="button" style="display:none;">Borrar historial</button>
-      </section>
-      <section class="panel">
-        <h2>2. Salida SOCIOKAIROS</h2>
-        <p class="meta sk-tutor" style="font-size:0.82rem; margin:2px 0 14px;">SOCIOKAIROS no solo entrega resultados: explica en cada bloque qué está haciendo y por qué, para que puedas auditar y ajustar el razonamiento en cada paso.</p>
+      </div>
 
-        <div id="badge_area" class="badge-area"></div>
-
-        <h3>2.1 Problema científico definitivo (síntesis)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Se funde tu problema inicial con el resto del análisis en un párrafo ya redactado, del tipo que abriría un capítulo de planteamiento del problema.</p>
-        <pre id="out_problema_perfecto"></pre>
-
-        <h3>2.2 Tres versiones del problema en forma de pregunta</h3>
-        <pre id="out_reformulacion"></pre>
-
-        <div id="selector_version" class="version-selector" style="display:none;">
-          <p class="meta" style="font-size:0.8rem;">
-            Selecciona la versión que quieres usar como problema de trabajo para la exportación (Word/CSV):
-          </p>
-          <label><input type="radio" name="vers_sel" value="1"> Versión descriptiva (P1)</label><br>
-          <label><input type="radio" name="vers_sel" value="2"> Versión relacional / explicativa (P2)</label><br>
-          <label><input type="radio" name="vers_sel" value="3"> Versión crítica / estratégica (P3)</label>
-          <p id="version_elegida_hint" class="meta" style="font-size:0.75rem; margin-top:4px;">
-            Si no seleccionas ninguna, SOCIOKAIROS usará por defecto la versión relacional (P2).
-          </p>
+      <div class="sk-sidebar-footer">
+        <div class="sk-author-top">
+          Dr. Víctor Hugo Pérez Gallo ·
+          <a href="mailto:contacto@sociokairos.com?subject=SOCIOKAIROS&body=Hola%2C%0A%0ALe%20escribo%20sobre%20SOCIOKAIROS.%0A%0AUn%20saludo%2C">contacto@sociokairos.com</a>
         </div>
+      </div>
+    </aside>
 
-        <h3>2.3 Variables sugeridas (VI / VD)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS asigna VI/VD por convención léxica (ver la nota al final de este bloque); esa dirección causal es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí: se recalculan las preguntas, correlaciones, hipótesis y operacionalización, no solo la etiqueta.</p>
-        <pre id="out_variables"></pre>
-        <button id="btn_swap_vivd" class="secondary" type="button" disabled>⇄ Intercambiar VI ↔ VD</button>
+    <main class="sk-main">
 
-        <h3>2.4 Correlaciones, hipótesis y marcos teóricos</h3>
-        <pre id="out_notas"></pre>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Los marcos de arriba se proponen por afinidad léxica con tu texto; que un marco sea pertinente es una decisión teórica tuya. Escribe aquí por qué el marco que elijas explica tu problema concreto — este texto se inserta literalmente en el informe Word exportado.</p>
-        <textarea id="txt_justificacion_marco" style="min-height:110px;" placeholder="Ej.: elijo la violencia simbólica de Bourdieu porque el problema describe una relación de dominación aceptada, no solo impuesta por la fuerza..."></textarea>
-
-
-        <h3>2.5 Por qué SOCIOKAIROS sugirió esto (transparencia del análisis)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS es determinista, no una caja negra: aquí se explica, VD por VD, VI por VI, área por área y marco por marco, qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto.</p>
-        <pre id="out_transparencia"></pre>
-
-        <h3>2.6 Categorías explicativas para tu problema concreto</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Más allá de una lista de autores: si tu problema describe una dinámica que cuesta explicar a primera vista, aquí se propone un concepto teórico concreto que puede explicarla, con el razonamiento aplicado a tu caso.</p>
-        <pre id="out_categorias_explicativas"></pre>
-
-        <h3>2.7 Unidad de análisis, diseño de estudio y enfoque metodológico</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Se decide si tu problema pide un abordaje cualitativo, cuantitativo o mixto, y se adapta a partir de ahí el diseño, el software de apoyo y el tipo de muestreo sugeridos.</p>
-        <pre id="out_diseno"></pre>
-
-        <h3>2.8 Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Un punto de partida para trabajo cualitativo, pensado para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real.</p>
-        <pre id="out_guia_codigos"></pre>
-        <pre id="out_guia_preguntas"></pre>
-
-        <h3>2.9 Fuentes de datos / bases recomendadas</h3>
-        <pre id="out_fuentes"></pre>
-
-        <h3>2.10 Alertas metodológicas</h3>
-        <pre id="out_alertas"></pre>
-
-        <h3>2.11 Tradiciones sociológicas compatibles</h3>
-        <pre id="out_tradiciones"></pre>
-
-        <h3>2.12 Mapa lógico del problema</h3>
-        <pre id="out_mapa"></pre>
-
-        <h3>2.13 Diseños metodológicos sugeridos</h3>
-        <pre id="out_disenos_plus"></pre>
-
-        <h3>2.14 Visualización heurística del problema</h3>
-        <div class="visual-controls" style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px 0;">
-          <button id="btn_visual_causal" class="secondary" type="button">Modo 1 · Mapa causal</button>
-          <button id="btn_visual_red" class="secondary" type="button">Modo 2 · Red sociológica</button>
-          <button id="btn_visual_capas" class="secondary" type="button">Modo 3 · Capas sociales</button>
+      <section class="sk-stage" data-stage="definir">
+        <div class="panel" id="panel_problema">
+          <h2>1. Problema científico inicial</h2>
+          <textarea id="txt_problema" placeholder="Escribe aquí el problema científico tal como lo formularías en un proyecto de investigación..."></textarea>
+          <div>
+            <button id="btn_reformular">Reformular problema y sugerir VI/VD</button>
+            <button id="btn_clear" class="secondary">Borrar problema</button>
+          </div>
+          <div class="tags">
+            <span class="badge">#preguntas_de_investigación</span>
+            <span class="badge">#VI_VD</span>
+            <span class="badge">#hipótesis</span>
+            <span class="badge">#operacionalización</span>
+            <span class="badge">#área_sociológica</span>
+            <span class="badge">#unidad_de_análisis</span>
+            <span class="badge">#fuentes_de_datos</span>
+          </div>
         </div>
-        <div id="out_visual_svg" class="visual-svg-box"></div>
-
       </section>
-    </div>
-  </main>
+
+      <section class="sk-stage" data-stage="analizar" style="display:none;">
+        <div class="panel">
+          <h2>2. Análisis del problema de investigación</h2>
+          <p class="meta sk-tutor" style="font-size:0.82rem; margin:2px 0 14px;">SOCIOKAIROS no solo entrega resultados: explica en cada bloque qué está haciendo y por qué, para que puedas auditar y ajustar el razonamiento en cada paso.</p>
+
+          <div id="badge_area" class="badge-area"></div>
+
+          <h3>Mapa conceptual</h3>
+          <div class="visual-controls" style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px 0;">
+            <button id="btn_visual_causal" class="secondary" type="button">Mapa causal</button>
+            <button id="btn_visual_red" class="secondary" type="button">Red sociológica</button>
+            <button id="btn_visual_capas" class="secondary" type="button">Capas sociales</button>
+          </div>
+          <div id="out_visual_svg" class="visual-svg-box"></div>
+
+          <h3>2.1 Problema científico definitivo (síntesis)</h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Se funde tu problema inicial con el resto del análisis en un párrafo ya redactado, del tipo que abriría un capítulo de planteamiento del problema.</p>
+          <pre id="out_problema_perfecto"></pre>
+
+          <h3>2.2 Tres versiones del problema en forma de pregunta</h3>
+          <pre id="out_reformulacion"></pre>
+
+          <div id="selector_version" class="version-selector" style="display:none;">
+            <p class="meta" style="font-size:0.8rem;">
+              Selecciona la versión que quieres usar como problema de trabajo para la exportación (Word/CSV):
+            </p>
+            <label><input type="radio" name="vers_sel" value="1"> Versión descriptiva (P1)</label><br>
+            <label><input type="radio" name="vers_sel" value="2"> Versión relacional / explicativa (P2)</label><br>
+            <label><input type="radio" name="vers_sel" value="3"> Versión crítica / estratégica (P3)</label>
+            <p id="version_elegida_hint" class="meta" style="font-size:0.75rem; margin-top:4px;">
+              Si no seleccionas ninguna, SOCIOKAIROS usará por defecto la versión relacional (P2).
+            </p>
+          </div>
+
+          <h3>2.3 Variables sugeridas (VI / VD)</h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS asigna VI/VD por convención léxica (ver la nota al final de este bloque); esa dirección causal es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí.</p>
+          <pre id="out_variables"></pre>
+          <button id="btn_swap_vivd" class="secondary" type="button" disabled>⇄ Intercambiar VI ↔ VD</button>
+
+          <h3>2.4 Correlaciones, hipótesis y marcos teóricos</h3>
+          <pre id="out_notas"></pre>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Los marcos de arriba se proponen por afinidad léxica con tu texto; que un marco sea pertinente es una decisión teórica tuya. Escribe aquí por qué el marco que elijas explica tu problema concreto — este texto se inserta literalmente en el informe Word exportado.</p>
+          <textarea id="txt_justificacion_marco" style="min-height:110px;" placeholder="Ej.: elijo la violencia simbólica de Bourdieu porque el problema describe una relación de dominación aceptada, no solo impuesta por la fuerza..."></textarea>
+
+          <h3>2.5 Por qué SOCIOKAIROS sugirió esto (transparencia del análisis)</h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Sin caja negra: qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto.</p>
+          <pre id="out_transparencia"></pre>
+
+          <h3>2.6 Categorías explicativas para tu problema concreto</h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Si tu problema describe una dinámica que cuesta explicar a primera vista, aquí se propone un concepto teórico concreto que puede explicarla.</p>
+          <pre id="out_categorias_explicativas"></pre>
+        </div>
+      </section>
+
+      <section class="sk-stage" data-stage="disenar" style="display:none;">
+        <div class="panel">
+          <h2>3. Diseño del estudio</h2>
+
+          <h3>Unidad de análisis, diseño y enfoque metodológico</h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Se decide si tu problema pide un abordaje cualitativo, cuantitativo o mixto, y se adapta a partir de ahí el diseño, el software de apoyo y el tipo de muestreo sugeridos.</p>
+          <pre id="out_diseno"></pre>
+
+          <h3>Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Un punto de partida para trabajo cualitativo, pensado para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real.</p>
+          <pre id="out_guia_codigos"></pre>
+          <pre id="out_guia_preguntas"></pre>
+
+          <h3>Fuentes de datos / bases recomendadas</h3>
+          <pre id="out_fuentes"></pre>
+
+          <h3>Diseños metodológicos sugeridos</h3>
+          <pre id="out_disenos_plus"></pre>
+        </div>
+      </section>
+
+      <section class="sk-stage" data-stage="ejecutar" style="display:none;">
+        <div class="panel">
+          <h2>4. Ejecutar: alertas y verificación</h2>
+
+          <h3>Alertas metodológicas</h3>
+          <pre id="out_alertas"></pre>
+
+          <h3>Tradiciones sociológicas compatibles</h3>
+          <pre id="out_tradiciones"></pre>
+
+          <h3>Mapa lógico del problema</h3>
+          <pre id="out_mapa"></pre>
+        </div>
+      </section>
+
+      <section class="sk-stage" data-stage="comunicar" style="display:none;">
+        <div class="panel">
+          <h2>5. Comunicar: exportar resultados</h2>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Exporta el análisis completo a Word (informe redactado, con tu justificación teórica incluida) o a CSV (tabla de operacionalización) usando la versión del problema que elegiste en la etapa "Analizar".</p>
+          <div>
+            <button id="btn_export_word" class="secondary">Exportar informe Word</button>
+            <button id="btn_export_csv" class="secondary">Exportar operacionalización (CSV)</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <aside class="sk-rightpanel">
+      <h3>Resumen del análisis</h3>
+      <p class="meta sk-tutor" style="font-size:0.74rem;">Conteos reales del análisis actual — nada de puntuaciones inventadas: cada número sale directamente del motor.</p>
+      <div id="sk_stats_grid" class="sk-stats-grid">
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_variables">–</span><span class="sk-stat-label">Variables detectadas</span></div>
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_areas">–</span><span class="sk-stat-label">Áreas sociológicas</span></div>
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_marcos">–</span><span class="sk-stat-label">Marcos teóricos</span></div>
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_categorias">–</span><span class="sk-stat-label">Categorías explicativas</span></div>
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_fuentes">–</span><span class="sk-stat-label">Fuentes de datos</span></div>
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_alertas">–</span><span class="sk-stat-label">Alertas metodológicas</span></div>
+      </div>
+
+      <h3>Fuentes recomendadas</h3>
+      <div id="sk_fuentes_preview" class="sk-fuentes-preview">
+        <p class="sk-historial-vacio">Reformula un problema para ver fuentes de datos recomendadas.</p>
+      </div>
+    </aside>
+
+  </div>
+</div>
 
 <script>
 const LOGO_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAMAAAAJixmgAAADAFBMVEX///////7///3//v7//v3+//7+/v/+/v7+/v39/v7+/f39/f79/f39/fz8/f39/Pz8/P38/Pz8/Pv8+/z7/Pz7+/z7+/v7+/r6+/z6+/v6+/r8+vr7+vv7+vr6+vv6+vr6+vn5+vv5+vr5+vn4+vr8+fr6+fv6+fr6+fn6+Pn5+fr5+fn4+fr4+fn5+Pn4+Pr4+Pn5+Pj4+Pj3+fn3+Pn3+Pj2+Pj59/j39/n39/j39/f29/j29/f39vj29vj29vf19vf09fbz9Pby8/Xv8PPs7vHr7PDo6u7l5+zi5erf4+jd4Oba4ObZ3uTW3OLU2eDS2d/Q1t3M09zK0drGz9jDzNXAytS9xtG5xc+4wc2zwMyyvcqtu8irt8WmtsSjscCesL+erb2crbycqruYqrqVp7iSo7WOo7WMn7GKna+Gm66Cl6uClad/lKl9kaZ3j6Vyi6Fvh55rhp5og5pkf5dkfJVffJVgeZJaeJJXdZBRc45QcIxNbopLa4hGaoZEZ4RAY4E+YYA7YH84XXw3W3g3Wnc1XHs0WnkyWHgtVnYrU3UoU3QmUHEjTXAgTG8ZTG4dSm0VTG4US24VSm0USm0TSm0SSmwcSGsYRmoWRWgUSWwTSWwTRmkSSWwSR2sRSWwRSGsQSGsRR2oQR2oQRWkPSGsPR2oOR2oPRmoORmkNRmkPRWkORWkNRWkORGgNRGgNQ2gNQ2cMRWkMRGgMRGcLRGgMQ2gMQ2cLQ2cKQ2cJQ2YTQmYRQWYOQWYKQmYJQmYKQWYIQmYIQWYHQWYHQWUGQWYIQGUHQGUGQGUPPmQNPmMMPmMIPmMGPmMLO2EJO2AHOmAFP2QEPmMEPWIDPWIEPGIDPGECPGEFOmADO2ECO2ABO2ABOmAAOmAEOV8DOV8COV8AOV8AOV4AOF8AOF4AOF0EN10CNl0BN10BNVwAN14AN10AN1wANl4ANl0ANlwANV0ANVwANVsANFwANFsANFoBM1sAM1wAM1sAM1oAM1kAMloAMlkAMVkAL1cAKFHnhEeSAAA+eUlEQVR42sV9B2AUR5pu8bT35OXJxlrbM2/aXdXa8d21rvuGm9Vjjh2PHiLnYHIGgw0mLMmEA5PBxoCBBUy0TsQzBpOMMWnBwNocMjmZaMBgy8RdyZKG96QjvarqVJ1mesB3r42l0UxPd/31p+8PVQ0E5wPSnxz5jZRXSHkXIu1D5QPTEWC+i3/z+pcEgcc/6Qc8cwpk72dcTn8FeaT9TU7lkXYVpF6HvYT+ZV6AzJcs5wDtLWU0UKD0IPIbYSr126sfKN/mET1b+WG84BGyzwGyzqL6g6Mf6fQ4zB5PhoBHog6DfMkv8PqJUJlSh4M35orcRXmFFF5pBBvjQxqB5DUlHULTYHi/MmaEApxZHvRxWvkEEb0Gx7xhpY/3GV/Eh4+9JFIZ5mMu6TC1xlTwzIig/iG9jE4wnXIyN7x6Cp0VXhNKTT7IFCBFwPFHAcEkXew9HQfCvIMMBis04Qv7oFkMyOcKrRwZFWRFFNll2XxDhU3QNgzg/jWemSVjzNA0a+rB6a9ZKpi7QZ43iTa0iDBEumq4sA0ReRMMYUPmX8j5e4i5J8cSbHxdm1s6At6qWtA0YnIbBFkbhoyTzDZIN0qKnEAe6efTj1EC06kwFCEzmX6b3Orj8CM6eQiyH6smCVBGssoIzeqPTAxDNo0PKIOmZo5nGWwlW7sScrmW1cbpaqppH8foA3SUBv2LyHxBXevwJwAl0gWoOCbm8LNXJjcNMO+yN4J+iFjea4KAkM0LWcbm4PM4M8HsX5T5Vl8AXY23XYcZQVPmgsgG53ANzkHU7XdALl9w0DIz0Q5KiVz9v10VEO/yEUhg6DjDYiWSA51g3nAiiU8PCF4OZFMlN4I5lxFBh8+dCfax5yErJGIERDkLCqkcnPJdJCQVETJ7yONVEYR2ZVA0BwUCZoI5nTHkD6Q7Cp9uI/Qp4qhPVweMeGqjDKQBXQi0zpFqDRAj9cjR21jmQ78Bh6yGz+pNTMJAJkM12hAoH3J+wQJx8ccBanaQjl4o75UpZyc+AAUnUdAwuGGZzQAIIeSsjawAcgqGx4zmzYJgZT3y03lAJrDOaUNV/ZIvgBgsbVIyXuAIqX6o808FR36DUcjiQky0IrMycpAFvslAEmv3KAkBKwphoA7zCRISezpFpA3zpAkCCwEpuEaWUEj9O6DCF2jSBcEOuRBkxY9XvJiBURATQkBBtPh9RKWfU+K1ANUBTtEr6GSptAEFdJuPOJuVpuf5bGKFdJIZdMOQgVSjoDtclCjUFNwAiYsTMkagKhU7ozzi3MycoHzCIZPe6bIBNIPPM5hCYRwyeRt6NocUXEZO4AnvVc/lBEChgJC7oTbTFkguimo4rH2T51xmlZEmX8AOXQLAjFCsngvaWISQWWoh0mFbEtZSZKfZjwQOCSbysEg3OdDlItAIs3QjrYY3xDQDzeZABM0c1iy2n5FC8k0OMX4dR0EBaMGJyDA9yGoNkTVotgBKx7CPwcacLm5+aI6lDMyqYDKfHpNgSw81WAsh0DycdlEGoSA9roRqAgJqvhApNw/wDr5PpxnPBs8lV2qzWeecpZuKEkEG5AVvPY9D5lARqdEeskI1P/bDqhoGeIWz1PGqqSReR/x48PQ+6nQgiL/Fa8GR6poZOgKO6SRjXlACHGhiP2SyAAoHaJSOfDrSVwUPGuoHiX0jqYwAk3xRLAr+B/wCcjCg9JWfN+EbqCYR1AEjLoCSQGA3U2xJ0CDBAWs5SgavReoKaKHUUu9oyjognxqx+rXkBP1bEUfAhn2USTRxA3ko2AJ7GoTwiNFoV+MDtTyL8r4VJpjzQpbkA7JGdNoLZMIfyDA6kKJgw/Pz1NTw5pQSyVdhAgFWacUJGeGrIdQY4hCu4u9ClvsUkBOaeOVEI3LT72oWDjwkzhKkW0Ifs8/kdNSDONbXcBo9KmM4FiAo1o0TAozSqpE4oiiDRu/AdCNoTCpnEjOIHJAfl0D8LEGALa5AjtG5aySJTCdxrCnikEUbkIEiOLt7A4KTB1OFlbOlYxADIWFipeOsIbnwpIeKiSDiOGc4pjoPzX5SRnBMchP51QQ9JdiIeiFCTllVZEec1tDFkW+IDWlQ4vg3MdLU0heIt2XXFEhlkkfIM2AYmiN5hFiCTTEHJA4AmeSN41UhxmCDWj6oIicEXWhBdIjQdBHVhKAEySABOWWUBeOGggqY1duTXwGacSR/+43EBPmbSCTnQ1DxLtBMsO4yENF/XhMUXrNrGhwJmJCbToxuy6E+JAG6oglvCR62VsXMDkK2lI8ukZoKcxY5pYIOBMhE6dr0Y+em4TlOn36oViOIDBkBHg+NCMDvYIWQi56z74jOMTKy6gzFDsS9kOQw7zduFWDBqaq6yAgP9CgWKgkAqKMJxepBJYmNsRWnBfa8qXbG4TM46OM5zmK3eWS25JyaNrA42IDgmlbWRR3atZzjIRO0aqYQUYca8BsBD9TDAZ66MJ9aVKPDAIxcICXDgMmgswfVOfSrF6YwXGGpH98A8krtgxesgQA0fDFkSzFIq185+F6zYYOmmIJBUWomSoMgvGq8Az7WYCvFT1J+oNknGFBMN3UvJBGvx1DMUClyQX6oTo1lTArq4JD2N9UWTjAKj0hDx7p7RYEU3BJvZKe5xN4aKfJiBadOpUU6XqiJNMfxvoBydQ4q1pUTtISWHiSoSR7erzjrAKf6CW0aEHK2N5BNAEFbsODolhygNTRCWMRrAazqS9n55KBfnXHOKHrQuAPzHUBDeXg9+uO10gNni1GhmkHDc8Eh94yqh+KRE6yygnMeOXGOU9UFaSPnzLhPs0ZM+KyaLJ4Dgh5McFCvkCJkKDUbdqtk+BUnDF3sCxEO5FIyYt6C7kgEOcowYuQEUaYidp70YFChgoT4WhXOMAY80IuvfuVUFbXyar6dlgeRZnRIkhapYQhCWt0J8n5HPiIHmKmYbaRZfKvjgYY0I2SCzWZg4tAcgvSikgGXtPCdIgqqfwgojkjLEUDFeBOvw1NNRqqJVyJg/S1ajaEVUghtLtQpUEDIjh6gNSXs1Etgmi6fXrz262l8DiGzJnHaRAZURE26PBBUmxuAVlGh4CngY2JXv2YkSS+CyjIfzQRCbXAKSPQLfAJioZVq5gdvl1qLcnBqgcKvwr8ANVCQkqnymbiMAOYPLbITHE2Nq0KjoHRSGCAZAV3uSapbT3FCOiEIqjeC0KiPQzbjJfgQbw8eILIJsrNeOqg3NAdYCLFIhtfje0GLAdVgmTfF2rZaOPE61AT7gHplTdI0T8MhZOIPpyS2aH6b8JxjWmY4B1MMuSRIOUlZEDklMKGBGNi6FaNUAU4wdYJANZUPabRDfBcWaZ41MxoGJT6PxjSKstHxI6RBbajfVLkgb2MmMkc8vA1J+l0y14Kpj0fP0HJKyQtqltXqv1RTwvG6w4J2TEtEAXAULwYwa7E5ViGaX0HpAYWjqtWmIF2pjeO54Fi9RJzgmKOyOGZPWMtvgx96KksJTxBnTpJxTNILaR0YNO2D9HsGoGrBSHhINYCosGITNMYFDFjH6Zl5YppJwlZp79AMJVJdFBSgY2jP29Nz0FsRHUGLZWdaeRATFiJzGliRR6U/Barum4MEHXBqQdyoTPmNgfLIp4WE+G0INfsAteqDoKaxlQo7FCxdOqYCqGvPhc6fgMniQDYLAJ2K5hAyd+LZUjTikZGCp8EuDXuUP4CK+XkL9EF6YoISyvFG7K0UHHQ/SOx2ACZNank5HLP2THsekz4MmHOc9umEagEC2ZJ4fr8Gvs3tP1CzIbyCO3hO0IM8GkMi3jQI5GH8SZOUzhgTaQED8hv5S2pUFfnxO8wRTTVDJohTg0GgUO+3lrQ03vJ2ShCTzUNeGcaRtEbqiUvkEOK531rhD7ROLdRyaBAbIaBEbsqs+BifD9WsFPQU8kDv7EUpEg6Z0AFCu81zrsZDBwiviLRZHvycKW9I9DWBciJz5dADHUE5EsuNRsPyP0pyThS/jMiJ4kZoCTQhI5wueV+9xGaUQ6Bq0mjtEdBwh0XmxqV4pIo2FJ5UFkX1f/o6HI0KVQA9qlRJU1/9KjsaDWkZRI/cTjYgCB2mjdDhFxL1WqKExQXvYqkQnBMLYPJQk/avDxg+ZuzEiRMnjB3zdr+ebRtVxW8HY+HEzREwhZsiVxtqSuKZb6G6bt4Um7KBHbIpKkwwJVIUYWJfe2PktCXfl5YWXTl/5szp0+evFJWXXlg85e2eLX4FgPR7OTHDUhYzaE9pE2gp+Hg2Pk3kaTjzxZSGvoDrUPT4vno0DfDtBk87Unr94LqVn+wqPHf9p7t3i66fKdy2ZuXnp4rK9kwa0CYNVFVF2+YNjDwttFybE+yJAB1QsKP3a3jGp3cAONWjEZdo+jj96lDxOs6HHAWgSb9pJ0tOfbz86+ul32/6YOq4EcOHvz18xLhps768VXrlzx9/ciZ+fNIbDQGISYlUx1N3JkSWwqBadVGhGw/QE+ml/RtZzm2Sr+QC8NrbS+KnFq05X3Zkxqi+nZrWrwbUI7N+i85vjZpxJH5u5fJvK+YMbgaqRCXhqQ9r5cpU+QWsnqPUVAWhpDMUfQ60GHG4eOuiU/Evx/dtnUfJDIawQ8IuKRSkpNdp3XfCl/FvFu0q3T2sCciMinYuihaVgk58hqyXN8umFmEJtvZh5CjN0NaGABMbbPXeWJrrD95T/PGiKzen9W+BafNFciPVZYMiORyNRXz4gxb93r95edG60qUD64GY7GrqzTfxO2Q5EnTTKGMCycauqilvMgwWs+niCGpkgq6z7m9cdP3q+C4SAOFYjiMVUjj2jwBkdxl78vrCrZUzu4LMyJPgMFeojrQcCVIIVjJlSnJSrbsgAQlscRgZJleBKdRScQn8MiElBuoPLzs17/Tt8R2xT8oNMx/JUXxUZ84PRbGXbj/25pl539we0QDErFSJrrAC6Z0zbO6LqUtbEsbAr5zghxbP52MzbJZuQDWy5nmUQPJioO3MeMEnFdO7YuZG2U9Dkf9G0VYNE9qI1gCg89T7GwtKZ7UHEdluHUXnvIieZjBS3UbeW8tr60USCJBjtQRzWmnD0iImzloB8Rs9I07ZGzkEeh3/dt7F4wOjoIZZRCMANO78xhvdmgAQMQlmThj8Q/9Dl+edPtkXSJJTfdEYH88WZdVCCkczGdDI8elQXGsMI8CDZ1fa6QyGidAp1FYDuhtpWQKDH2zOj7/fFvgt8hkFzUYsuVlRUbp0dEtg0daoAFpNqly27v6wqr4wK4y23lmOFosROzjOWYeRWnXR3JK1O9ZUtmAm0AGxI8FWalO/H/ZVG/lwxbrK4f+bqqPISFEUdNld8qd1q1ev2VV8uAeowRCBT8uKAd+Q29sWPnhHeiFsCuzMncxqdZumXpRSgwlX8YIfcsbX2WVdQJ0iJECmx5Fm6aAaLFH9CGglX9pxyUNLHZtjZxbJfjTmwcKvTvYBXNQyR1HQ8cbXq7bs2LF9x+ZVuyq6AcsJQlgEPQ6fmlcxLpwZppVfZAWvPsFabwpozZAE/FOO/r3eBcAmsml9GLJizDR1cxxkE3p+VSWUbhioNh/wBnRlYLosZY65P//YoU522yNnNpx7aj0m9zNC8vqvljbOtMZJUi3QdvH5efHx/+ST2W4qq/VERv8DC55ZTKn2cqgds0pSHmiyqmTt/MghQOP0Sq11GZwRRjL5VCkCRtyff3ppW1BbjYdFxnQPrFyxYwehdseOz7aviA8BeZr91c/LA81mfTev4p2MfwwG7C7PCVFAzrH2z2kfqJzmIS8ANevF+dWkiLHeiWfaKKz1Ayg4QC+oWeFBDxcWLm2N6bXZMkGefnrT9s+wSO/YvGPLjk2nZtX9DbXH2QSNa0ceaDLr3PwHw0AN6G4aIYs6oAl06Ys8BEsahEcQ2INGnRBex5jGwv+AU/TMsW4xBrr/x4q9h9sR1unOOUvhXhi0+HLbli1bt+zYsoX8/9nmo63NlloRiRhosfjUwgd9QBQmq08g63JlxJkdmlolIYaLZ7A0BwW2G8hEP3IF2da1VojQ1OrQrnU3Ohv0MpAjAtpd24ClmXAY//zss7XftzcI1iQ/KAi5oO3h7etOttOseIJMA9LLE+yqbsiU1nWGctB1sSXS28OTBqAIstyWgrH3Ly160Nckz2KWGkFGQNsLmz7bsWU7FWnM4vWUYIZSQ6q7x1eenlU/ICcF0siSClV2HIAOjahQqS0Z8wDtiS9jjamXbK2AImDI/fklo0CuY7wTeqbRkn2f7dB4vGXzzj3NQNgqB6KiGfhCZSNA2OV+nOAgi5bUDLtkn3Rs05yW0qmhODdLUwbUC0L6GYlCFBoggXY31hybWS9Q3TnAC6dPuLR+h36sPzflJVFyDAYlKTDl4qJ4Z5ujdp5xn5PrcorXAVukYwg2SX9AcO6bcggtxKlnP77ang13RFEnV8yKgm731xkEr374BsjVBDorm5ycpRnrSHqrIxuPzayLJKecqR8lS9EgM0aGBsGOS4v8Zup4ppoHza4AmnBynwfz4kNBLefIHZMjZ4y9tt5g8NQYdlWaHxaD2WJQ0CmOggEV8+4PYFjMO0b8Jkawi6pMWgrV3gxgVOA0UUb66ZB2JgQU0MG7mC9mviSMo/YddLE0Iv0XTW9xZPum9cQprd+0+WQbEBUFlwSgLERnHNu6pPGzklMuXh2upRlNyVWQOI8PONXm/QJQqt2ctlMJSwynZSeVIhWfNOMVxThqYUVPEBMTnDLk59Wnrv955859V06tvDVIcUpBxkobExAFXUvn3xtCWYySJRt5fbmuEgsjUxafY4MH6BYGIlOvFJfUSEvPN1y88+yUF2RHgyUqivnaia1HPxi/5NCh3RM/OLr1eMv0mvo5osVQC3LViZe2LmmUkXImE1ratZl9O4C5nAFtAT30Xr+Ogv6V8293tbgkg9tBIVgDjCsquN0JNG7ZqinoeHv5j2NBWDQZZ/YLUdDp5sKKAYYJhB7KKup6OuTizAByyE4iZ/KQe4KDDvel2jMLz0z1SZIVR+hU5IGu5fl33gGxZwCoEgWj/rqgvJtCjshYdEaNq006+/UHdV4MpsJe3iFOt7gluwNLvGuHm3p2i8+P91JCftPItb9koc6MYxsOtciIyOGwnPNck6Wbv8F+R6anEJG2EhwDPeKLbhtBs4e6tJn76ho2pq/ZbR+Pv7cunbM159huHgbvXNs3p36mhPkhviLo7jdLoQa/fBX0r5hfOUiLCPNAv4r59zWJDQapuRLZaFLKrDd737UxICdRfjqVSTBtPqT6HnUnLWQJQi171CBbq5mc3njpxp/fNqVYgzTu0/gWzmi6e2vhrPqEpYQuSYpOP71xT7OMHFHlsX6uRlcuGPrzp0sapctOvWi25IMbvWxJDmirXaCRzXSuosEkODoKXq9YcbUDFT9F57JJiJvFnjGqZEFFdyOOioHOt/OLR2NfTJmbJWSJNqja4WpBaQ8bvjR3d3J2IIlYZ21BWmx1Um2thtZNx1y6udnfOWDMD1/PzMs0xowxU5aJ3g5Xl1+eUFUzy6Io1QBj7iy/2UmhRxSylbCZTpTC5GBmnQ/+XDRKJRh6dUoaHuJsgsrqsCnM4qFpWwp6f0tzmZkb8rP1Zu/6y3CWF4qX0Q2XhKZcXHOyTXpUUtVbFHMyWhzaeOb9GoKUFRRFHXFnGd44CkYUfT2zVqboXUsFIyvtEACY1g8L1jSBaeuWxOFhDmh3YWWcCp+RyNKJwDyLgl7355cPwzoukU8JUdnYbg3EZuwt/C2MooM4cMKanK18MaiKRc/4xyda4ygRpWSmoFs4AdiBQzs8hihhNGyMIhf0iX9ypEWVsOp4FRZlE+HMJn445GswZ//exY1ezFHMEzHj2dmhQL1ZB7ctbfx8WHxFDmLWZmeJ9CC2jpAcAq2Orql43VxtEhNUs/VNJ5zOQEaDuOMUJd8pCjIuc8Sdr2eEfJKBFLONVKQo5YEhmJdvgFqUHuVzSRSjoHvFwp9H0BgiqJyNqZWZvC5W4tKhRHBQ6n6Is2emFKQlJsve2DbJsR3S85NPXx6jSbR+xSzV0UTTWx1fc3YKjut1UCVmBYOSEEobf63gRjvji+R9k6qMu/TdOJr4QKm6YOhYH7aKh+Omhf5kt8rGEGFXyRCQJ6pk6rAjG7MtKGMQ/ePyGx2xaGIGUvUOBoVsTF00/bXja85PekEWRVkVBpEqgS45Q4u/mhH2eQ4gklg04LKFXIATBJRCz0eoSrM96+K9MUHIHPEQ35qFMVa38oXFoxQ+Bg3LTe3w0Pi8il405Aja8XQU9Cn9fHGjZyQbirDsfQMFD5GFwAHXOUqtLyoM2lxYebOLtZStJCxFWag789jnu5s+l5PNqA9VZln2NZi7f/+cBr6QpBDMKASdj26lq4+8xgZVSQ/kWtuEFiwNLUuQuSQNE6yqdfx+zYk2piSjItKimq2ZX9kfYyzNUalgMkuQsTl7/f78+FDdg4smY5wD2p9cc7UdCAupEuxsxoCjAiDBZVmKurCGcwiVepSuPdLCeVzh55ru3nhsRl1BsqS4qE2W5cxJl9acaJ2eQ+U5W7SITqsjn2DRiaSGO5zhEXTq4tGbA5yiRGaDXTPVMdA7vvrL5iCk2maTXGIQXbzgXleNh/SDVxRRJx43CtrdWHltfFpIwPYqmG2+Y3XQ4sgaBzSdiL9I6Wp3ZLpVh6G6ETLn0fBpH9UCb8bXbmpexUYwVcMON5YXjU3LoV42W4UkxMlK2RRyRcHw+ML/252acFH1xQaHm3+5Lt7TMA6iZ7OcNAHActFoe0+6OYnK4Tcr1+ocNg1LlF6YcnHtkVaKyGJSXlELbDRKJiwOZzZeurNwVr2AbCeHEPxJ/HUrh+1pWjFZMGEimHcggvPEYjXdS0Sa6HDIbnnyQO/78yuGgFcV1onsGTikIBHzq+Ct+x9WDMKuSbQyUcYEry3vmYJIJ/BO0Lr7MDQnPomrC3i7nmK0WjoYLd3tyEYgoaVjRTVYkKTw9DOfHmqRUcMmtSGsw+uK2dYIMUGyNiF7OEFdTsvkDow91cydjQg6ZrWMe0ZAxxvrjrc2EyxHc/OitcHQyoWVaqqLYjBMMEnnyAqWkAjAioFONxfdGQNi5KgumkS69fFPvu8AclLI0QoJ2rmBu1aYvpIMdOWANlfXYO/BdKCFc5Se2dYn1lya9FKIBchZJDcgZmeT4EgmsSKesDHFBbc7K9+IhA1ORkCnG2sutEnBD3vKaVlO55JcBdmcHYaWuz8tZYwpFnLQvMeAgT1bjr+2GgcHuTQUChIrJal2Ws4muFqkAUU0o/nh7Wemt+k5cECPFkrHmqglLss+Xdo0LeTiYUUP7teZYC4hjTBRRprmF+vO2lUyyCA4Cl5751C8NF5+9ODqO8OtZX4q25jFhLlKThODsdtrCk9WlJfFD41pZahsLhhQumt23Uz5CVgL3QlmdhA1FvOhZNUc9l0pY9KZy6P1gUZBz+NF29asXb1666atR1qksQSLeoBIkbWS8YlWafrlrk1b1+Jj553DPZgLjSo6Pfk52WP3elKnDFRqfBa6EAutoesFkCkBUPg+z6lrWECPhztXq1XRDRfHkchXzWFoiecgSQAIWa+o9u23dSed3aQ0NG1Ztev/aFgyS8iYcuzHEZrkQIeylzKLDCrkbds5IyeRhoJLQSYx8tAmhaR41u1uCojoodBzTffsMyr9qx8NALWCkixLUlCS8M9XJClbpgf5lY3fxGHvI2WCSP/H+gNLGitCTLPd8b5qate5YGSLcJHLAnRerQ9DB3cluG2GjHzOSh8B7b//+GeClxGhflj5Kjp0emz+09JGGRKyADlTOJ3e7PDWLfgb23d8QVpeVlUMVmpypJ62EnulSIIsFrIU/5Dr2jyrlYbmZXbIGZ85Lx6Uqtafs614KJU9qVq92YWbd6itK5iK1eW9qtT5Xc2av/sH/D/59Tvy8nf4Jf27Zs06aQPKV+/YvkWdoS2bTs3MI0gFEzy4bNvihlWlYGKN9ZyrAE8G1BxTAGMvn3pf8Ik0G3B0q9HJgQnZP+fd9957Fx/KT/pK+Y/8w8e7S/Z+toVM0GfKF7YepqhNFDKnnLk8jvXCYuI4ED4RwTCVyFONvLASV6480YZAoijoUrx2h+nY+zV7HPj6z//+7//+9Vf0j4PkR+FOhbvbP9tB2/TWXetIDHUYtDyypqIviaOeGnWIKsHWZ4p45bI1WMag9/Cacqp6WPGK1qoWaDtV5c1nykpLS0vwj7KyklLlKCn9uVh9WVYaP4tVYLuq9ZjgDRdoi14e6BdfeVSF6MhzlsdpAb5o5rDrhk/uM4DMT1cSpPSJFwtn1vYpfNm5nRHpDccm/SHJMfnYJjI5WI0/2/HZls/27m5ShUQbL009c3Zi1aAnFIVS0mFoi5qgkMj9Qtv8RUHvikW3iZ0OCmjamQ2U1i8Uv1TZCSQ5OsdXq06JiPSmi5MywqIY+ZsONxZV9nHo63N2Lh7yPCCV5XeJ1+3KGQ0X77o0Pk0mktj3wTLVp2IC1p+eUSdWO0858O/cPOag79eO1Z1xmmnRW/GgJ46fMX4ZfWfb0sYZsueslUcO26MpiikCNokJuGdARBQFQ8uWnyRFBAnVmnZ9mULwlh2b1jzsqmSkaUshRVnqGq1siiypeHSpXLtJo3fZXyYhHEGGf93qyMry4R6Df85NsDnW/wPHTAdET5DTF8Lp2KQWjQUhJOT8usXcH1ds2IzFc9OqXY9oO51II2EmLY1jxGxRkJXmjigY+Gjbqk3EYP3biuLZTZ7Hdur3YETJ6hOt08PuJln0psPIlpdGjmfBBJ9Zbx2kxdzighsdQE3SVdt8SuXlvRs3bD8VP9QH5Mg0fyfKbPBA1EAUs0jwkC1Kvwd9DpUe27lx877LDyc2Id4tQqowxaNBTvBp8IFdpNGTbJPr+J1Qesvjn1ycTFFwpIrQe9LSE1cPfTCsBYioCSxBKacQniqlRVl7RxLkHNBy2AeHLpxYMqFnZpUIjUDG/vjxSXcG26VPTCqIIlDGLjolKBHS1ikij7OZA4ZWLKjoTaP9sABA47YdWtYBRJ4NJgXVTF7wlSDJBbyiB4skZVCnRfu2jQGQQjT+6la+sHSEl+QO9M5iYNi5ZAVRESV1ztVfbLR4766lTZ4jyTgpFiY7OfwmN0wJJCXu7KBCMqkvBLNlHB9mKz9xyCRJUjjvBfyFtDAtQYZeqj/74LbdTZ4L2csHKR/QJTx0eLqQtm2ft1tFQa+HC34aR5cqZIlBOScnJJmjfqK4SkIex8M4QiaTgDmdTd4QRTkcrVldpHEzNghl8x/2pSbaMVHpd6OKS8Rwj8EDl8D1IbOlHv/XBfdp/JolMJKcrWU7BK0hQhSCkpAdJPk8pQuPFoVpe5rS/dHjQf7lSS+HpCd0uC5jN6AlStFUOUeJOc81Xbp/w9UOWI0lJa9h5a9KPDVdOPLHXBUIs7OzFcXWYVurQzs3H26VHrVS6pFs0ZXDembOQ9EGJZ+IV0H3ypUHFzfVexhUammlUGKMlyiLwaAsSsqnNLv1CnZRokTcVE5mg5kX8x++SQqsgmm5iytxomM1wU7wk20K4kY65c2QBx9emt4gQ+ENKfjrjS6yHBQ1waYpvGwlU0vfxEab5IAI9MoR0ITiDytHgUhQ+AUPZacWZ5eDPJs9G6QOVRtfMv/u5HoZEcUgCzrAErNfYQigKIS07EgCsdbktSzhGRGDOVLa6MoPf5pa+7eyIKXOApRIrAH6JRhrRpi+eu9fn1cyqV56FFJ7lC2paqs0naksDiql0WxN4qnIE4YLEV/aqMoPz85tkpHDFE5/IV5boKVpmbjLPudJ5T9SpcnsSx/+ZXJDJddIiAtmGwrNNHFIcjZ1Rkp3McllYrpiVaUxDxYc3d2aBJqiyCyCUJMO4tMTnErXpgdmR0Hzud/NL5rREuRJpracbPIvWyk8BIkLwgiEcFoFmjRxXRs0nFS+4PShdvp0Pc1hWjOTZbbSHjUVeRDtXNBi9vUPLy3tAmTrnhxZdAYkWVL9bRbbcIsBaRS0/eDuvHNLFXpFiw6rqxiTc8jS/YssVprdR4jirBTAqeMRA03e/3n+gduDXgB5slERFoPmJi4aJzEqKuelgzeOn5n/05xW2JFnCYIgpcrPZFYV6MqBnoSVCaS63tiHq1fFJ7cGvljQQFtBgXHP2eZRitEQaDzm/raPHkxpYiwcd6TLVsyEXhUSOCskTC7abt/Q1olnpg26fWr+5cOD6gEhKgssxtLTfqJmfAltkTCo9sbi4oU774+IVYk9ubdInLwAesus6YGOvAfuJvo4KKBQCHSeXV6wpnxmTx74cmUjInZyk3JMAqDT5Pv7FhTt6Q38Ec8o0try7Lr+AZmrhyh5SiNVKBaMgYYjbp6eV3hvag8c6taIyZJkJ1XdmufXoGqn8Tcvzd/3YGJLELUm7azLexJONnRrnmT6tNhqsP6bg+7X8oZCos+Czu/f/2r+mfLp/ZoBUCUUi8jWocuRWPgZABr2mnzryqIN8cVvVgWxJwRAluXPooc+LXWLHy45PVmeQhc5CnL6zr6/f2Hhvd1jejQhOw4JOWTvsEg4Eo1Gc3Mjwq/wmw27jphbfm7RpyWHhjYCcg2LgRJNd/ylkBadF5RYRLzLN7N8kAcN+s2Kn1u+7srPS8YP6NgEmvPvLzfu0G/s3J/vfLHoQHzpsBagah7by5WVqhoJtm2DkiUARNuma64PhOahB6qRnFsN1O818URp4fJ1Z0u/Xzr1naF9u3ft2L5Dp67d+w4ZM3XJ1bLLWwu2FpV9MLAp0HZLS2atshKbMWRcwNZRDVyqCpBLxlbk1UfLsUwA2g6efjJ+ftvHn39zubikvPT7kxdu/VxaUnr91IYVa04VF8/9l671QJV/DlnIFZ9WgPknTfEkKeJAG3NNQ5WiMgA12w0YN/dq6d1LB7d+vgYfq9d8snXfuR/ixXumDuvSCABfnkLuK15slIdCgcsCFeD4ZQ9PNYfJxmXSQzGcS/b6a9j+jaHjps1dcujCxYsXjiyd+8GEEQO6NHsBgPQar3roSwp6FCougaEBELqlcrxDS5gglWS8Ec4Nk31ogVS/cas27dq1fa1pgzp0qzghZnG8oij8ooe+fyWnZzwcVxd7xtEwUaaJ/VuK5NaqAZ9VNx4GGb8JR/MiYQcTlPVLkOzYbQVMERRKHDmgxJosmIMDByZT4CxJcjgnUiMnLMsyk/95imyLe2yHbKlW4HpRr2AySagimpepiGxQTmtMoih6yLBmP4mDcpoo4J68Q27m4Im3jxUFWzhsXrbjJXElJvFZSZYPAiGl5xNwQvKhiR4BQ9B0nSwlP2D6dpaQAv1PAC1dmct5l3DRbZSiLt96Fk9U9xajLyTR2LbHQkTwF4LRTgRz3q0FfKIyno0nkotNT+SNE3I3K7FsunYAcIltvcvW8kGXcYhmD6tUGpwJeXqHlLD3Bgi/6BF0Egwji6O0ACj1YX0qso2aopNhEIMe7/c0OuzmmCCDXZAn8oNOMih6s0dZ7jTCpH4IPT2HRY+eTvR2CcY2Zdk/F8VU/R/nDXQB7wBSTC30dybS9JakanSWSrSYXFifWsOBx0uKQlIjJbKoSLSsOrHvs0PXd9CasVpJ09yxsnyLqaOLbsBDcotVTP7cvOmeB5Gm231HY8w6mnAsFomaQ5xIbjQWqxVWhijnRvNytHoZ/SQWCeJRZNGYKaY+3KB6Xiw3VyEafyM3pu0xTtZw4b9yRPo+vipZvBVhl/GE8XDwRZn7R3PxG9GIB14lJziSqcY22kYLclh941m9JTAkqW+F6SAyyEul+hvRcliSMpogef0MUTj5V/SRABLlJo0bgbbWUiQf0WbaZ43sV1hr15JrqO/8KvqKEiOHZPWdkJRUNoGj4jN6HQb1ug8ZOXJ43xZAuVpOFdDyjWEjR/yhawO1UZ0PVwHtB4wY+fabrUDVsCBlNnq9R682mYQnNYDUsf/wkcP7tf8VXbYgZ7bHnzXJlIVwRpM3Xn/9zYb4pVg9s1Hv119/ozXdiRizNbPp6z1eb5VZXabv06NrMwBy6PDCz4AWbwwdOXJw90ZAaWwLVUnrOHDEyJGDOoDkm6sl43AYdJp17+6VK1fix/tT+nJAkzHHK4p/+KmsdE4fIAcJvaDZhJvxoutF946PbpwRioAOj688HkqqQzVA1+m34j/9UFR6dXJbpVd+9OPzjzuDiCxJUx5fejw6SPoK80C/x3f/+nhSWg3KkFzQ/fHFxwNAXhS0f/xzvLS0pLjk5p7xrWmLWk6VRqMOx4t/+KEkvmRANUwxDKc3mXizBA+xpHxMfWNJ5xMRjHLS2544v/zAX+5eX7Ht0ZtYqsMZzWaXb1x04Mr5bQWFj4amhYL4rRaL765eefr6qeXr7k+v78sF7U/Mv0pa42uC3ve/XbHu9JXTa1ZfP0H2GIqCURfnXegIcnLB0Mo/XpyQRldyyOkTz3y07JMvm6eHlR0Dun//x+/fArmY4KOrVn1x7tvT33y68e7h9pjinBcaz6z8fNGB7777U8GfH43KCEmyr/7M+MrPi+7e/XzlozHpCQkWk615EOSqE4o+Ojujb89hJ1YfmFOfdFFOufvR3qLpY8Yt/nHt8kc9ASkN4rcKT04ZPfnq/gUPhoI6oOM1snF0brhq65O7lp07NHH0pCOnl51e3Og3IczhO/m3OoK6oFt8ReHixuSRDlnhtBaHtu49uKpCWZ4k1gI94wvj/UAsAjpeXXtw9vgJ46ccPvbR+Vn1XpTk9LH38rcXzxjzzuy765c96gNyY2DgwwX7/3XI6wOW7C+42R5EPIi0ZU0H86QN0HTP5wfmNsb2YHjlpw86YWK6VazYeaQnAqDRv9xadXpGxBcDXe+t2L+0UxUAuh9euXFugxdBJ0pwDFNXnH92aiv8SdvZx/IrqZCOKSoo7gSeb7Z7/4YbHZWupFzQN7517syvLk1Ml5QHRLxeTgjGHO70/bK7o0C1tKptZhUWVPTA9+9wc+3Wk32x3az/9q1VhZgHwcDUs6uudsND7FG59uEQ0y7PyUTatnotDDpcXVE0BtSr+3zHQ7OXdMM3HH1rUelAEIpGgfTB6dXXOuC3RvyUH+8D8iIxMOrxdaygoMutAkxw7aqNluzdeag5ZkIu6HRz9Zn3kUAJvtvp16Ep1xY+7Ku09kuhtAnnLo8ZFP/kkLJ3UQz0Ll9Q1p/MWOdbBXdG/7p2KA+8GV9weyiWjGGlHxW/DeR/jj2TNuXsirKu4IWGi/d+NaeeVMfXaPYflwxL0k0OAfOYV7tU52CZWnlmGsD3zmvYoH4NwVf7g1Pb9tDm0dpgUHxBfACISu+f+QK/FRZqvth+cL+Br/1P0PUOIbgupnJZ0Tt043SJn35m855mVXLBO0UrbnYma6jvjVKrZuH0ZnvWPuzTtnJh/C26tU2MUIevnBsBXYrz74zG50UzOv61AM98brXJl9ZcaJsRI/fvc2/BvcHA12jJvq17muEhRhs0qF87BSuNLCuqOUh2/D76+aarbxOZ/s0L1V6QqzRZuv3baTRtHUnvejv/7tsg0HDu/tPTa/plEQnUGcZAt+L8+FBQD7xZicedXovaodF3828RlRhbtKyybaeHKy9MrYsUr5aL6Vt+tU147t5zk/6HTN/oU0EJJru0fHRn9HN1I3We61RCCBbqzzm4b25DsggiCjrcWnFnDBa2GafWXpzUmjh137MveSE4yIizZauqUMaE0vzNd5eO6dUUYAEMgdZH116ZSP1TBLS/tuz6O+CZ5rs3fjcRhAgCwIApT44SgssIwf0xwcp2BTEwpDS/tDsmeNyPq0/0mXN08+EW2mpysp9S4Yw6YMydtUdaEpmOgbcqPiwbQES6W2l+ySg6jUOLPyoZBF5svGTnt++HoYSdA3jtyLor4/ElBz1auP7S8Qn9XksDkWR+WLQstrSKdjij5ZLSDQt3FsX3jGkDQjVA2+9XYSKJ86wB2l1chW+I77v+uwnAgH7Yq5TklxOCB2GCe1DBzQUD4wvKehGCr69fv6Tw3zbeeFNdnFM9venuT0uGA9A7Pr+yH3kzD7wV/zBOCe5emv/9uHYdOnQccnTHivIO4Jlmu7een1yVtFBj779745UJoIZQd9LDbQXrrlQemdQVBKWk0VLick0YNB97tfz0yoXbfjrZA9QmBGO1jKgcJgRXaX1k7XV2dWAU9ChWCS5bqBJcCxO8UCH4h/U7d35xZv2pJY1ekpXTe5Ututf9RaHlkU8vTcr4W7Il/ltYhweCWAz0KF+7ff+Fkxdule78/NHo9Cgh8rtJVf6WNDipBP+vUGbdYYfufbdx4cbvHgzNkIOJ4jiYFGmhCPYpQ6adKPli1Z9OtsoAbTFXJ6gi3aFoBeZ2Wgt63zDJY8h5uVEs0t1VgvvHF5Qr2wIQkV6oiPT19Vv2/+u0MwXlb5Od8ISsHPDOtV1za2KpHX953ZFWWKYph8sHgjxC8Oode785tW/12q17Rtbz5VQhIj3lBZI1wSJ9eO318ZjDsg807z9xd/zAqpWPequKkuURaTHLHpTKlSiHsCmS2w47undZ2RBQtfmezeenVFUWuna9mY89BN9o8V4sZVIWppjWUHKxDheUvo0J7lOJvUt6LhXpUSUFtzorHN7wsFfjIzs3nmzzN3hw8jPYeX3zwR8GD/7DpLPLysmOTHlEhzGHsdHqXr5q/+Lp0+ceXFsyAEiSXLXBnH0HZ9evKtEJv7oCm/CoJIdIONPsrbmFq85OqRZyiRtETYd51yQGeeR9VfByvSh5RmPf4mVYU331Zh/ct5ggfqH23wyo/LCiHwjX+eDUn+c2eFYO5rzUZnDf7s0k0K0kHxNcB3S5u6x4FEUC4fTJlzYcaQnywLiiZdeGATA4/tG1CTjSwMLeI/5vG74owlD84NpNlyZXC4q5VIcHEQ53L/+oZBRfs83xjcdm1CMt9L6p36470jIDfzEvvXflfHIWD6rVqR0L/Qq0P77hwJwGJH6A7lEicNRtsp6FFPjD6V3emzKnXUadur997eRaLLix9AmXCu71BHVzayMw9dzqmx2xXo+7tgL/rpuHlRaD/jcp8MAE105rumfrV3Prp9XJrQNeO7Hx9MyYL4L9cEFph/8uNZxbuDreHctfDMOxVafKioqKfiy9uGn7USzTWIcx8BikuiVspWuD0X9Z8JAsqn0VjCjJx/asTiwvBCZcW36rC8hoOWXy7N6gXu3av5957E9zGj7jUncVlX0A1VUtzmUzLgd0fvTn+yOIoGL5vTUcg4m+FQWFs1uSdwbeWvXNrLq+2qDf/fyzk+vjdxrP2rnoyxbpBB9hgmPyMxOuLSv6l+qkMDz5IlHrXErw3c74On0qC47NqucLZzSYu79wxsDBgwYNHjju7DJMTC2yncACwjtM8M8fFY/673XT25zcUDgbh0JYj/5j1f7dHcj9+91Ye2Bu/RfTGx89XzKVBO1Y3U5P5104yyWOltQJCGbWm7V31cnhHdr3nHU0/35XEMtsOPf0sjP/OrzfwEm3NhY8wnAfB7Z79q26NHNwv8Gzz35UhpEVQVhlw8GrGApXrll/a/rg/kNnX16963CzjHAOgZYl5FkGNd7H1A0iUURpfmV/JX5/7eSai1OqiRhDlS+IDyYEd/1rfglGWmEw5m5+xQCiHfLUH/ILj4zuP3Ditc35j/Bb4bRxlz68NqFLh65TLyx4ONja9CTpvQ/ISzwcBb0fbVx5/dqF4n2LHo7PDGJT0fnGt/lb78bLvi1Y+2gsL8tkm75HOFYsLft538LrS5s/nwc6npx/9W3sUXPAkEfbFp4qKSs+sOirR28o4eGFeVdxPPwq6HJ74drdzTLA8KvzT7R5sU40GouJU48WHG6Flb/31T/eoAR3ufDHq6MABu7trhZ8Mbd+RignvfWe6wVrf4yXnytY/XDCP0liJL3djW/yL9668NdjC6/PxuYFJszCGTuXii4JgAEny4+dOnXq+sPxDV7CFrAm6DjzftE3hYVnym6MqOUL0XP6nag8V3ig8PqDGW0A5mKHR1ce/wsmWA6lDThUcembb765Urm0F3FmOHh4fP4x0d0wGPf48uNJzzc6fO/RDAER71kbDMQfDiGY9PG5x8MowficcZhp5Ozzj0lkUBO0frfy7rHCA2dKb4+q56tOAH/33ZVnTp0+dfnhzFZJ9+xJmtPCaHLo5Pfee3dM96rPUnMQAXV7jZ723nuThrYD6gM7QqDV4InvvT/tnd4xfMNQRrORw0f2Iv37kgRaDBz37rvTxvZvQocSzug1ctjINtjKhp9rOXL48JGNmuG/e6bT/Q3CGc1Hvj2yf0Y0oz1+s3tGzeoZrfCLPvjsSEabkcNHDK3tIwv2hO6jpr773qRh7UGmOqJmgya+9+674/rWI0mRxIt+QJKHGSCB7Jn0cnY1ACTV/OW8AEDVl1/GPjdHFpXHoUXIObAqAMqj3ZRWDqjoBADVXsbfTlMXICldHUS5qNN+kabptGHRL/4WO0tykDfStBfGW4gsaqz68t+laSlDsuYA357cJFNGycovHsql4ZiMvVREe4wqjvVejYgBJOdGjNPDeSFs9WuondEkyxrRtg3PyyGwKFfDAzl5sTxlnDJJ0walWCxPW0xN3iJ/4C+pSVtyjrL5dDgvNzeq5Y3xfX4r1zKeiYEvH/wtHqiUPFkPEpBqMF6yZ9FtIP0V2VZCEbR0umgXMFFZZqqdZGzPnKj4aFyU3t/YxYjsvy4Fk5bcRCFBj0fQXsMT7UMIWmpf1pnR/kbOLQuiNnXmUpKYpNOBrXW43dFcUEduWNpDO1JqxW8xYXEt6FwiznKSCDshateAmFiILZUH55VojispUfLaoZiwNc1+SF4LWkHR5XNrYcssmfbaVOI9AKwRlLfKoZhsihJJrphsqjw2dSGX+QfemzoSf2phQTA5hVr/i2mpbdDZRpnsRND1qomlC3kBHqIXviJP8y66iaONuaLI7PWasFdA3RAky7vlAamTK6ZIWmKdcmSU17J3MEuXCK/fAa6zIj51g4Mgpqx6Yqol/qDLpUU32wMS3Ptp1uKx8CLhjLCNHqK79D/FCJ64qeUXOURvNlr8ZahLwuEEj59xayQWn4hSy56jyLnp5QmJhql0ALjeJum+PtquPSbbAYXkrWPyf5Fo6bsecp4ny9Tv5bpni/ifrAjJPS10k0/GDztQ7dZmau8+R/8JBDk9LDTRLu6ens+jZy3Vp8Qjb4JhfqRl0M38IzeBgb8Q1/EN/s4rGOSewEoj4f/PIXofQsJwR5NM4EHToUU9nnQO4H+SGrs/GtnJLRmPfnSUA/MSVT6l9QKJzV9Kh+2BBCjFiyDtYcoA2i0CB53jLYPJfkOjHba6MDbchL/AIli2es2lIDJuK9P89g0tLS/NO/uqr5D1TORpQSAz4Q6C6mj9zfuaoRTkg3O6NDA9b5gpJSZ8Hg1PnpuHjIeeuq2SQh7dM5ckWHFo+ea96Ih9MYD+CDGE3OeYib1t2+ZZHiHvQU9deeSQQTD1fio79Hl2KMj5HeBq2pDTWFjx5pJZoF/K43L6PHNP7yRBimNEDPJADPDwEE2knBRxHQ1SJSsZThetVg6pe/E434V9HnHCGYBPOu+WxR4pPjPLRDD0mofTH/SI7AAaGebBajWQ/oAAJBg8RqbwiE8wCTDZXvtJbQHnKgPQBYWrW9MgxCxPNG2/61e/phsqvzZMjjc7aKjPiaj7S/gkVGifis5ujDPd1Uvsztl4hf2wjznTuKQfqU/gtT2FSF9T7lcfTGdzSyr/jSd5Q2g24Lx964mgi8fRDQZVW8g6BL/LzFkfS6qJlG6lOUsDMWLQtumpcVAzWbzi4ci8Bxyco+NjTlkp5gw4JyaUacQyFCm3gIKxtSjLK0VQkVMpBUHN1CGgkW5/dDF2PD5MI+KVJ4opnKabm/h9jGhBxsMzYWwAv2feCIjj7NYXCs7bDkJtenibU1X0KWDx69C4rxnLsWTz0M9YaRuEC6DE2Ai6x2SOIbLIMtvl4G3wGenv8zYrRWVN0R8LpOcwZ6Bj7Rewlix5JsOuewg5GEZoSwJBUxSCkiFRq1HgLRCWN/MH2bRHvV7yrWkS4ngz7S6nIMdHaKaaZ0j++B/k6NxQkvSrkuJx2FYdQceuYmSCtvZUE/olMgBulUxEFdTm7xB0tXeQsymB62JL3mWoyPGeZsboqQPOmWPQtQQbZGYS2efL4dksQT18gdb43XG6geC0XSUyKQMjAbxmClh/gegkIw1AIYtsidBqb1wSDGbfrYShrI3jk0kENCwKmRyf0xeABq54jU+qzYPmOMWOZ3hV6jUKec4ycnV7Pavcm3w3tIsta7ugrjZQdUXaY/s49ooIMh4KUZ9G7+KUObVwOGC6twVbQwe7CK3PsYHGWBmcBp2+4shj92XpAcZnJ95DFWp7GPL27SDN2zzyiFEg8rxTSF2dzzos6LS7GmeNspB5fhBv1ZnUomY8Gh+HBCHpDskBpdkOI3qHJI+ZYFNe0IgTTWYcpZRPZ9AG4i3g1Xsez5Jxcxyl/gRhTKrfhsRd/DB0FF/z+JLlaWEiz+KJVhsqpBswIrfgzxKOQi3qcx6IuZgGjV06eEHfFRAR6XBP6iFbKtfmRpAXXGHPyjKkeMiWuQm6+avAkZCAOrEBB/CLnKAMcmB9whKrwUW/S6qDPvYWJXxCFu9OF+PFUCJoyTNPbXXkBkqGsAXbhpqmtFEK2ossfiJh9UID9pyQBH64LPLgeJMGmxsmg2alRLxT9UFtZ0oG4RJlerSnF7LePkkmHgkJnkiCBMQQzCfgHHqK0iGyX+HpCpEpVYZdoiWXHQy5FJsPkbthCqQ6Q+7g0+PMuW9NgwSn3VjdnKo1UOWEFGdYAx7ik/AUuSYPXP2BawLAo6D8l9aEbRtEP4ViQMtWrcgLcSiZ53M36OjJZwcJ9twQ74ZrXS0jMjjMJSDYjI6g4CV29kAMdA2XnHY4gm4Bi2cZhI5uiWOrdVBLInF2OGq+Ck8ym4IjFjdNO29LFCdJ5dm/ipAzfa6NSmq7DqUHsUYrkc3nnB62zuz+Khozghxq58i7NkPt0k4Gx8/MBPSqg7a5g9piS06L+5BVhD098daYUCsTIHKMWbhU0oVGbiDgehbjLqAS57q6JQbxubtAaK+MwURxKfQcXDmAFMcqHMcE0gn3+2fSH5ATEgMPXR8sdQzFSvCOGTjkECaxTGf7b5zNuSgkjCVRMhtvd73I/RFv0NRNa5EDz/V29ARISDB1g7t+FZnVAKUiKk6JCGO7ZfYnsu5FnMTO8Jxz1kZvC0CmByu4+yvoUChNiTaY1Dr+P55iHOtNyyb8AAAAAElFTkSuQmCC";
@@ -3005,9 +3346,14 @@ function generarSvgVisual(resultado, modo) {
   const markerPath = skSvgTag("path", { d: "M0,0 L0,6 L9,3 z", fill: "#111827" }, "", true);
   const marker = skSvgTag("marker", { id: "arrow", markerWidth: 10, markerHeight: 10, refX: 8, refY: 3, orient: "auto", markerUnits: "strokeWidth" }, markerPath);
   const defs = skSvgTag("defs", {}, marker);
+  // Fondo claro fijo dentro del propio SVG: el texto/los nodos usan colores
+  // oscuros codificados y, si no hay un fondo propio, quedan ilegibles
+  // cuando la página está en modo oscuro (el contenedor alrededor sí cambia
+  // de color, pero el interior del SVG no debía depender de eso).
+  const fondo = (w, h) => skSvgTag("rect", { x: 0, y: 0, width: w, height: h, fill: "#f7faf7", rx: 12 }, "", true);
 
   if (modo === "red") {
-    const parts = [`<svg viewBox="0 0 760 310" width="100%" height="310" xmlns="http://www.w3.org/2000/svg">`, defs];
+    const parts = [`<svg viewBox="0 0 760 310" width="100%" height="310" xmlns="http://www.w3.org/2000/svg">`, defs, fondo(760, 310)];
     parts.push(text(380, 28, "Red sociológica de variables", 16, "700"));
     const nodes = [[180, 120, vi1], [380, 90, vi2], [580, 120, vd1]];
     if (areas.length) nodes.push([380, 220, skCompactLabel(areas[0], 34)]);
@@ -3026,7 +3372,7 @@ function generarSvgVisual(resultado, modo) {
 
   if (modo === "capas") {
     const [macro, meso, micro] = skLayerDomains(resultado);
-    const parts = [`<svg viewBox="0 0 760 330" width="100%" height="330" xmlns="http://www.w3.org/2000/svg">`, defs];
+    const parts = [`<svg viewBox="0 0 760 330" width="100%" height="330" xmlns="http://www.w3.org/2000/svg">`, defs, fondo(760, 330)];
     parts.push(text(380, 28, "Capas sociales del problema", 16, "700"));
     parts.push(box(80, 55, 600, 58, "MACRO · " + macro, 12));
     parts.push(arrow(380, 113, 380, 138));
@@ -3038,7 +3384,7 @@ function generarSvgVisual(resultado, modo) {
     return parts.join("");
   }
 
-  const parts = [`<svg viewBox="0 0 760 360" width="100%" height="360" xmlns="http://www.w3.org/2000/svg">`, defs];
+  const parts = [`<svg viewBox="0 0 760 360" width="100%" height="360" xmlns="http://www.w3.org/2000/svg">`, defs, fondo(760, 360)];
   parts.push(text(380, 28, "Mapa causal del problema", 16, "700"));
   parts.push(box(60, 70, 220, 55, vi1, 13));
   parts.push(arrow(280, 98, 330, 98));
@@ -3591,19 +3937,24 @@ function formatearFechaHistorial(ts) {
   }
 }
 
-function renderizarHistorial() {
+function renderizarHistorial(filtro) {
   const cont = document.getElementById("sk_historial_lista");
   const btnBorrar = document.getElementById("btn_historial_borrar");
   if (!cont) return;
-  const lista = cargarHistorial();
+  const listaCompleta = cargarHistorial();
+  const q = (filtro || "").trim().toLowerCase();
+  const lista = q ? listaCompleta.filter(item => (item.texto || "").toLowerCase().includes(q)) : listaCompleta;
+
+  if (btnBorrar) btnBorrar.style.display = listaCompleta.length ? "" : "none";
 
   if (!lista.length) {
     cont.innerHTML = "";
     const vacio = document.createElement("p");
     vacio.className = "sk-historial-vacio";
-    vacio.textContent = "Todavía no has analizado ningún problema en este dispositivo.";
+    vacio.textContent = q
+      ? "Ningún problema del historial coincide con «" + filtro.trim() + "»."
+      : "Todavía no has analizado ningún problema en este dispositivo.";
     cont.appendChild(vacio);
-    if (btnBorrar) btnBorrar.style.display = "none";
     return;
   }
 
@@ -3745,7 +4096,111 @@ function actualizarInterfazConResultado(resultado) {
   if (outDisPlus) outDisPlus.textContent = generarDisenos(document.getElementById("txt_problema").value, resultado);
 
   const outVisual = document.getElementById("out_visual_svg");
-  if (outVisual) outVisual.innerHTML = generarSvgVisual(resultado, "causal");
+  if (outVisual) outVisual.innerHTML = generarSvgVisual(resultado, "red");
+
+  actualizarResumenReal(resultado);
+}
+
+/**
+ * Panel derecho "Resumen del análisis": solo conteos reales calculados a
+ * partir del propio resultado del motor (número de variables, áreas,
+ * marcos, categorías, fuentes y alertas detectadas) — nunca una puntuación
+ * de "confianza" inventada ni citas de ejemplo. También alimenta el
+ * contador de la campana de alertas en la barra superior.
+ */
+function actualizarResumenReal(resultado) {
+  const alertasTexto = generarAlertasMetodologicas(document.getElementById("txt_problema").value, resultado);
+  const numAlertas = (alertasTexto.match(/^•/gm) || []).length;
+
+  const stats = {
+    sk_stat_variables: (resultado.vi.length + resultado.vd.length),
+    sk_stat_areas: (resultado.areas || []).length,
+    sk_stat_marcos: (resultado.marcos || []).length,
+    sk_stat_categorias: (resultado.categoriasExplicativas || []).length,
+    sk_stat_fuentes: (resultado.fuentes || []).length,
+    sk_stat_alertas: numAlertas
+  };
+  for (const id in stats) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = String(stats[id]);
+      el.classList.remove("sk-stat-pulse");
+      void el.offsetWidth;
+      el.classList.add("sk-stat-pulse");
+    }
+  }
+
+  const badgeAlertas = document.getElementById("sk_alertas_badge");
+  if (badgeAlertas) {
+    if (numAlertas > 0) { badgeAlertas.textContent = String(numAlertas); badgeAlertas.style.display = ""; }
+    else badgeAlertas.style.display = "none";
+  }
+
+  const fuentesPreview = document.getElementById("sk_fuentes_preview");
+  if (fuentesPreview) {
+    const fuentes = resultado.fuentes || [];
+    if (!fuentes.length) {
+      fuentesPreview.innerHTML = '<p class="sk-historial-vacio">No se identificaron fuentes específicas para este problema.</p>';
+    } else {
+      fuentesPreview.innerHTML = "";
+      fuentes.slice(0, 5).forEach(f => {
+        const div = document.createElement("div");
+        div.className = "sk-fuente-item";
+        const m = f.match(/^(.*?)\s+—\s+(https?:\/\/\S+)$/);
+        if (m) {
+          const nombre = document.createTextNode(m[1] + " — ");
+          div.appendChild(nombre);
+          const a = document.createElement("a");
+          a.href = m[2];
+          a.textContent = m[2];
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          div.appendChild(a);
+        } else {
+          div.textContent = f;
+        }
+        fuentesPreview.appendChild(div);
+      });
+    }
+  }
+}
+
+/* ================= Navegación: stepper + sidebar (todas las secciones son reales, no un wizard con pasos falsos) ================= */
+
+function activarEtapa(stage) {
+  document.querySelectorAll(".sk-stage").forEach(sec => {
+    sec.style.display = (sec.getAttribute("data-stage") === stage) ? "" : "none";
+  });
+  document.querySelectorAll("#sk_stepper .sk-step").forEach(btn => {
+    btn.classList.toggle("active", btn.getAttribute("data-stage") === stage);
+  });
+  document.querySelectorAll(".sk-sidebar-item[data-stage]").forEach(btn => {
+    btn.classList.toggle("active", btn.getAttribute("data-stage") === stage);
+  });
+}
+
+function inicializarNavegacion() {
+  document.querySelectorAll("#sk_stepper .sk-step").forEach(btn => {
+    btn.addEventListener("click", () => activarEtapa(btn.getAttribute("data-stage")));
+  });
+  document.querySelectorAll(".sk-sidebar-item[data-scrollto]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const stage = btn.getAttribute("data-stage");
+      if (stage) activarEtapa(stage);
+      document.querySelectorAll(".sk-sidebar-item").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const target = document.getElementById(btn.getAttribute("data-scrollto"));
+      if (target) setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), stage ? 60 : 0);
+    });
+  });
+  const btnAlertas = document.getElementById("sk_btn_alertas");
+  if (btnAlertas) {
+    btnAlertas.addEventListener("click", () => {
+      activarEtapa("ejecutar");
+      const target = document.getElementById("out_alertas");
+      if (target) setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+    });
+  }
 }
 
 function limpiarSalidasPorErrorEdu() {
@@ -3763,6 +4218,15 @@ function limpiarSalidasPorErrorEdu() {
   ultimoResultado = null;
   const btnSwap = document.getElementById("btn_swap_vivd");
   if (btnSwap) { btnSwap.disabled = true; btnSwap.textContent = "⇄ Intercambiar VI ↔ VD"; }
+
+  ["sk_stat_variables", "sk_stat_areas", "sk_stat_marcos", "sk_stat_categorias", "sk_stat_fuentes", "sk_stat_alertas"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = "–";
+  });
+  const badgeAlertas = document.getElementById("sk_alertas_badge");
+  if (badgeAlertas) badgeAlertas.style.display = "none";
+  const fuentesPreview = document.getElementById("sk_fuentes_preview");
+  if (fuentesPreview) fuentesPreview.innerHTML = '<p class="sk-historial-vacio">Reformula un problema para ver fuentes de datos recomendadas.</p>';
 }
 
 function activarSalidasValidasEdu() {
@@ -3828,12 +4292,21 @@ window.addEventListener("load", function () {
     if (localStorage.getItem("sk_theme") === "dark") document.body.classList.add("sk-dark");
   } catch (e) { /* localStorage no disponible */ }
 
+  inicializarNavegacion();
+
   renderizarHistorial();
+  const btnHistorialBuscar = document.getElementById("sk_historial_buscar");
+  if (btnHistorialBuscar) {
+    btnHistorialBuscar.addEventListener("input", function () {
+      renderizarHistorial(btnHistorialBuscar.value);
+    });
+  }
   const btnHistorialBorrar = document.getElementById("btn_historial_borrar");
   if (btnHistorialBorrar) {
     btnHistorialBorrar.addEventListener("click", function () {
       borrarHistorialGuardado();
-      renderizarHistorial();
+      const buscador = document.getElementById("sk_historial_buscar");
+      renderizarHistorial(buscador ? buscador.value : "");
     });
   }
 
@@ -3879,7 +4352,9 @@ window.addEventListener("load", function () {
         const resultado = analizarProblema(txt, { intercambiarViVd: false });
         actualizarInterfazConResultado(resultado);
         guardarEnHistorial(txt, resultado);
-        renderizarHistorial();
+        const buscadorActivo = document.getElementById("sk_historial_buscar");
+        renderizarHistorial(buscadorActivo ? buscadorActivo.value : "");
+        activarEtapa("analizar");
         if (statusEl) statusEl.textContent = "Análisis completado. Puedes exportar a Word o CSV.";
       } catch (e) {
         if (statusEl) statusEl.textContent = "Error interno del motor: " + e.message;
@@ -3923,6 +4398,15 @@ window.addEventListener("load", function () {
       viVdIntercambiado = false;
       const btnSwap = document.getElementById("btn_swap_vivd");
       if (btnSwap) { btnSwap.disabled = true; btnSwap.textContent = "⇄ Intercambiar VI ↔ VD"; }
+      ["sk_stat_variables", "sk_stat_areas", "sk_stat_marcos", "sk_stat_categorias", "sk_stat_fuentes", "sk_stat_alertas"].forEach(id => {
+        const e = document.getElementById(id);
+        if (e) e.textContent = "–";
+      });
+      const badgeAlertas = document.getElementById("sk_alertas_badge");
+      if (badgeAlertas) badgeAlertas.style.display = "none";
+      const fuentesPreview = document.getElementById("sk_fuentes_preview");
+      if (fuentesPreview) fuentesPreview.innerHTML = '<p class="sk-historial-vacio">Reformula un problema para ver fuentes de datos recomendadas.</p>';
+      activarEtapa("definir");
       if (statusEl) statusEl.textContent = "Problema borrado. Introduce un nuevo problema científico.";
     });
   }
