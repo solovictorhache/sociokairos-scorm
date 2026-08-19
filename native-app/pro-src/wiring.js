@@ -318,7 +318,12 @@ function actualizarResumenReal(resultado) {
   };
   for (const id in stats) {
     const el = document.getElementById(id);
-    if (el) el.textContent = String(stats[id]);
+    if (el) {
+      el.textContent = String(stats[id]);
+      el.classList.remove("sk-stat-pulse");
+      void el.offsetWidth;
+      el.classList.add("sk-stat-pulse");
+    }
   }
 
   const badgeAlertas = document.getElementById("sk_alertas_badge");
