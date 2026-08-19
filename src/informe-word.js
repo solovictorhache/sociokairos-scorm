@@ -16,8 +16,8 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   const horaStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 
   const parts = [];
-  parts.push(paragraphXml(piePagina, { italic: true, sz: 16 }));
-  parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 16 }));
+  piePagina.split("\n").forEach(linea => parts.push(paragraphXml(linea, { italic: true, sz: 16, sinSangria: true })));
+  parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 16, sinSangria: true }));
   try {
     if (LOGO_BASE64) parts.push(imageParagraphXml(502920, 502920));
   } catch (e) { /* logo opcional */ }

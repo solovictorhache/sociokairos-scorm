@@ -641,7 +641,7 @@ window.addEventListener("load", function () {
         const txtJustificacion = document.getElementById("txt_justificacion_marco");
         const justificacionMarcos = txtJustificacion ? txtJustificacion.value : "";
         const zipBytes = construirInformeWord(resultado, problemaTrabajo, versionLabel, txt, justificacionMarcos, {
-          piePagina: "© SOCIOKAIROS – contacto@sociokairos.com",
+          piePagina: "Heuristic software developed by Victor Hugo Pérez Gallo, PhD\ncontacto@sociokairos.com",
           tituloInforme: "Informe SOCIOKAIROS – Research Suite",
           incluirNotaUnizar: false
         });

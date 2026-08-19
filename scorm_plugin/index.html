@@ -1175,7 +1175,8 @@ const VOCABULARIO_DOMINIO = [
   "practica", "practican", "precariedad", "precarizacion", "precarización", "predicen", "prevalencia", "probabilidad",
   "producen", "profesorado", "profesores", "provincia", "provincias", "provocan", "publicidad", "racializad",
   "radicalizacion", "radicalización", "refugiadas", "refugiados", "regularizacion", "regularización", "reincidencia", "relacion",
-  "relación", "religion", "religiosidad", "religión", "representaciones", "resentimiento", "residencial", "residenciales",
+  "relación", "relaciona", "relacionada", "relacionadas", "relacionado", "relacionados", "relacionan", "religion",
+  "religiosidad", "religión", "representaciones", "resentimiento", "residencial", "residenciales",
   "resignacion", "resignación", "ruralidad", "salarios", "santander", "secularizacion", "secularización", "sedgwick",
   "segregacion", "segregación", "seguimiento", "significado", "sobreendeudamiento", "sostenibilidad", "sunstein", "temperatura",
   "temporalidad", "territorial", "territorio", "territorios", "trabajadoras", "trabajadores", "transfobia", "transgenero",
@@ -3338,14 +3339,24 @@ function runXml(text, opts) {
   return `<w:r>${rprXml}<w:t xml:space="preserve">${xmlEscape(text)}</w:t></w:r>`;
 }
 
+// Interlineado 1,5 en todo el documento: OOXML no garantiza que un
+// w:spacing de formato directo herede w:line del docDefault del propio
+// documento (word/styles.xml) si el elemento ya trae w:before/w:after, así
+// que se repite explícitamente aquí en cada w:spacing que se genera a
+// mano, en vez de confiar solo en el valor por defecto de los estilos.
+const LINEA_1_5 = `w:line="360" w:lineRule="auto"`;
+
 function paragraphXml(text, opts) {
   opts = opts || {};
   const ppr = [];
   if (opts.spacingBefore || opts.spacingAfter) {
-    ppr.push(`<w:spacing w:before="${opts.spacingBefore || 0}" w:after="${opts.spacingAfter || 120}"/>`);
+    ppr.push(`<w:spacing w:before="${opts.spacingBefore || 0}" w:after="${opts.spacingAfter || 120}" ${LINEA_1_5}/>`);
   }
   if (opts.bullet) {
     ppr.push(`<w:ind w:left="360" w:hanging="360"/>`);
+  } else if (!opts.sinSangria) {
+    // Sangría de primera línea (formato académico estándar, ~1,25cm).
+    ppr.push(`<w:ind w:firstLine="708"/>`);
   }
   const pprXml = ppr.length ? `<w:pPr>${ppr.join("")}</w:pPr>` : "";
   const prefix = opts.bullet ? "• " : "";
@@ -3354,7 +3365,7 @@ function paragraphXml(text, opts) {
 
 function headingXml(text, level) {
   const sz = level === 1 ? 32 : 26;
-  return `<w:p><w:pPr><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="${level - 1}"/></w:pPr>${runXml(text, { bold: true, sz, color: "133A5C" })}</w:p>`;
+  return `<w:p><w:pPr><w:spacing w:before="240" w:after="120" ${LINEA_1_5}/><w:outlineLvl w:val="${level - 1}"/></w:pPr>${runXml(text, { bold: true, sz, color: "133A5C" })}</w:p>`;
 }
 
 function tableXml(headers, rows) {
@@ -3386,6 +3397,27 @@ function imageParagraphXml(cxEmu, cyEmu) {
     `</wp:inline></w:drawing></w:r></w:p>`;
 }
 
+// word/styles.xml: fija Times New Roman 12pt (sz="24", en medios puntos) e
+// interlineado 1,5 como valores por defecto de TODO el documento — sin este
+// archivo, Word usa su fuente/interlineado por defecto del tema
+// (normalmente Calibri/Aptos a espacio simple) en cualquier texto que no
+// traiga ya su propio w:rFonts/w:spacing explícito.
+function buildStylesXml() {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+    `<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+    `<w:docDefaults>` +
+    `<w:rPrDefault><w:rPr>` +
+    `<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman"/>` +
+    `<w:sz w:val="24"/><w:szCs w:val="24"/>` +
+    `</w:rPr></w:rPrDefault>` +
+    `<w:pPrDefault><w:pPr>` +
+    `<w:spacing w:after="160" ${LINEA_1_5}/>` +
+    `</w:pPr></w:pPrDefault>` +
+    `</w:docDefaults>` +
+    `<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>` +
+    `</w:styles>`;
+}
+
 /**
  * bodyParts: array of XML paragraph/table strings
  * logoPngBytes: Uint8Array | null
@@ -3413,6 +3445,7 @@ function buildDocx(bodyParts, logoPngBytes) {
     `<Default Extension="xml" ContentType="application/xml"/>` +
     (hasLogo ? `<Default Extension="png" ContentType="image/png"/>` : "") +
     `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+    `<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>` +
     `<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>` +
     `</Types>`;
 
@@ -3426,6 +3459,7 @@ function buildDocx(bodyParts, logoPngBytes) {
   const docRels =
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
     `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+    `<Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
     (hasLogo ? `<Relationship Id="rIdLogo" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/>` : "") +
     `</Relationships>`;
 
@@ -3445,6 +3479,7 @@ function buildDocx(bodyParts, logoPngBytes) {
     { name: "_rels/.rels", data: encoder.encode(rootRels) },
     { name: "docProps/core.xml", data: encoder.encode(coreXml) },
     { name: "word/document.xml", data: encoder.encode(documentXml) },
+    { name: "word/styles.xml", data: encoder.encode(buildStylesXml()) },
     { name: "word/_rels/document.xml.rels", data: encoder.encode(docRels) },
   ];
   if (hasLogo) {
@@ -3473,8 +3508,8 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   const horaStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 
   const parts = [];
-  parts.push(paragraphXml(piePagina, { italic: true, sz: 16 }));
-  parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 16 }));
+  piePagina.split("\n").forEach(linea => parts.push(paragraphXml(linea, { italic: true, sz: 16, sinSangria: true })));
+  parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 16, sinSangria: true }));
   try {
     if (LOGO_BASE64) parts.push(imageParagraphXml(502920, 502920));
   } catch (e) { /* logo opcional */ }
