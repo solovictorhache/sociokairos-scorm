@@ -1,24 +1,38 @@
 #!/usr/bin/env python3
-"""Copia scorm_plugin/index.html y logo.png a los recursos del paquete Swift
-(mac-app/SociokairosEduMac/Sources/SociokairosEduMac/Resources/scorm_plugin/),
-para que la app de Xcode cargue siempre el motor/interfaz más reciente.
+"""Copia native-app/dist_pro/index.html y logo.png a los recursos del
+paquete Swift (mac-app/SociokairosEduMac/Sources/SociokairosEduMac/Resources/scorm_plugin/),
+para que la app de Xcode cargue siempre la interfaz más reciente de la
+línea Profesional (track 2: sin SCORM, tema verde, contacto@sociokairos.com)
+— la misma que usa native-app/ (Tauri). La carpeta de destino sigue
+llamándose "scorm_plugin" solo porque así la referencia Bundle.module en
+SociokairosWebView.swift/Package.swift; no tiene nada que ver con SCORM.
 
-A diferencia de native-app/ (Tauri), que apunta directamente a scorm_plugin/
-sin copiar nada, Xcode/SPM sí necesita los recursos dentro del propio paquete
+Requiere haber generado antes native-app/dist_pro/ (build_pro.py):
+    python3 native-app/pro-src/build_pro.py
+
+A diferencia de native-app/ (Tauri), que apunta a dist_pro/ directamente sin
+copiar nada, Xcode/SPM sí necesita los recursos dentro del propio paquete
 para poder empaquetarlos — de ahí este script. Ejecútalo:
   - una vez, antes de abrir el proyecto en Xcode por primera vez (ya viene
     hecho en el repo, así que el primer "Run" funciona sin pasos previos), y
-  - cada vez que cambies engine.js/wiring.js/body.html/head.html y quieras
-    ver los cambios reflejados en la app de Xcode (además de reconstruir
-    scorm_plugin/index.html con `python3 ../src/build.py`).
+  - cada vez que cambies engine.js o algo en native-app/pro-src/ y quieras
+    ver los cambios reflejados en la app de Xcode (después de reconstruir
+    dist_pro/ con build_pro.py, como se indica arriba).
 """
 import shutil
 import pathlib
+import subprocess
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SRC_HTML = ROOT / "scorm_plugin" / "index.html"
-SRC_LOGO = ROOT / "scorm_plugin" / "logo.png"
+DIST_PRO = ROOT / "native-app" / "dist_pro"
+SRC_HTML = DIST_PRO / "index.html"
+SRC_LOGO = DIST_PRO / "logo.png"
 DEST_DIR = pathlib.Path(__file__).resolve().parent / "SociokairosEduMac" / "Sources" / "SociokairosEduMac" / "Resources" / "scorm_plugin"
+
+if not SRC_HTML.exists():
+    print(f"No existe {SRC_HTML}. Generándolo con native-app/pro-src/build_pro.py...")
+    subprocess.run([sys.executable, str(ROOT / "native-app" / "pro-src" / "build_pro.py")], check=True)
 
 DEST_DIR.mkdir(parents=True, exist_ok=True)
 shutil.copy2(SRC_HTML, DEST_DIR / "index.html")

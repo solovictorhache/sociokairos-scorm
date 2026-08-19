@@ -25,19 +25,25 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Construir scorm_plugin/index.html
+      - name: Construir scorm_plugin/index.html (línea 1, SCORM/EDU)
         run: python3 src/build.py
+
+      - name: Construir native-app/dist_pro/index.html (línea 2, Profesional)
+        run: python3 native-app/pro-src/build_pro.py
 
       - name: Instalar Playwright y Chromium
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
 
-      - name: Ejecutar prueba end-to-end
+      - name: Ejecutar prueba end-to-end (SCORM)
         run: node tests/e2e/scorm.e2e.js
 
       - name: Ejecutar prueba end-to-end de las mejoras (transparencia, VI/VD, historial, justificación)
         run: node tests/e2e/mejoras.e2e.js
+
+      - name: Ejecutar prueba end-to-end de la línea Profesional (sin SCORM, tema verde)
+        run: node tests/e2e/pro.e2e.js
 
       - uses: actions/setup-python@v5
         with:
@@ -46,11 +52,14 @@ jobs:
       - name: Instalar python-docx
         run: pip install python-docx
 
-      - name: Validar el informe Word generado
+      - name: Validar el informe Word generado (SCORM)
         run: python3 tests/e2e/validate_docx.py .e2e-output/informe.docx
 
-      - name: Validar el informe Word con justificación teórica
+      - name: Validar el informe Word con justificación teórica (SCORM)
         run: python3 tests/e2e/validate_docx.py .e2e-output/informe_justificado.docx
+
+      - name: Validar el informe Word de la línea Profesional
+        run: python3 tests/e2e/validate_docx.py .e2e-output/informe_pro.docx
 
       - name: Subir archivos generados como artefacto
         if: always()

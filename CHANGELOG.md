@@ -1,5 +1,67 @@
 # CHANGELOG — SOCIOKAIROS SCORM Plugin
 
+## Separación en dos líneas de producto: SCORM/EDU y Profesional 2026-08-18
+
+A partir de ahora el proyecto se desarrolla en dos líneas independientes que
+comparten un solo motor:
+
+- **Línea 1 — SCORM/educativa** (`scorm_plugin/`): sin cambios de
+  comportamiento respecto a antes de este commit — sigue siendo
+  "SOCIOKAIROS EDU", con integración SCORM, identidad de la Universidad de
+  Zaragoza y el correo victorhugo.perez@unizar.es.
+- **Línea 2 — Profesional** (`native-app/`, empaquetada con Tauri para
+  Mac/Windows/Linux): nueva interfaz propia en `native-app/pro-src/`
+  (`head.html`, `body.html`, `wiring.js`), independiente de `src/`:
+  - **Sin SCORM**: se quitó por completo la integración SCORM 1.2/2004
+    (`scormInit`, `scormMarkCompleted`, `scormFinish` y todas sus llamadas)
+    y el overlay de "Entrar en pantalla completa" al arrancar (no tiene
+    sentido en una ventana de escritorio normal, ya se abre directamente).
+  - **Tema verde, estética de app nativa de macOS**: paleta verde
+    (`--sk-primary:#1c7a4c`, `--sk-accent:#3ecf8e`...) sustituyendo la
+    azul/marina original; la toolbar pasa de un banner oscuro con gradiente
+    a una barra translúcida clara (blur + saturate) con texto oscuro, más
+    parecida a la barra de herramientas de una app de macOS; botones más
+    planos, con transiciones sutiles en vez de sombras pesadas y gradientes
+    marcados. Modo oscuro conservado, retemado en verde.
+  - **Contacto propio**: `contacto@sociokairos.com` en la cabecera y en el
+    pie del informe Word exportado, en vez de victorhugo.perez@unizar.es.
+  - **Identidad "SOCIOKAIROS" a secas**: título de la cabecera y del
+    informe Word sin "EDU"/"V32"/"UNIZAR"; la nota final del informe
+    ("16. Nota para estudiantes de la Universidad de Zaragoza") se sustituye
+    por una nota genérica.
+  - `native-app/pro-src/build_pro.py` ensambla `native-app/dist_pro/index.html`
+    juntando `pro-src/{head,body,wiring}.js/html` con el motor COMPARTIDO de
+    `src/{geo-data,engine,docxwriter,informe-word}.js` — cero duplicación de
+    la lógica heurística ni de la exportación Word/CSV entre las dos líneas.
+  - `src/informe-word.js` gana un 6º parámetro opcional (`opciones`:
+    `piePagina`, `tituloInforme`, `incluirNotaUnizar`) en
+    `construirInformeWord(...)`, con los valores de siempre como
+    predeterminados — la línea SCORM no pasa este parámetro y no cambia en
+    nada; solo la línea Profesional lo usa para su propio pie/título/nota.
+  - `native-app/src-tauri/tauri.conf.json` ahora apunta `frontendDist` a
+    `../dist_pro` (antes `../../scorm_plugin`), con `productName`,
+    `identifier` (`com.sociokairos.app`) y título de ventana actualizados.
+  - `mac-app/` (variante Xcode-puro de la línea Profesional) actualizada
+    para sincronizar sus recursos desde `native-app/dist_pro/` en vez de
+    `scorm_plugin/`, con el mismo resultado visual/funcional que la app
+    Tauri.
+
+Nuevo test end-to-end `tests/e2e/pro.e2e.js` (añadido a CI) que verifica
+sobre el build real: ausencia del overlay de arranque y del estado SCORM,
+título/correo de cabecera correctos, el motor funcionando igual que en la
+línea SCORM (misma transparencia del análisis), y que el `.docx` exportado
+contiene el nuevo pie de contacto y NO contiene ni el correo antiguo ni la
+nota específica de la Universidad de Zaragoza. 46/46 tests unitarios siguen
+en verde (sin cambios: el motor compartido no cambió su comportamiento por
+defecto).
+
+Nota: dos strings de validación del motor compartido ("SOCIOKAIROS EDU
+requiere..."/"SOCIOKAIROS EDU ha detectado...", visibles solo cuando un
+problema no pasa la validación estructural) siguen mencionando "EDU" en
+ambas líneas — deliberadamente fuera de este cambio por ser texto compartido
+de bajo impacto visual; pendiente de una limpieza futura si se decide que
+merece la pena parametrizarlo igual que se hizo con el informe Word.
+
 ## Scaffold de la app de escritorio (Tauri) para Mac/Windows 2026-08-18
 
 Primer paso de "1. App nativa (Tauri)" del ROADMAP: nueva carpeta `native-app/`

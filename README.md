@@ -1,18 +1,29 @@
-# SOCIOKAIROS EDU – Research Suite para Moodle
+# SOCIOKAIROS – Research Suite
 
-Plugin SCORM del proyecto SOCIOKAIROS: un motor heurístico determinista (sin IA/caja negra) que ayuda a estudiantes y personal investigador a reformular problemas de investigación sociológica. Valida la calidad estructural del problema inicial, sugiere variables independientes/dependientes (con candidatas informadas por la literatura cuando el texto no nombra ningún factor explicativo), hipótesis, área sociológica, tradiciones compatibles, unidad de análisis, diseño de estudio, operacionalización con nivel de medición, fuentes de datos geolocalizadas y una visualización SVG del problema — y exporta el resultado a Word y CSV.
+Un motor heurístico determinista (sin IA/caja negra) que ayuda a reformular problemas de investigación sociológica: valida la calidad estructural del problema inicial, sugiere variables independientes/dependientes (con candidatas informadas por la literatura cuando el texto no nombra ningún factor explicativo), hipótesis, área sociológica, tradiciones compatibles, unidad de análisis, diseño de estudio, operacionalización con nivel de medición, fuentes de datos geolocalizadas y una visualización SVG del problema — y exporta el resultado a Word y CSV.
 
-Autor: Dr. Víctor Hugo Pérez Gallo · Universidad de Zaragoza.
+Autor: Dr. Víctor Hugo Pérez Gallo.
+
+## Dos líneas de producto, un solo motor
+
+El proyecto se divide en dos líneas independientes que **comparten el mismo motor heurístico** (`src/engine.js`, `src/geo-data.js`) y la misma exportación Word/CSV (`src/docxwriter.js`, `src/informe-word.js`) — una sola fuente de verdad, sin duplicar lógica:
+
+- **Línea 1 — SCORM / educativa** (`scorm_plugin/`): "SOCIOKAIROS EDU", pensada para Moodle — integración SCORM 1.2/2004, identidad de la Universidad de Zaragoza.
+- **Línea 2 — Profesional** (`native-app/`): "SOCIOKAIROS" a secas, app de escritorio instalable en Mac/Windows/Linux (Tauri) — sin SCORM, tema verde con estética de app nativa de macOS, contacto propio (`contacto@sociokairos.com`).
+
+Cada línea tiene su propia interfaz (`src/head.html`+`src/body.html`+`src/wiring.js` para la 1; `native-app/pro-src/` para la 2) y su propio script de ensamblado (`src/build.py` / `native-app/pro-src/build_pro.py`), pero ambas leen el motor de `src/engine.js` sin copiarlo.
 
 ## Estructura del repositorio
 
 ```
-scorm_plugin/          Paquete SCORM 1.2 listo para importar en Moodle (index.html, imsmanifest.xml, logo.png, licencia)
-native-app/             App de escritorio multiplataforma (Tauri, Mac/Windows, con instalador .dmg/.msi) —
-                          reutiliza scorm_plugin/index.html tal cual. Ver native-app/README.md
-mac-app/                 Alternativa solo-Mac: abrir directo en Xcode y pulsar ▶ Run, sin terminal ni Rust
-                          (SwiftUI + WKWebView). Ver mac-app/README.md
-src/                    Fuentes del motor y la interfaz, en módulos separados
+scorm_plugin/          Línea 1 (SCORM/EDU): paquete SCORM 1.2 listo para importar en Moodle
+                          (index.html, imsmanifest.xml, logo.png, licencia)
+native-app/             Línea 2 (Profesional): app de escritorio multiplataforma (Tauri, Mac/Windows/Linux,
+                          con instalador .dmg/.msi/.AppImage) — interfaz propia en pro-src/, motor
+                          compartido con la línea 1. Ver native-app/README.md
+mac-app/                 Variante solo-Mac de la línea 2: abrir directo en Xcode y pulsar ▶ Run, sin
+                          terminal ni Rust (SwiftUI + WKWebView). Ver mac-app/README.md
+src/                    Fuentes del motor y la interfaz de la línea 1 (SCORM/EDU), en módulos separados
   engine.js             Motor heurístico puro (sin dependencias de DOM): detección de variables,
                           validación pedagógica SOCIOKAIROS EDU, alertas metodológicas, tradiciones
                           sociológicas, mapa lógico, diseños sugeridos, visualización SVG
@@ -26,8 +37,11 @@ tests/                  Pruebas automatizadas
   engine.test.js          Tests del motor (node:test, sin dependencias): variables, validación EDU,
                             enfoque cuali/cuanti/mixto, hipótesis, operacionalización, dominios sociológicos
   helpers/load-engine.js    Concatena geo-data.js + engine.js igual que build.py, para poder probarlos con require()
-  e2e/scorm.e2e.js          Prueba end-to-end con Playwright sobre scorm_plugin/index.html ya construido
-  e2e/validate_docx.py       Valida con python-docx el informe Word generado por la prueba end-to-end
+  e2e/scorm.e2e.js          Prueba end-to-end con Playwright sobre scorm_plugin/index.html ya construido (línea 1)
+  e2e/mejoras.e2e.js         Prueba end-to-end de transparencia, selector VI/VD, historial y justificación (línea 1)
+  e2e/pro.e2e.js              Prueba end-to-end de native-app/dist_pro/index.html: confirma que no hay SCORM
+                                ni identidad EDU/UNIZAR, y que el motor funciona igual que en la línea 1
+  e2e/validate_docx.py       Valida con python-docx los informes Word generados por las pruebas end-to-end
 .github/workflows/test.yml  CI: corre los tests del motor y la prueba end-to-end en cada push/PR
 CITATION.cff             Metadatos de citación (Citation File Format)
 metadata.json             Metadatos de depósito para Zenodo

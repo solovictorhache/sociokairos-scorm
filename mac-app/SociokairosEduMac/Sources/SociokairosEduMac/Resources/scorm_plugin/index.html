@@ -3,138 +3,207 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SOCIOKAIROS · Research Suite para Moodle</title>
+  <title>SOCIOKAIROS · Research Suite</title>
   <style>
 
     :root{
-      --sk-bg:#eef5fb;
+      --sk-bg:#f4f8f4;
       --sk-card:rgba(255,255,255,.86);
       --sk-card-solid:#ffffff;
-      --sk-text:#0f2f4a;
-      --sk-muted:#61778c;
-      --sk-primary:#083e70;
-      --sk-primary-2:#0b65b1;
-      --sk-accent:#46b4e8;
-      --sk-border:rgba(12,63,105,.14);
-      --sk-shadow:0 18px 45px rgba(8,62,112,.14);
-      --sk-radius:24px;
+      --sk-text:#122016;
+      --sk-muted:#5a6b5e;
+      --sk-primary:#1c7a4c;
+      --sk-primary-2:#2fae72;
+      --sk-accent:#3ecf8e;
+      --sk-border:rgba(20,60,38,.13);
+      --sk-shadow:0 14px 38px rgba(20,60,38,.10);
+      --sk-radius:16px;
+      --sk-toolbar-bg:rgba(250,252,250,.78);
+      --sk-toolbar-border:rgba(20,60,38,.10);
     }
     *{ box-sizing:border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
       margin: 0;
       padding: 0;
-      background:
-        radial-gradient(circle at 12% 10%, rgba(70,180,232,.22), transparent 32%),
-        radial-gradient(circle at 88% 18%, rgba(8,62,112,.18), transparent 36%),
-        linear-gradient(135deg,#f7fbff,#eaf4ff 55%,#f4f8fc);
+      background: var(--sk-bg);
       color:var(--sk-text);
       min-height:100vh;
     }
+
+    /* --- Toolbar estilo macOS: translúcida, clara, sin gradiente pesado --- */
     header {
-      background: linear-gradient(90deg,#06150f,#0b3d1f,#06150f);
-      color: #f8fbff;
-      padding: 22px 28px;
-      border-bottom:1px solid var(--sk-border);
-      box-shadow:0 8px 28px rgba(8,62,112,.08);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      background: var(--sk-toolbar-bg);
+      color: var(--sk-text);
+      padding: 14px 22px;
+      border-bottom:1px solid var(--sk-toolbar-border);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
       position: sticky;
       top: 0;
       z-index: 20;
     }
-    header > div {
-      max-width: 1220px;
+    .sk-toolbar{
+      max-width: 1320px;
       margin: 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      flex-wrap:wrap;
+    }
+    .sk-toolbar-brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
     }
     header img {
-      height:72px !important;
-      width:72px !important;
-      border-radius:20px;
-      box-shadow:0 12px 28px rgba(8,62,112,.15);
+      height:44px;
+      width:44px;
+      border-radius:12px;
+      box-shadow:0 4px 14px rgba(20,60,38,.16);
       background:white;
-      padding:4px;
+      padding:3px;
     }
     header h1 {
       margin: 0;
-      font-size: 30px;
-      letter-spacing:.02em;
-      font-weight:850;
-      color: #ffffff;
-      text-shadow:0 1px 2px rgba(0,0,0,.35);
+      font-size: 19px;
+      letter-spacing:.01em;
+      font-weight:750;
+      color: var(--sk-text);
     }
     header p {
-      margin: 7px 0 0 0;
-      font-size: 15px;
-      color: rgba(255,255,255,.86);
-      line-height:1.45;
-      max-width:980px;
+      margin: 2px 0 0 0;
+      font-size: 12.5px;
+      color: var(--sk-muted);
+      line-height:1.4;
     }
-    header .meta {
-      margin-top: 8px;
-      font-size: 13px;
-      color: rgba(255,255,255,.78);
+    .sk-author-top{
+      margin-top:3px;
+      font-size:11.5px;
+      color:var(--sk-muted);
     }
-    header a{
-      color:#5fc7ff !important;
+    .sk-author-top a{
+      color: var(--sk-primary);
       text-decoration:none;
-      font-weight:700;
+      font-weight:650;
     }
+    .sk-author-top a:hover{ text-decoration:underline; }
+
+    .sk-controls-clean{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-shrink:0;
+    }
+    .sk-theme-toggle-clean{
+      height:34px;
+      min-width:76px;
+      border-radius:999px;
+      border:1px solid var(--sk-border);
+      background:rgba(28,122,76,.08);
+      color:var(--sk-text);
+      display:flex;
+      align-items:center;
+      justify-content:space-around;
+      gap:6px;
+      padding:0 10px;
+      cursor:pointer;
+    }
+    .sk-track{
+      position:relative;
+      width:32px;
+      height:18px;
+      border-radius:999px;
+      background:rgba(28,122,76,.20);
+      display:inline-block;
+    }
+    .sk-knob{
+      position:absolute;
+      left:2px;
+      top:2px;
+      width:14px;
+      height:14px;
+      border-radius:50%;
+      background: var(--sk-primary);
+      box-shadow:0 1px 3px rgba(0,0,0,.25);
+      transition:left .18s ease;
+    }
+    body.sk-dark .sk-knob{ left:16px; }
+    .sk-sun,.sk-moon{
+      font-size:12px;
+      line-height:1;
+    }
+    .sk-icon-btn-clean{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      border:1px solid var(--sk-border);
+      background:rgba(28,122,76,.08);
+      color:var(--sk-text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:15px;
+      cursor:pointer;
+    }
+    .sk-icon-btn-clean:hover,.sk-theme-toggle-clean:hover{
+      background:rgba(28,122,76,.16);
+    }
+
     main {
-      padding: 28px 28px 52px;
-      max-width: 1220px;
+      padding: 24px 24px 48px;
+      max-width: 1320px;
       margin: 0 auto;
     }
     .grid {
       display: grid;
       grid-template-columns: minmax(360px,.95fr) minmax(420px,1.35fr);
-      gap: 22px;
+      gap: 20px;
       align-items:start;
     }
     textarea {
       width: 100%;
-      min-height: 238px;
+      min-height: 220px;
       resize: vertical;
-      padding: 16px 18px;
+      padding: 14px 16px;
       font-family: inherit;
-      font-size: 15px;
+      font-size: 14.5px;
       line-height:1.55;
-      border-radius: 20px;
+      border-radius: 12px;
       border: 1px solid var(--sk-border);
-      background:rgba(255,255,255,.82);
+      background:#ffffff;
       color:var(--sk-text);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
       outline:none;
-      transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+      transition:border-color .16s ease, box-shadow .16s ease;
     }
     textarea:focus {
-      border-color: rgba(11,101,177,.55);
-      box-shadow:0 0 0 4px rgba(70,180,232,.18);
+      border-color: var(--sk-primary-2);
+      box-shadow:0 0 0 3px rgba(62,207,142,.20);
     }
     .panel {
       background: var(--sk-card);
       border-radius: var(--sk-radius);
       border: 1px solid var(--sk-border);
-      padding: 22px 24px;
+      padding: 20px 22px;
       box-shadow: var(--sk-shadow);
       font-size: 14px;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      animation: skFade .35s ease both;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
-    .sk-logo { height: 32px; margin-right: 8px; vertical-align: middle; }
     .panel h2 {
       margin-top: 0;
-      margin-bottom:16px;
-      font-size: 18px;
-      color: var(--sk-primary);
+      margin-bottom:14px;
+      font-size: 16px;
+      font-weight:700;
+      color: var(--sk-text);
       letter-spacing:.01em;
     }
     .panel h3 {
-      margin: 18px 0 8px;
-      font-size: 14px;
+      margin: 16px 0 6px;
+      font-size: 13px;
       color: var(--sk-text);
-      font-weight:800;
+      font-weight:700;
     }
     .panel pre {
       white-space: pre-wrap;
@@ -142,447 +211,228 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
       font-size: 12.5px;
       line-height:1.55;
-      background: rgba(246,250,255,.92);
-      border-radius: 18px;
-      padding: 14px 16px;
-      border: 1px solid rgba(12,63,105,.10);
-      margin-bottom: 12px;
-      color:#17324a;
+      background: #f7faf7;
+      border-radius: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--sk-border);
+      margin-bottom: 10px;
+      color:var(--sk-text);
       max-height: 360px;
       overflow:auto;
     }
     button {
-      border: none;
-      border-radius: 16px;
-      padding: 11px 18px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 9px 15px;
       font-size: 13px;
       cursor: pointer;
-      background: linear-gradient(135deg,var(--sk-primary),var(--sk-primary-2));
+      background: var(--sk-primary);
       color: #fff;
-      margin-top: 10px;
+      margin-top: 8px;
       margin-right: 8px;
-      font-weight:750;
-      box-shadow:0 10px 24px rgba(8,62,112,.18);
-      transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+      font-weight:600;
+      transition: background .15s ease, opacity .15s ease, transform .1s ease;
     }
     button:hover{
-      transform:translateY(-2px);
-      box-shadow:0 14px 30px rgba(8,62,112,.25);
+      background: var(--sk-primary-2);
+    }
+    button:active{
+      transform: scale(.98);
     }
     button.secondary {
-      background: linear-gradient(135deg,#4b86b6,#1476b8);
+      background: rgba(28,122,76,.10);
+      color: var(--sk-primary);
+      border-color: var(--sk-border);
+    }
+    button.secondary:hover{
+      background: rgba(28,122,76,.18);
     }
     button:disabled {
-      opacity: 0.55;
+      opacity: 0.5;
       cursor: default;
       transform:none;
     }
     .tags {
-      margin-top: 14px;
-      font-size: 12px;
+      margin-top: 12px;
+      font-size: 11.5px;
       color: var(--sk-muted);
       line-height:1.9;
     }
     .badge {
       display: inline-block;
-      padding: 5px 10px;
+      padding: 4px 9px;
       border-radius: 999px;
-      border: 1px solid rgba(11,101,177,.18);
+      border: 1px solid var(--sk-border);
       margin-right: 5px;
       margin-bottom: 5px;
-      background:rgba(11,101,177,.08);
-      color:#164569;
-      font-weight:650;
+      background:rgba(28,122,76,.07);
+      color:var(--sk-primary);
+      font-weight:600;
     }
     .status {
-      margin-top: 12px;
+      margin-top: 10px;
       font-size: 12px;
       color: var(--sk-muted);
-      padding:8px 10px;
+      padding:6px 10px;
       border-radius:999px;
-      background:rgba(255,255,255,.72);
+      background:rgba(28,122,76,.06);
       display:inline-block;
-      border:1px solid rgba(12,63,105,.10);
+      border:1px solid var(--sk-border);
     }
     .badge-area {
       display: inline-block;
       margin: 0 0 12px;
-      padding: 6px 12px;
+      padding: 5px 11px;
       border-radius: 999px;
-      border: 1px solid rgba(11,101,177,.20);
+      border: 1px solid var(--sk-border);
       font-size: 12px;
-      background: #e9f4ff;
-      color:#12456f;
-      font-weight:700;
+      background: rgba(28,122,76,.09);
+      color:var(--sk-primary);
+      font-weight:650;
     }
     .version-selector{
-      background:rgba(255,255,255,.70);
-      border:1px solid rgba(12,63,105,.12);
-      border-radius:18px;
-      padding:14px 16px;
-      margin:10px 0 14px;
+      background:#f7faf7;
+      border:1px solid var(--sk-border);
+      border-radius:12px;
+      padding:12px 14px;
+      margin:8px 0 12px;
       line-height:1.7;
     }
     .version-selector label{
       cursor:pointer;
-      display:inline-block;
-      margin:3px 0;
+      display:block;
+      padding:4px 6px;
+      border-radius:8px;
+      font-weight:600;
+    }
+    .version-selector label:hover{
+      background: rgba(28,122,76,.07);
     }
     input[type="radio"]{
-      accent-color: var(--sk-primary-2);
-      transform:scale(1.08);
+      accent-color: var(--sk-primary);
+      transform:scale(1.05);
       margin-right:6px;
-    }
-    @keyframes skFade{
-      from{opacity:0; transform:translateY(10px);}
-      to{opacity:1; transform:translateY(0);}
+      vertical-align:middle;
     }
 
-    .theme-toggle{
-      width:112px;
-      height:54px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.24);
-      background:rgba(255,255,255,.12);
+    body.sk-dark{
+      --sk-bg:#0d1712;
+      --sk-card:rgba(18,32,24,.86);
+      --sk-card-solid:#12201a;
+      --sk-text:#eaf5ee;
+      --sk-muted:#93a89b;
+      --sk-border:rgba(120,200,150,.16);
+      --sk-toolbar-bg:rgba(13,23,18,.72);
+      --sk-toolbar-border:rgba(120,200,150,.12);
+    }
+    body.sk-dark textarea{ background:#12201a; color:var(--sk-text); }
+    body.sk-dark .panel pre{ background:#0f1c15; color:var(--sk-text); }
+    body.sk-dark .version-selector{ background:#0f1c15; }
+    body.sk-dark .sk-theme-toggle-clean,
+    body.sk-dark .sk-icon-btn-clean{ background:rgba(62,207,142,.10); }
+    body.sk-dark .sk-theme-toggle-clean:hover,
+    body.sk-dark .sk-icon-btn-clean:hover{ background:rgba(62,207,142,.18); }
+
+    .sk-historial-lista{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin:8px 0 4px;
+    }
+    .sk-historial-item{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 12px;
-      color:#fff;
-      box-shadow:0 10px 28px rgba(0,0,0,.22);
+      gap:10px;
+      text-align:left;
+      padding:8px 12px;
+      border-radius:10px;
+      border:1px solid var(--sk-border);
+      background:#ffffff;
+      color:var(--sk-text);
+      font-size:12.5px;
+      line-height:1.4;
       cursor:pointer;
-      user-select:none;
+      width:100%;
     }
-    .theme-toggle .sun{font-size:18px;opacity:.95;}
-    .theme-toggle .track{
-      position:relative;
-      width:54px;
-      height:30px;
-      border-radius:999px;
-      background:rgba(255,255,255,.62);
+    .sk-historial-item:hover{
+      background: rgba(28,122,76,.06);
     }
-    .theme-toggle .knob{
-      position:absolute;
-      width:26px;
-      height:26px;
-      left:2px;
-      top:2px;
-      border-radius:50%;
-      background:#fff;
-      box-shadow:0 3px 8px rgba(0,0,0,.25);
-      transition:left .18s ease;
+    .sk-historial-item .sk-historial-texto{
+      flex:1;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
-    body.sk-dark{
-      background:
-        radial-gradient(circle at 10% 10%, rgba(70,180,232,.12), transparent 30%),
-        linear-gradient(135deg,#06111d,#0e2438 55%,#06111d);
+    .sk-historial-item .sk-historial-fecha{
+      flex-shrink:0;
+      font-size:11px;
+      color:var(--sk-muted);
     }
-    body.sk-dark .panel{background:rgba(10,28,44,.88); color:#f5f9ff; border-color:rgba(255,255,255,.10);}
-    body.sk-dark .panel h2, body.sk-dark .panel h3{color:#f8fbff;}
-    body.sk-dark textarea{background:rgba(255,255,255,.08); color:#fff; border-color:rgba(255,255,255,.18);}
-    body.sk-dark .panel pre{background:rgba(255,255,255,.08); color:#f5f9ff; border-color:rgba(255,255,255,.12);}
-    body.sk-dark .version-selector{background:rgba(255,255,255,.08); color:#f5f9ff; border-color:rgba(255,255,255,.12);}
-    body.sk-dark .badge{background:rgba(95,199,255,.16); color:#e8f7ff; border-color:rgba(95,199,255,.28);}
-    body.sk-dark .badge-area{background:rgba(95,199,255,.16); color:#e8f7ff; border-color:rgba(95,199,255,.28);}
-    body.sk-dark .status{background:rgba(255,255,255,.10); color:#cfe0f0; border-color:rgba(255,255,255,.16);}
-    body.sk-dark .theme-toggle .knob{left:26px;}
+    .sk-historial-vacio{
+      font-size:12.5px;
+      color:var(--sk-muted);
+      font-style:italic;
+    }
+    body.sk-dark .sk-historial-item{
+      background:#12201a;
+    }
+    body.sk-dark .sk-historial-item:hover{
+      background: rgba(62,207,142,.10);
+    }
+
+    .visual-svg-box{
+      overflow-x:auto;
+      border:1px solid var(--sk-border);
+      border-radius:12px;
+      padding:10px;
+      background:#f7faf7;
+    }
+    body.sk-dark .visual-svg-box{ background:#0f1c15; }
 
     @media (max-width: 980px) {
       .grid { grid-template-columns: 1fr; }
-      header h1{font-size:22px;}
-      main{padding:20px;}
+      header h1{ font-size:17px; }
+      main{ padding:18px; }
     }
 
-
-/* --- SOCIOKAIROS EDU V36: botonera unificada y datos abajo --- */
-header{
-  min-height: 138px !important;
-}
-header > div{
-  max-width: 1400px !important;
-}
-.sk-controls-clean{
-  display:flex !important;
-  gap:16px !important;
-  align-items:center !important;
-  justify-content:flex-end !important;
-  flex-shrink:0 !important;
-}
-.sk-theme-toggle-clean{
-  height:54px !important;
-  min-width:132px !important;
-  border-radius:999px !important;
-  border:1px solid rgba(255,255,255,.28) !important;
-  background:rgba(255,255,255,.13) !important;
-  color:#ffffff !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:space-around !important;
-  gap:10px !important;
-  padding:0 14px !important;
-  box-shadow:0 10px 26px rgba(0,0,0,.22) !important;
-  backdrop-filter:blur(8px) !important;
-  -webkit-backdrop-filter:blur(8px) !important;
-  cursor:pointer !important;
-}
-.sk-track{
-  position:relative !important;
-  width:56px !important;
-  height:32px !important;
-  border-radius:999px !important;
-  background:rgba(255,255,255,.45) !important;
-  display:inline-block !important;
-}
-.sk-knob{
-  position:absolute !important;
-  left:3px !important;
-  top:3px !important;
-  width:26px !important;
-  height:26px !important;
-  border-radius:50% !important;
-  background:#ffffff !important;
-  box-shadow:0 3px 10px rgba(0,0,0,.28) !important;
-  transition:left .18s ease !important;
-}
-body.sk-dark .sk-knob{
-  left:27px !important;
-}
-.sk-sun,.sk-moon{
-  font-size:20px !important;
-  color:#ffffff !important;
-  line-height:1 !important;
-  font-weight:800 !important;
-}
-.sk-icon-btn-clean{
-  width:56px !important;
-  height:56px !important;
-  border-radius:16px !important;
-  border:1px solid rgba(255,255,255,.28) !important;
-  background:rgba(255,255,255,.13) !important;
-  color:#ffffff !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  font-size:24px !important;
-  font-weight:900 !important;
-  line-height:1 !important;
-  cursor:pointer !important;
-  box-shadow:0 10px 26px rgba(0,0,0,.22) !important;
-  backdrop-filter:blur(8px) !important;
-  -webkit-backdrop-filter:blur(8px) !important;
-}
-.sk-icon-btn-clean:hover,.sk-theme-toggle-clean:hover{
-  background:rgba(255,255,255,.23) !important;
-}
-.sk-footer-author{
-  margin-top:40px !important;
-  width:100% !important;
-  text-align:center !important;
-  padding:18px 20px 22px !important;
-  color:#16324f !important;
-  font-size:15px !important;
-  line-height:1.6 !important;
-  background:rgba(255,255,255,.78) !important;
-  border-top:1px solid rgba(8,62,112,.14) !important;
-}
-.sk-footer-author a{
-  color:#006bb6 !important;
-  text-decoration:none !important;
-  font-weight:800 !important;
-}
-.sk-footer-author a:hover{
-  text-decoration:underline !important;
-}
-body.sk-dark .sk-footer-author{
-  background:rgba(10,28,44,.92) !important;
-  color:#f5f9ff !important;
-  border-top:1px solid rgba(255,255,255,.14) !important;
-}
-body.sk-dark .sk-footer-author a{
-  color:#5fc7ff !important;
-}
-@media(max-width:980px){
-  header > div{
-    flex-direction:column !important;
-    align-items:flex-start !important;
-  }
-  .sk-controls-clean{
-    margin-left:90px !important;
-  }
-}
-
-
-/* --- SOCIOKAIROS EDU V38: datos visibles arriba --- */
-.sk-author-top{
-  display:block !important;
-  margin-top:8px !important;
-  color:#f7fbff !important;
-  font-size:15px !important;
-  font-weight:600 !important;
-  letter-spacing:.1px !important;
-  text-shadow:0 1px 3px rgba(0,0,0,.35) !important;
-  opacity:1 !important;
-  visibility:visible !important;
-}
-.sk-author-top a{
-  color:#64c8ff !important;
-  text-decoration:none !important;
-  font-weight:800 !important;
-}
-.sk-author-top a:hover{
-  text-decoration:underline !important;
-}
-header{
-  min-height:150px !important;
-}
-
-
-
-/* --- FIX SOCIOKAIROS EDU II: visibilidad del selector de versión 2.1 ---
-   No modifica la lógica ni la sección 2.3. Solo corrige contraste/legibilidad. */
-.version-selector,
-.version-selector p,
-.version-selector label,
-.version-selector .meta,
-#version_elegida_hint {
-  color: var(--sk-text) !important;
-  opacity: 1 !important;
-  text-shadow: none !important;
-}
-.version-selector {
-  background: rgba(255,255,255,.88) !important;
-}
-.version-selector label {
-  display: block !important;
-  padding: 6px 8px !important;
-  border-radius: 12px !important;
-  font-weight: 650 !important;
-}
-.version-selector label:hover {
-  background: rgba(11,101,177,.08) !important;
-}
-.version-selector input[type="radio"] {
-  appearance: auto !important;
-  -webkit-appearance: radio !important;
-  accent-color: var(--sk-primary-2) !important;
-  opacity: 1 !important;
-  transform: scale(1.12) !important;
-  margin-right: 8px !important;
-  vertical-align: middle !important;
-}
-body.sk-dark .version-selector,
-body.sk-dark .version-selector p,
-body.sk-dark .version-selector label,
-body.sk-dark .version-selector .meta,
-body.sk-dark #version_elegida_hint {
-  color: #f5f9ff !important;
-}
-body.sk-dark .version-selector {
-  background: rgba(10,28,44,.92) !important;
-}
-body.sk-dark .version-selector label:hover {
-  background: rgba(95,199,255,.14) !important;
-}
-
-.sk-historial-lista{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  margin:8px 0 4px;
-}
-.sk-historial-item{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  text-align:left;
-  padding:8px 12px;
-  border-radius:14px;
-  border:1px solid rgba(12,63,105,.14);
-  background:rgba(255,255,255,.72);
-  color:var(--sk-text);
-  font-size:12.5px;
-  line-height:1.4;
-  cursor:pointer;
-  width:100%;
-}
-.sk-historial-item:hover{
-  background:rgba(11,101,177,.08);
-}
-.sk-historial-item .sk-historial-texto{
-  flex:1;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.sk-historial-item .sk-historial-fecha{
-  flex-shrink:0;
-  font-size:11px;
-  color:var(--sk-muted);
-}
-.sk-historial-vacio{
-  font-size:12.5px;
-  color:var(--sk-muted);
-  font-style:italic;
-}
-body.sk-dark .sk-historial-item{
-  background:rgba(255,255,255,.08);
-  color:#f5f9ff;
-  border-color:rgba(255,255,255,.14);
-}
-body.sk-dark .sk-historial-item:hover{
-  background:rgba(95,199,255,.14);
-}
-body.sk-dark .sk-historial-item .sk-historial-fecha{
-  color:#9fb6cf;
-}
-
-</style>
+  </style>
 </head>
+
 <body>
 
-<div id="sociokairosStartOverlay" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#071421,#12385c);display:flex;align-items:center;justify-content:center;color:white;text-align:center;">
-  <div style="max-width:850px;padding:40px;">
-    <img src="logo.png" style="width:140px;border-radius:28px;box-shadow:0 12px 38px rgba(0,0,0,.35);">
-    <h1 style="font-size:42px;margin:24px 0 12px;">SOCIOKAIROS</h1>
-    <p style="font-size:22px;line-height:1.5;">Research Suite · Reformulación dinámica de problemas científicos</p>
-    <button onclick="startSociokairosFullscreen()" style="margin-top:24px;padding:16px 28px;border:none;border-radius:18px;background:#0a72c8;color:white;font-weight:800;font-size:18px;cursor:pointer;">Entrar en pantalla completa</button>
-  </div>
-</div>
-
-<div id="skTypoModal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(7,20,33,.72);align-items:center;justify-content:center;padding:20px;">
-  <div style="max-width:520px;width:100%;background:#0e2438;color:#f5f9ff;border-radius:22px;padding:28px 26px;box-shadow:0 25px 60px rgba(0,0,0,.4);text-align:left;">
+<div id="skTypoModal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(10,20,15,.55);align-items:center;justify-content:center;padding:20px;">
+  <div style="max-width:520px;width:100%;background:var(--sk-card-solid);color:var(--sk-text);border-radius:22px;padding:28px 26px;box-shadow:0 25px 60px rgba(0,0,0,.35);text-align:left;border:1px solid var(--sk-border);">
     <h3 style="margin:0 0 10px;font-size:19px;">Posible errata en tu problema</h3>
-    <p style="margin:0 0 16px;font-size:14.5px;line-height:1.5;color:#cfe0f9;">
+    <p style="margin:0 0 16px;font-size:14.5px;line-height:1.5;color:var(--sk-muted);">
       No reconocemos la palabra «<strong id="skTypoPalabra"></strong>». Puede ser una errata de una palabra clave para el análisis. ¿Quisiste decir...?
     </p>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
       <button id="skTypoBtnSug1" type="button" class="secondary" style="text-align:left;"></button>
       <button id="skTypoBtnSug2" type="button" class="secondary" style="text-align:left;"></button>
     </div>
-    <p style="margin:0 0 8px;font-size:13px;color:#9fb6cf;">O escribe tú la palabra correcta:</p>
+    <p style="margin:0 0 8px;font-size:13px;color:var(--sk-muted);">O escribe tú la palabra correcta:</p>
     <div style="display:flex;gap:8px;margin-bottom:18px;">
-      <input id="skTypoInputManual" type="text" placeholder="palabra correcta" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-size:14px;">
+      <input id="skTypoInputManual" type="text" placeholder="palabra correcta" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--sk-border);background:rgba(0,0,0,.03);color:var(--sk-text);font-size:14px;">
       <button id="skTypoBtnManual" type="button" class="secondary">Usar esta</button>
     </div>
     <div style="text-align:right;">
-      <button id="skTypoBtnContinuar" type="button" style="background:transparent;color:#9fb6cf;box-shadow:none;font-weight:600;">Continuar sin corregir</button>
+      <button id="skTypoBtnContinuar" type="button" style="background:transparent;color:var(--sk-muted);box-shadow:none;font-weight:600;">Continuar sin corregir</button>
     </div>
   </div>
 </div>
 
   <header>
-<div style="max-width:1400px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px;">
-<div style="display:flex;align-items:center;gap:18px;">
+<div class="sk-toolbar">
+<div class="sk-toolbar-brand">
 <img src="logo.png" alt="SOCIOKAIROS">
 <div>
-<h1>SOCIOKAIROS EDU V32 — UNIZAR</h1>
-<p>Entrenamiento heurístico, formulación de problemas científicos y aprendizaje metodológico</p>
+<h1>SOCIOKAIROS</h1>
+<p>Research Suite · Reformulación dinámica de problemas científicos</p>
 <div class="sk-author-top">
-  Dr. Víctor Hugo Pérez Gallo · Universidad de Zaragoza ·
-  <a href="mailto:victorhugo.perez@unizar.es?subject=SOCIOKAIROS%20EDU&body=Estimado%20Dr.%20V%C3%ADctor%20Hugo%20P%C3%A9rez%20Gallo%3A%0A%0ALe%20escribo%20sobre%20SOCIOKAIROS%20EDU.%0A%0AUn%20saludo%2C">victorhugo.perez@unizar.es</a>
+  Dr. Víctor Hugo Pérez Gallo ·
+  <a href="mailto:contacto@sociokairos.com?subject=SOCIOKAIROS&body=Hola%2C%0A%0ALe%20escribo%20sobre%20SOCIOKAIROS.%0A%0AUn%20saludo%2C">contacto@sociokairos.com</a>
 </div>
-
 </div>
 </div>
 
@@ -592,7 +442,7 @@ body.sk-dark .sk-historial-item .sk-historial-fecha{
     <span class="sk-track"><span class="sk-knob"></span></span>
     <span class="sk-moon">☾</span>
   </button>
-  <button class="sk-icon-btn-clean" onclick="document.documentElement.requestFullscreen()" title="Ampliar pantalla" type="button">⛶</button>
+  <button class="sk-icon-btn-clean" onclick="document.documentElement.requestFullscreen()" title="Pantalla completa" type="button">⛶</button>
   <button class="sk-icon-btn-clean" onclick="salirPantallaCompleta()" title="Salir de pantalla completa" type="button">↗</button>
 </div>
 </div>
@@ -602,7 +452,7 @@ body.sk-dark .sk-historial-item .sk-historial-fecha{
     <div class="grid">
       <section class="panel">
         <h2>1. Problema científico inicial</h2>
-        <textarea id="txt_problema" placeholder="Escribe aquí el problema científico tal como lo formularía un estudiante o investigador..."></textarea>
+        <textarea id="txt_problema" placeholder="Escribe aquí el problema científico tal como lo formularías en un proyecto de investigación..."></textarea>
         <div>
           <button id="btn_reformular">Reformular problema y sugerir VI/VD</button>
           <button id="btn_clear" class="secondary">Borrar problema</button>
@@ -612,7 +462,6 @@ body.sk-dark .sk-historial-item .sk-historial-fecha{
           <button id="btn_export_csv" class="secondary">Exportar operacionalización (CSV)</button>
         </div>
         <div id="status" class="status">Listo.</div>
-        <div id="scorm_status" class="status"></div>
         <div class="tags">
           <span class="badge">#preguntas_de_investigación</span>
           <span class="badge">#VI_VD</span>
@@ -624,18 +473,18 @@ body.sk-dark .sk-historial-item .sk-historial-fecha{
         </div>
 
         <h3 style="margin-top:22px;">Historial de problemas trabajados (en este dispositivo)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS guarda tus últimos problemas analizados en este navegador para que puedas retomarlos y comparar versiones sucesivas mientras los vas puliendo. No se envía a ningún servidor: vive solo en este dispositivo.</p>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS guarda tus últimos problemas analizados en este dispositivo para que puedas retomarlos y comparar versiones sucesivas mientras los vas puliendo. No se envía a ningún servidor.</p>
         <div id="sk_historial_lista" class="sk-historial-lista"></div>
         <button id="btn_historial_borrar" class="secondary" type="button" style="display:none;">Borrar historial</button>
       </section>
       <section class="panel">
         <h2>2. Salida SOCIOKAIROS</h2>
-        <p class="meta sk-tutor" style="font-size:0.82rem; margin:2px 0 14px;">SOCIOKAIROS actúa como un tutor de metodología: no solo entrega resultados, sino que explica en cada bloque qué está haciendo y por qué, para que aprendas a formular problemas de investigación mientras los construyes.</p>
+        <p class="meta sk-tutor" style="font-size:0.82rem; margin:2px 0 14px;">SOCIOKAIROS no solo entrega resultados: explica en cada bloque qué está haciendo y por qué, para que puedas auditar y ajustar el razonamiento en cada paso.</p>
 
         <div id="badge_area" class="badge-area"></div>
 
         <h3>2.1 Problema científico definitivo (síntesis)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">El tutor funde tu problema inicial con el resto del análisis en un párrafo ya redactado, del tipo que abriría un capítulo de planteamiento del problema en una tesis.</p>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Se funde tu problema inicial con el resto del análisis en un párrafo ya redactado, del tipo que abriría un capítulo de planteamiento del problema.</p>
         <pre id="out_problema_perfecto"></pre>
 
         <h3>2.2 Tres versiones del problema en forma de pregunta</h3>
@@ -660,24 +509,24 @@ body.sk-dark .sk-historial-item .sk-historial-fecha{
 
         <h3>2.4 Correlaciones, hipótesis y marcos teóricos</h3>
         <pre id="out_notas"></pre>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Los marcos de arriba los propone SOCIOKAIROS por afinidad léxica con tu texto; que un marco sea pertinente es una decisión teórica tuya, no del motor. Escribe aquí por qué el marco que elijas explica tu problema concreto — este texto se inserta literalmente en el informe Word exportado.</p>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Los marcos de arriba se proponen por afinidad léxica con tu texto; que un marco sea pertinente es una decisión teórica tuya. Escribe aquí por qué el marco que elijas explica tu problema concreto — este texto se inserta literalmente en el informe Word exportado.</p>
         <textarea id="txt_justificacion_marco" style="min-height:110px;" placeholder="Ej.: elijo la violencia simbólica de Bourdieu porque el problema describe una relación de dominación aceptada, no solo impuesta por la fuerza..."></textarea>
 
 
         <h3>2.5 Por qué SOCIOKAIROS sugirió esto (transparencia del análisis)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS es determinista, no una caja negra: aquí se explica, VD por VD, VI por VI, área por área y marco por marco, qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto. Útil para detectar falsos positivos léxicos por ti mismo/a.</p>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS es determinista, no una caja negra: aquí se explica, VD por VD, VI por VI, área por área y marco por marco, qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto.</p>
         <pre id="out_transparencia"></pre>
 
         <h3>2.6 Categorías explicativas para tu problema concreto</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Más allá de una lista de autores: si tu problema describe una dinámica que cuesta explicar a primera vista (por ejemplo, por qué alguien permanece, calla o no cambia de opinión pese a la evidencia), aquí SOCIOKAIROS propone un concepto teórico concreto que puede explicarla, con el razonamiento aplicado a tu caso — no solo el nombre del autor.</p>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Más allá de una lista de autores: si tu problema describe una dinámica que cuesta explicar a primera vista, aquí se propone un concepto teórico concreto que puede explicarla, con el razonamiento aplicado a tu caso.</p>
         <pre id="out_categorias_explicativas"></pre>
 
         <h3>2.7 Unidad de análisis, diseño de estudio y enfoque metodológico</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS decide si tu problema pide un abordaje cualitativo, cuantitativo o mixto, y adapta a partir de ahí el diseño, el software de apoyo y el tipo de muestreo sugeridos.</p>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Se decide si tu problema pide un abordaje cualitativo, cuantitativo o mixto, y se adapta a partir de ahí el diseño, el software de apoyo y el tipo de muestreo sugeridos.</p>
         <pre id="out_diseno"></pre>
 
         <h3>2.8 Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Un punto de partida para trabajo cualitativo, pensado para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real, o para usarse directamente en análisis manual o en la redacción de tesis.</p>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Un punto de partida para trabajo cualitativo, pensado para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real.</p>
         <pre id="out_guia_codigos"></pre>
         <pre id="out_guia_preguntas"></pre>
 
@@ -702,7 +551,7 @@ body.sk-dark .sk-historial-item .sk-historial-fecha{
           <button id="btn_visual_red" class="secondary" type="button">Modo 2 · Red sociológica</button>
           <button id="btn_visual_capas" class="secondary" type="button">Modo 3 · Capas sociales</button>
         </div>
-        <div id="out_visual_svg" class="visual-svg-box" style="overflow-x:auto; border:1px solid rgba(0,0,0,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.45);"></div>
+        <div id="out_visual_svg" class="visual-svg-box"></div>
 
       </section>
     </div>
@@ -3457,19 +3306,24 @@ function base64ToBytes(b64) {
   return bytes;
 }
 
-function construirInformeWord(resultado, problema, versionLabel, textoOriginal, justificacionMarcos) {
+function construirInformeWord(resultado, problema, versionLabel, textoOriginal, justificacionMarcos, opciones) {
+  opciones = opciones || {};
+  const piePagina = opciones.piePagina || "© Víctor Hugo Pérez Gallo – Universidad de Zaragoza – victorhugo.perez@unizar.es";
+  const tituloInforme = opciones.tituloInforme || "Informe SOCIOKAIROS EDU – Research Suite";
+  const incluirNotaUnizar = opciones.incluirNotaUnizar !== false;
+
   const now = new Date();
   const fechaStr = now.toLocaleDateString("es-ES");
   const horaStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 
   const parts = [];
-  parts.push(paragraphXml(`© Víctor Hugo Pérez Gallo – Universidad de Zaragoza – victorhugo.perez@unizar.es`, { italic: true, sz: 16 }));
+  parts.push(paragraphXml(piePagina, { italic: true, sz: 16 }));
   parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 16 }));
   try {
     if (LOGO_BASE64) parts.push(imageParagraphXml(502920, 502920));
   } catch (e) { /* logo opcional */ }
 
-  parts.push(headingXml("Informe SOCIOKAIROS EDU – Research Suite", 1));
+  parts.push(headingXml(tituloInforme, 1));
 
   if (problema.trim()) {
     parts.push(headingXml("1. Problema científico inicial", 2));
@@ -3580,8 +3434,13 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   parts.push(headingXml("15. Diseños metodológicos sugeridos", 2));
   generarDisenos(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
 
-  parts.push(headingXml("16. Nota para estudiantes de la Universidad de Zaragoza", 2));
-  parts.push(paragraphXml("Universidad de Zaragoza: consulta también los recursos de la Biblioteca de Ciencias Sociales y los convenios de acceso a bases de datos restringidas (estadísticas, encuestas, registros administrativos, etc.)."));
+  if (incluirNotaUnizar) {
+    parts.push(headingXml("16. Nota para estudiantes de la Universidad de Zaragoza", 2));
+    parts.push(paragraphXml("Universidad de Zaragoza: consulta también los recursos de la Biblioteca de Ciencias Sociales y los convenios de acceso a bases de datos restringidas (estadísticas, encuestas, registros administrativos, etc.)."));
+  } else {
+    parts.push(headingXml("16. Nota adicional", 2));
+    parts.push(paragraphXml("Puedes complementar este informe con la revisión bibliográfica y el acceso a las bases de datos institucionales o de suscripción disponibles en tu contexto de investigación."));
+  }
 
   parts.push(headingXml("17. Nota APA para citar SOCIOKAIROS", 2));
   parts.push(paragraphXml("Pérez Gallo, V. H. (2025). SOCIOKAIROS: A Heuristic Computational Assistant for the Reformulation of Scientific Problems in Sociology (Versión 15) [Software]. Zenodo. https://doi.org/10.5281/zenodo.17462816"));
@@ -3597,94 +3456,6 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   return buildDocx(parts, logoBytes);
 }
 
-/* ================= Integración SCORM (1.2 / 2004) ================= */
-
-let scormAPI = null;
-let scormVersion = null;
-let scormCompletedYaMarcado = false;
-
-function scormFindAPI(win) {
-  let attempts = 0;
-  while (win.API == null && win.API_1484_11 == null && win.parent != null && win.parent !== win && attempts < 500) {
-    attempts++;
-    win = win.parent;
-  }
-  if (win.API_1484_11) { scormVersion = "2004"; return win.API_1484_11; }
-  if (win.API) { scormVersion = "1.2"; return win.API; }
-  return null;
-}
-
-function scormGetAPI() {
-  let api = scormFindAPI(window);
-  if (!api && window.opener) api = scormFindAPI(window.opener);
-  return api;
-}
-
-function scormInit() {
-  const statusEl = document.getElementById("scorm_status");
-  try {
-    scormAPI = scormGetAPI();
-    if (!scormAPI) {
-      if (statusEl) statusEl.textContent = "Modo independiente: no se detectó ningún LMS (sin seguimiento SCORM).";
-      return false;
-    }
-    const result = scormVersion === "2004" ? scormAPI.Initialize("") : scormAPI.LMSInitialize("");
-    if (result === "true" || result === true) {
-      const already = scormVersion === "2004"
-        ? scormAPI.GetValue("cmi.completion_status")
-        : scormAPI.LMSGetValue("cmi.core.lesson_status");
-      if (!already || already === "not attempted" || already === "unknown") {
-        scormSetStatus("incomplete");
-      }
-      if (statusEl) statusEl.textContent = `Conectado al LMS (SCORM ${scormVersion}). El progreso se registrará en Moodle.`;
-      return true;
-    }
-    scormAPI = null;
-    if (statusEl) statusEl.textContent = "No se pudo inicializar la conexión SCORM con el LMS.";
-    return false;
-  } catch (e) {
-    scormAPI = null;
-    if (statusEl) statusEl.textContent = "Modo independiente: no se detectó ningún LMS (sin seguimiento SCORM).";
-    return false;
-  }
-}
-
-function scormSetStatus(status) {
-  if (!scormAPI) return;
-  try {
-    if (scormVersion === "2004") {
-      scormAPI.SetValue("cmi.completion_status", status);
-      scormAPI.SetValue("cmi.success_status", status === "completed" ? "passed" : "unknown");
-    } else {
-      scormAPI.LMSSetValue("cmi.core.lesson_status", status);
-    }
-    scormCommit();
-  } catch (e) { /* LMS no disponible o rechazó el valor: continuar sin bloquear la interfaz */ }
-}
-
-function scormCommit() {
-  if (!scormAPI) return;
-  try {
-    if (scormVersion === "2004") scormAPI.Commit("");
-    else scormAPI.LMSCommit("");
-  } catch (e) { /* ignorar fallos de commit */ }
-}
-
-function scormMarkCompleted() {
-  if (scormCompletedYaMarcado) { scormCommit(); return; }
-  scormCompletedYaMarcado = true;
-  scormSetStatus("completed");
-}
-
-function scormFinish() {
-  if (!scormAPI) return;
-  try {
-    if (scormVersion === "2004") scormAPI.Terminate("");
-    else scormAPI.LMSFinish("");
-  } catch (e) { /* ignorar */ }
-  scormAPI = null;
-}
-
 /* ================= Tema claro/oscuro y pantalla completa ================= */
 
 function toggleSKTheme() {
@@ -3694,14 +3465,6 @@ function toggleSKTheme() {
 
 function salirPantallaCompleta() {
   try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { /* no disponible */ }
-}
-
-function startSociokairosFullscreen() {
-  const overlay = document.getElementById("sociokairosStartOverlay");
-  if (document.documentElement.requestFullscreen) {
-    document.documentElement.requestFullscreen().catch(() => {});
-  }
-  if (overlay) overlay.style.display = "none";
 }
 
 /* ================= pop-up de corrección de erratas ================= */
@@ -4008,14 +3771,12 @@ function activarSalidasValidasEdu() {
 }
 
 /**
- * Guarda un blob en disco. Dentro de la app de escritorio (Tauri, ver
- * native-app/) usa el diálogo nativo «Guardar como…» y escribe el archivo
- * directamente — el estudiante elige carpeta y nombre como en cualquier app
- * de escritorio, sin pasar por la carpeta de Descargas del navegador. Fuera
- * de Tauri (navegador normal, SCORM dentro de Moodle, o el Artifact de
- * Claude) se mantiene sin cambios el mecanismo existente basado en
- * `<a download>`. Devuelve `true` si el archivo se guardó, `false` si el
- * estudiante canceló el diálogo nativo.
+ * Guarda un blob en disco. Dentro de la app de escritorio (Tauri) usa el
+ * diálogo nativo «Guardar como…» y escribe el archivo directamente — el
+ * usuario elige carpeta y nombre como en cualquier app de escritorio.
+ * Fuera de Tauri (navegador normal, para pruebas) se mantiene sin cambios
+ * el mecanismo basado en `<a download>`. Devuelve `true` si el archivo se
+ * guardó, `false` si el usuario canceló el diálogo nativo.
  */
 async function descargarBlob(blob, filename) {
   if (window.__TAURI__ && window.__TAURI__.dialog && window.__TAURI__.fs) {
@@ -4063,8 +3824,6 @@ function obtenerVersionSeleccionada(resultado, txtOriginal) {
 }
 
 window.addEventListener("load", function () {
-  scormInit();
-
   try {
     if (localStorage.getItem("sk_theme") === "dark") document.body.classList.add("sk-dark");
   } catch (e) { /* localStorage no disponible */ }
@@ -4108,7 +3867,7 @@ window.addEventListener("load", function () {
         const outRef = document.getElementById("out_reformulacion");
         if (outRef) outRef.textContent = construirFeedbackValidacionEdu(validacion);
         limpiarSalidasPorErrorEdu();
-        if (statusEl) statusEl.textContent = "Reformula el problema inicial: aún no cumple la estructura mínima de SOCIOKAIROS EDU.";
+        if (statusEl) statusEl.textContent = "Reformula el problema inicial: aún no cumple la estructura mínima de SOCIOKAIROS.";
         btnReformular.disabled = false;
         return;
       }
@@ -4122,7 +3881,6 @@ window.addEventListener("load", function () {
         guardarEnHistorial(txt, resultado);
         renderizarHistorial();
         if (statusEl) statusEl.textContent = "Análisis completado. Puedes exportar a Word o CSV.";
-        scormMarkCompleted();
       } catch (e) {
         if (statusEl) statusEl.textContent = "Error interno del motor: " + e.message;
       } finally {
@@ -4193,7 +3951,7 @@ window.addEventListener("load", function () {
         return;
       }
       if (!ultimoResultado) {
-        if (statusEl) statusEl.textContent = "Reformula el problema primero (debe pasar la validación SOCIOKAIROS EDU).";
+        if (statusEl) statusEl.textContent = "Reformula el problema primero (debe pasar la validación SOCIOKAIROS).";
         return;
       }
       if (statusEl) statusEl.textContent = "Generando informe Word…";
@@ -4202,12 +3960,15 @@ window.addEventListener("load", function () {
         const { problemaTrabajo, versionLabel } = obtenerVersionSeleccionada(resultado, txt);
         const txtJustificacion = document.getElementById("txt_justificacion_marco");
         const justificacionMarcos = txtJustificacion ? txtJustificacion.value : "";
-        const zipBytes = construirInformeWord(resultado, problemaTrabajo, versionLabel, txt, justificacionMarcos);
+        const zipBytes = construirInformeWord(resultado, problemaTrabajo, versionLabel, txt, justificacionMarcos, {
+          piePagina: "© SOCIOKAIROS – contacto@sociokairos.com",
+          tituloInforme: "Informe SOCIOKAIROS – Research Suite",
+          incluirNotaUnizar: false
+        });
         const blob = new Blob([zipBytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
         const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12);
         const guardado = await descargarBlob(blob, `Informe_SOCIOKAIROS_${ts}.docx`);
         if (statusEl) statusEl.textContent = guardado ? "Informe Word generado." : "Guardado cancelado.";
-        if (guardado) scormMarkCompleted();
       } catch (e) {
         if (statusEl) statusEl.textContent = "Error al generar el informe Word: " + e.message;
       }
@@ -4222,7 +3983,7 @@ window.addEventListener("load", function () {
         return;
       }
       if (!ultimoResultado) {
-        if (statusEl) statusEl.textContent = "Reformula el problema primero (debe pasar la validación SOCIOKAIROS EDU).";
+        if (statusEl) statusEl.textContent = "Reformula el problema primero (debe pasar la validación SOCIOKAIROS).";
         return;
       }
       if (statusEl) statusEl.textContent = "Generando CSV de operacionalización…";
@@ -4231,16 +3992,12 @@ window.addEventListener("load", function () {
         const blob = new Blob(["﻿" + csvText], { type: "text/csv;charset=utf-8" });
         const guardado = await descargarBlob(blob, "Operacionalizacion_SOCIOKAIROS.csv");
         if (statusEl) statusEl.textContent = guardado ? "CSV de operacionalización generado." : "Guardado cancelado.";
-        if (guardado) scormMarkCompleted();
       } catch (e) {
         if (statusEl) statusEl.textContent = "Error al generar el CSV: " + e.message;
       }
     });
   }
 });
-
-window.addEventListener("beforeunload", scormFinish);
-window.addEventListener("pagehide", scormFinish);
 
 </script>
 

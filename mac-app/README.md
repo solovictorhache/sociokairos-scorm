@@ -1,12 +1,14 @@
-# SOCIOKAIROS EDU — app de Mac en Xcode puro (sin terminal, sin Rust)
+# SOCIOKAIROS — app de Mac en Xcode puro (sin terminal, sin Rust)
 
-La forma más directa de probarlo: abrir un proyecto en Xcode y darle a ▶
-Run. Sin `npm install`, sin Rust, sin Cargo — solo necesitas Xcode (que ya
-incluye el compilador de Swift).
+Variante solo-Mac de la línea **Profesional** (track 2, sin SCORM, tema
+verde — ver `../native-app/README.md`). La forma más directa de probarla:
+abrir un proyecto en Xcode y darle a ▶ Run. Sin `npm install`, sin Rust,
+sin Cargo — solo necesitas Xcode (que ya incluye el compilador de Swift).
 
-Si prefieres la vía multiplataforma (Mac + Windows más adelante, con
-instalador `.dmg`/`.msi`), esa es `../native-app/` (Tauri). Esta carpeta es
-la alternativa cuando lo que quieres es simplemente "abrir y que corra".
+Si prefieres la vía multiplataforma (Mac + Windows + Linux, con instalador
+`.dmg`/`.msi`/`.AppImage`), esa es `../native-app/` (Tauri). Esta carpeta es
+la alternativa cuando lo que quieres es simplemente "abrir y que corra" en
+tu Mac, sin instalar nada más.
 
 ## Cómo probarlo
 
@@ -25,7 +27,7 @@ la alternativa cuando lo que quieres es simplemente "abrir y que corra".
    seleccionado sea **SociokairosEduMac** y el destino **My Mac**.
 
 4. Pulsa **▶ Run** (o `Cmd + R`). Se compila y se abre la ventana de
-   SOCIOKAIROS EDU.
+   SOCIOKAIROS.
 
 Prueba el flujo completo: escribe un problema, reformula, usa el selector
 VI/VD, exporta a Word — te debería aparecer el panel nativo de macOS
@@ -43,23 +45,26 @@ VI/VD, exporta a Word — te debería aparecer el panel nativo de macOS
   inyectado define `window.__TAURI__` con la misma forma que ya espera
   `descargarBlob()` en `src/wiring.js` (`dialog.save(...)` / `fs.writeFile(...)`),
   respaldado aquí por `NSSavePanel` y escritura de archivo real. **No se toca
-  ni una línea del motor**: el mismo `wiring.js` que usan el SCORM y la app
-  Tauri funciona sin cambios porque solo mira si `window.__TAURI__` existe,
-  no cómo está implementado detrás.
+  ni una línea del motor**: el mismo `wiring.js` (la variante de
+  `native-app/pro-src/`, la misma que usa la app Tauri) funciona sin cambios
+  porque solo mira si `window.__TAURI__` existe, no cómo está implementado
+  detrás.
 - `SociokairosEduMac/Sources/SociokairosEduMac/Resources/scorm_plugin/` —
-  copia de `scorm_plugin/index.html` y `logo.png`, sincronizada con
-  `sync_resources.py` (Xcode/SPM necesita los recursos dentro del propio
+  copia de `native-app/dist_pro/index.html` y `logo.png` (la interfaz de la
+  línea Profesional, sin SCORM), sincronizada con `sync_resources.py`. Se
+  sigue llamando "scorm_plugin" solo porque así la referencia el código
+  Swift, nada más — Xcode/SPM necesita los recursos dentro del propio
   paquete para empaquetarlos; a diferencia de Tauri, no puede apuntar
-  directamente a una carpeta fuera del paquete).
+  directamente a una carpeta fuera del paquete.
 
 ## Si cambias el motor o la interfaz
 
-Después de editar `src/engine.js`, `src/wiring.js`, `src/body.html` o
-`src/head.html`:
+Después de editar `src/engine.js` (motor compartido) o cualquier archivo de
+`native-app/pro-src/`:
 
 ```bash
-python3 src/build.py          # reconstruye scorm_plugin/index.html
-python3 mac-app/sync_resources.py   # lo copia a los recursos de la app de Xcode
+python3 native-app/pro-src/build_pro.py   # reconstruye native-app/dist_pro/index.html
+python3 mac-app/sync_resources.py         # lo copia a los recursos de la app de Xcode
 ```
 
 Y en Xcode: `Product` → `Clean Build Folder` (`Cmd+Shift+K`) antes de volver

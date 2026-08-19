@@ -1,10 +1,10 @@
 {
-  "name": "sociokairos-edu-desktop",
+  "name": "sociokairos-desktop",
   "private": true,
   "version": "1.0.0",
-  "description": "SOCIOKAIROS EDU empaquetado como app de escritorio (Mac/Windows) con Tauri. Reutiliza tal cual el motor y la interfaz de scorm_plugin/index.html; solo sustituye la descarga vía navegador por guardado nativo (diálogo Guardar como…).",
+  "description": "SOCIOKAIROS — línea profesional (track 2), empaquetada como app de escritorio (Mac/Windows/Linux) con Tauri. Comparte el motor heurístico y la exportación Word/CSV con la línea SCORM (../src/), pero con su propia interfaz sin dependencias de Moodle/SCORM (pro-src/), tema verde y guardado nativo (diálogo Guardar como…) en vez de la descarga vía navegador.",
   "scripts": {
-    "build:engine": "python3 ../src/build.py",
+    "build:engine": "python3 pro-src/build_pro.py",
     "dev": "tauri dev",
     "build": "tauri build",
     "icon": "tauri icon ../scorm_plugin/logo.png"

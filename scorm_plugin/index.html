@@ -3457,19 +3457,24 @@ function base64ToBytes(b64) {
   return bytes;
 }
 
-function construirInformeWord(resultado, problema, versionLabel, textoOriginal, justificacionMarcos) {
+function construirInformeWord(resultado, problema, versionLabel, textoOriginal, justificacionMarcos, opciones) {
+  opciones = opciones || {};
+  const piePagina = opciones.piePagina || "© Víctor Hugo Pérez Gallo – Universidad de Zaragoza – victorhugo.perez@unizar.es";
+  const tituloInforme = opciones.tituloInforme || "Informe SOCIOKAIROS EDU – Research Suite";
+  const incluirNotaUnizar = opciones.incluirNotaUnizar !== false;
+
   const now = new Date();
   const fechaStr = now.toLocaleDateString("es-ES");
   const horaStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 
   const parts = [];
-  parts.push(paragraphXml(`© Víctor Hugo Pérez Gallo – Universidad de Zaragoza – victorhugo.perez@unizar.es`, { italic: true, sz: 16 }));
+  parts.push(paragraphXml(piePagina, { italic: true, sz: 16 }));
   parts.push(paragraphXml(`Informe generado el ${fechaStr} a las ${horaStr}`, { italic: true, sz: 16 }));
   try {
     if (LOGO_BASE64) parts.push(imageParagraphXml(502920, 502920));
   } catch (e) { /* logo opcional */ }
 
-  parts.push(headingXml("Informe SOCIOKAIROS EDU – Research Suite", 1));
+  parts.push(headingXml(tituloInforme, 1));
 
   if (problema.trim()) {
     parts.push(headingXml("1. Problema científico inicial", 2));
@@ -3580,8 +3585,13 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   parts.push(headingXml("15. Diseños metodológicos sugeridos", 2));
   generarDisenos(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
 
-  parts.push(headingXml("16. Nota para estudiantes de la Universidad de Zaragoza", 2));
-  parts.push(paragraphXml("Universidad de Zaragoza: consulta también los recursos de la Biblioteca de Ciencias Sociales y los convenios de acceso a bases de datos restringidas (estadísticas, encuestas, registros administrativos, etc.)."));
+  if (incluirNotaUnizar) {
+    parts.push(headingXml("16. Nota para estudiantes de la Universidad de Zaragoza", 2));
+    parts.push(paragraphXml("Universidad de Zaragoza: consulta también los recursos de la Biblioteca de Ciencias Sociales y los convenios de acceso a bases de datos restringidas (estadísticas, encuestas, registros administrativos, etc.)."));
+  } else {
+    parts.push(headingXml("16. Nota adicional", 2));
+    parts.push(paragraphXml("Puedes complementar este informe con la revisión bibliográfica y el acceso a las bases de datos institucionales o de suscripción disponibles en tu contexto de investigación."));
+  }
 
   parts.push(headingXml("17. Nota APA para citar SOCIOKAIROS", 2));
   parts.push(paragraphXml("Pérez Gallo, V. H. (2025). SOCIOKAIROS: A Heuristic Computational Assistant for the Reformulation of Scientific Problems in Sociology (Versión 15) [Software]. Zenodo. https://doi.org/10.5281/zenodo.17462816"));

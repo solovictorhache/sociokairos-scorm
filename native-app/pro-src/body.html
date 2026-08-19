@@ -1,0 +1,164 @@
+<body>
+
+<div id="skTypoModal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(10,20,15,.55);align-items:center;justify-content:center;padding:20px;">
+  <div style="max-width:520px;width:100%;background:var(--sk-card-solid);color:var(--sk-text);border-radius:22px;padding:28px 26px;box-shadow:0 25px 60px rgba(0,0,0,.35);text-align:left;border:1px solid var(--sk-border);">
+    <h3 style="margin:0 0 10px;font-size:19px;">Posible errata en tu problema</h3>
+    <p style="margin:0 0 16px;font-size:14.5px;line-height:1.5;color:var(--sk-muted);">
+      No reconocemos la palabra «<strong id="skTypoPalabra"></strong>». Puede ser una errata de una palabra clave para el análisis. ¿Quisiste decir...?
+    </p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+      <button id="skTypoBtnSug1" type="button" class="secondary" style="text-align:left;"></button>
+      <button id="skTypoBtnSug2" type="button" class="secondary" style="text-align:left;"></button>
+    </div>
+    <p style="margin:0 0 8px;font-size:13px;color:var(--sk-muted);">O escribe tú la palabra correcta:</p>
+    <div style="display:flex;gap:8px;margin-bottom:18px;">
+      <input id="skTypoInputManual" type="text" placeholder="palabra correcta" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--sk-border);background:rgba(0,0,0,.03);color:var(--sk-text);font-size:14px;">
+      <button id="skTypoBtnManual" type="button" class="secondary">Usar esta</button>
+    </div>
+    <div style="text-align:right;">
+      <button id="skTypoBtnContinuar" type="button" style="background:transparent;color:var(--sk-muted);box-shadow:none;font-weight:600;">Continuar sin corregir</button>
+    </div>
+  </div>
+</div>
+
+  <header>
+<div class="sk-toolbar">
+<div class="sk-toolbar-brand">
+<img src="logo.png" alt="SOCIOKAIROS">
+<div>
+<h1>SOCIOKAIROS</h1>
+<p>Research Suite · Reformulación dinámica de problemas científicos</p>
+<div class="sk-author-top">
+  Dr. Víctor Hugo Pérez Gallo ·
+  <a href="mailto:contacto@sociokairos.com?subject=SOCIOKAIROS&body=Hola%2C%0A%0ALe%20escribo%20sobre%20SOCIOKAIROS.%0A%0AUn%20saludo%2C">contacto@sociokairos.com</a>
+</div>
+</div>
+</div>
+
+<div class="sk-controls-clean">
+  <button class="sk-theme-toggle-clean" onclick="toggleSKTheme()" title="Alternar modo claro/oscuro" type="button">
+    <span class="sk-sun">☀</span>
+    <span class="sk-track"><span class="sk-knob"></span></span>
+    <span class="sk-moon">☾</span>
+  </button>
+  <button class="sk-icon-btn-clean" onclick="document.documentElement.requestFullscreen()" title="Pantalla completa" type="button">⛶</button>
+  <button class="sk-icon-btn-clean" onclick="salirPantallaCompleta()" title="Salir de pantalla completa" type="button">↗</button>
+</div>
+</div>
+</header>
+
+  <main>
+    <div class="grid">
+      <section class="panel">
+        <h2>1. Problema científico inicial</h2>
+        <textarea id="txt_problema" placeholder="Escribe aquí el problema científico tal como lo formularías en un proyecto de investigación..."></textarea>
+        <div>
+          <button id="btn_reformular">Reformular problema y sugerir VI/VD</button>
+          <button id="btn_clear" class="secondary">Borrar problema</button>
+        </div>
+        <div>
+          <button id="btn_export_word" class="secondary">Exportar informe Word</button>
+          <button id="btn_export_csv" class="secondary">Exportar operacionalización (CSV)</button>
+        </div>
+        <div id="status" class="status">Listo.</div>
+        <div class="tags">
+          <span class="badge">#preguntas_de_investigación</span>
+          <span class="badge">#VI_VD</span>
+          <span class="badge">#hipótesis</span>
+          <span class="badge">#operacionalización</span>
+          <span class="badge">#área_sociológica</span>
+          <span class="badge">#unidad_de_análisis</span>
+          <span class="badge">#fuentes_de_datos</span>
+        </div>
+
+        <h3 style="margin-top:22px;">Historial de problemas trabajados (en este dispositivo)</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS guarda tus últimos problemas analizados en este dispositivo para que puedas retomarlos y comparar versiones sucesivas mientras los vas puliendo. No se envía a ningún servidor.</p>
+        <div id="sk_historial_lista" class="sk-historial-lista"></div>
+        <button id="btn_historial_borrar" class="secondary" type="button" style="display:none;">Borrar historial</button>
+      </section>
+      <section class="panel">
+        <h2>2. Salida SOCIOKAIROS</h2>
+        <p class="meta sk-tutor" style="font-size:0.82rem; margin:2px 0 14px;">SOCIOKAIROS no solo entrega resultados: explica en cada bloque qué está haciendo y por qué, para que puedas auditar y ajustar el razonamiento en cada paso.</p>
+
+        <div id="badge_area" class="badge-area"></div>
+
+        <h3>2.1 Problema científico definitivo (síntesis)</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Se funde tu problema inicial con el resto del análisis en un párrafo ya redactado, del tipo que abriría un capítulo de planteamiento del problema.</p>
+        <pre id="out_problema_perfecto"></pre>
+
+        <h3>2.2 Tres versiones del problema en forma de pregunta</h3>
+        <pre id="out_reformulacion"></pre>
+
+        <div id="selector_version" class="version-selector" style="display:none;">
+          <p class="meta" style="font-size:0.8rem;">
+            Selecciona la versión que quieres usar como problema de trabajo para la exportación (Word/CSV):
+          </p>
+          <label><input type="radio" name="vers_sel" value="1"> Versión descriptiva (P1)</label><br>
+          <label><input type="radio" name="vers_sel" value="2"> Versión relacional / explicativa (P2)</label><br>
+          <label><input type="radio" name="vers_sel" value="3"> Versión crítica / estratégica (P3)</label>
+          <p id="version_elegida_hint" class="meta" style="font-size:0.75rem; margin-top:4px;">
+            Si no seleccionas ninguna, SOCIOKAIROS usará por defecto la versión relacional (P2).
+          </p>
+        </div>
+
+        <h3>2.3 Variables sugeridas (VI / VD)</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS asigna VI/VD por convención léxica (ver la nota al final de este bloque); esa dirección causal es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí: se recalculan las preguntas, correlaciones, hipótesis y operacionalización, no solo la etiqueta.</p>
+        <pre id="out_variables"></pre>
+        <button id="btn_swap_vivd" class="secondary" type="button" disabled>⇄ Intercambiar VI ↔ VD</button>
+
+        <h3>2.4 Correlaciones, hipótesis y marcos teóricos</h3>
+        <pre id="out_notas"></pre>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Los marcos de arriba se proponen por afinidad léxica con tu texto; que un marco sea pertinente es una decisión teórica tuya. Escribe aquí por qué el marco que elijas explica tu problema concreto — este texto se inserta literalmente en el informe Word exportado.</p>
+        <textarea id="txt_justificacion_marco" style="min-height:110px;" placeholder="Ej.: elijo la violencia simbólica de Bourdieu porque el problema describe una relación de dominación aceptada, no solo impuesta por la fuerza..."></textarea>
+
+
+        <h3>2.5 Por qué SOCIOKAIROS sugirió esto (transparencia del análisis)</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS es determinista, no una caja negra: aquí se explica, VD por VD, VI por VI, área por área y marco por marco, qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto.</p>
+        <pre id="out_transparencia"></pre>
+
+        <h3>2.6 Categorías explicativas para tu problema concreto</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Más allá de una lista de autores: si tu problema describe una dinámica que cuesta explicar a primera vista, aquí se propone un concepto teórico concreto que puede explicarla, con el razonamiento aplicado a tu caso.</p>
+        <pre id="out_categorias_explicativas"></pre>
+
+        <h3>2.7 Unidad de análisis, diseño de estudio y enfoque metodológico</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Se decide si tu problema pide un abordaje cualitativo, cuantitativo o mixto, y se adapta a partir de ahí el diseño, el software de apoyo y el tipo de muestreo sugeridos.</p>
+        <pre id="out_diseno"></pre>
+
+        <h3>2.8 Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Un punto de partida para trabajo cualitativo, pensado para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real.</p>
+        <pre id="out_guia_codigos"></pre>
+        <pre id="out_guia_preguntas"></pre>
+
+        <h3>2.9 Fuentes de datos / bases recomendadas</h3>
+        <pre id="out_fuentes"></pre>
+
+        <h3>2.10 Alertas metodológicas</h3>
+        <pre id="out_alertas"></pre>
+
+        <h3>2.11 Tradiciones sociológicas compatibles</h3>
+        <pre id="out_tradiciones"></pre>
+
+        <h3>2.12 Mapa lógico del problema</h3>
+        <pre id="out_mapa"></pre>
+
+        <h3>2.13 Diseños metodológicos sugeridos</h3>
+        <pre id="out_disenos_plus"></pre>
+
+        <h3>2.14 Visualización heurística del problema</h3>
+        <div class="visual-controls" style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px 0;">
+          <button id="btn_visual_causal" class="secondary" type="button">Modo 1 · Mapa causal</button>
+          <button id="btn_visual_red" class="secondary" type="button">Modo 2 · Red sociológica</button>
+          <button id="btn_visual_capas" class="secondary" type="button">Modo 3 · Capas sociales</button>
+        </div>
+        <div id="out_visual_svg" class="visual-svg-box"></div>
+
+      </section>
+    </div>
+  </main>
+
+<script>
+/*__SCRIPT__*/
+</script>
+
+</body>
+</html>
