@@ -2059,6 +2059,92 @@ function generarDisenos(txt, resultado) {
   return uniq(salidas).slice(0, 6).join("\n");
 }
 
+/* ================= consejos de director de tesis ================= */
+/* Tres bloques en el tono de un profesor senior de metodología de la
+ * investigación: no listan fortalezas del problema (eso ya lo hacen otras
+ * secciones), sino que anticipan lo que preguntaría/objetaría un director
+ * de tesis o un tribunal — construidos a partir del resultado real
+ * (VI/VD, diseño, fuentes, enfoque), no como texto genérico repetido para
+ * cualquier problema. */
+
+function generarPreguntasSocraticas(txt, resultado) {
+  resultado = resultado || {};
+  const t = (txt || "").toLowerCase();
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const viTxt = skJoin(vi, "tu variable independiente");
+  const vdTxt = skJoin(vd, "tu variable dependiente");
+  const diseno = (resultado.diseno || "").toLowerCase();
+  const preguntas = [];
+
+  preguntas.push("• ¿Por qué esta población, este territorio y este periodo, y no otro comparable? ¿Qué cambiaría en tus conclusiones si compararas con otro grupo, ciudad o momento?");
+  preguntas.push(`• Más allá de ${viTxt}, ¿qué explicación rival podría producir el mismo efecto sobre ${vdTxt}? ¿Cómo la vas a descartar o controlar, y no solo mencionar?`);
+
+  if (diseno.includes("transversal") || skHas(t, ["transversal"])) {
+    preguntas.push(`• Tu diseño es transversal — una sola medición en el tiempo. Si el tribunal pregunta cómo sabes que ${viTxt} precede a ${vdTxt} y no al revés, ¿qué vas a responder?`);
+  } else {
+    preguntas.push(`• Si encuentras una asociación entre ${viTxt} y ${vdTxt}, ¿qué evidencia adicional necesitarías para defender que es una relación causal y no una coincidencia estadística?`);
+  }
+
+  if ((resultado.enfoque || "") === "cuantitativo") {
+    preguntas.push("• Tus datos podrán decirte SI hay asociación. Si alguien te pregunta POR QUÉ ocurre — el mecanismo, no solo el patrón — ¿qué le respondes con lo que has diseñado hasta ahora?");
+  }
+
+  return preguntas.slice(0, 4).join("\n");
+}
+
+function generarPuntosDebilesADefender(txt, resultado) {
+  resultado = resultado || {};
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const diseno = (resultado.diseno || "").toLowerCase();
+  const debiles = [];
+
+  if (diseno.includes("transversal")) {
+    debiles.push("• Diseño transversal: una sola medición no permite establecer secuencia temporal ni descartar causalidad inversa. Defiéndelo explícitamente en el trabajo — no lo des por supuesto.");
+  }
+
+  if ((resultado.fuentes || []).length <= 1) {
+    debiles.push("• Dependencia de una única fuente de datos: si esa fuente cambia de metodología, deja de publicarse o tiene sesgos de cobertura, todo el estudio queda expuesto. Busca al menos una fuente de contraste.");
+  }
+
+  if (vi.length > 1) {
+    debiles.push(`• Con más de una VI (${skJoin(vi)}), hay riesgo de confusión entre ellas: si no las mides ni controlas por separado, no podrás atribuir el efecto sobre ${skJoin(vd, "la VD")} a una en concreto.`);
+  }
+
+  if ((resultado.enfoque || "") === "cuantitativo") {
+    debiles.push("• Enfoque solo cuantitativo: podrás afirmar SI existe asociación, pero difícilmente explicarás POR QUÉ ocurre sin datos cualitativos complementarios sobre significados y mecanismos.");
+  }
+
+  debiles.push("• Tamaño y representatividad de la muestra: sin especificar cuántos casos y cómo se seleccionaron, cualquier hallazgo es, en el mejor de los casos, provisional.");
+
+  return uniq(debiles).slice(0, 5).join("\n");
+}
+
+function generarGuiaBusquedaBibliografica(resultado) {
+  resultado = resultado || {};
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const areas = resultado.areas || [resultado.area || ""];
+  const limpiar = (x) => String(x || "").replace(/^(el|la|los|las|un|una)\s+/i, "").trim();
+  const terminos = uniq(vi.concat(vd).map(limpiar).filter(Boolean));
+  const guia = [];
+
+  guia.push("• Bases de datos: Google Scholar y Dialnet para literatura en español; Scopus y Web of Science para cobertura internacional; INE/IAEST/Eurostat (según el ámbito geográfico) para datos oficiales.");
+
+  if (terminos.length >= 2) {
+    guia.push(`• Combinaciones de búsqueda a probar: "${terminos[0]}" AND "${terminos[1]}"; repite la búsqueda con la traducción al inglés de ambos términos — muchas bases indexan mejor en inglés incluso para temas locales.`);
+  } else if (terminos.length === 1) {
+    guia.push(`• Combina "${terminos[0]}" con el nombre de tu área sociológica (${areas[0] || "tu área"}) para acotar los resultados.`);
+  }
+
+  guia.push("• Bola de nieve hacia atrás: revisa la bibliografía de los 2-3 artículos más relevantes que encuentres — te llevará a los autores fundacionales del marco teórico.");
+  guia.push("• Bola de nieve hacia adelante: usa la opción «Citado por» de Google Scholar sobre esos mismos artículos para encontrar aplicaciones o críticas más recientes.");
+  guia.push("• Criterio de corte: prioriza fuentes de los últimos 10 años, salvo que sean el texto fundacional del marco teórico que estés usando.");
+
+  return guia.join("\n");
+}
+
 /* ================= visualización SVG heurística ================= */
 
 function skSvgEscape(value) {
@@ -2230,5 +2316,6 @@ if (typeof module !== "undefined") {
     construirCategoriasExplicativas, NOTA_CATEGORIAS_EXPLICATIVAS,
     detectarErratasSospechosas, VOCABULARIO_DOMINIO,
     construirExplicacionDeteccion, skContieneAlgunoTrack,
+    generarPreguntasSocraticas, generarPuntosDebilesADefender, generarGuiaBusquedaBibliografica,
   };
 }

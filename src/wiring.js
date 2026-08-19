@@ -384,10 +384,19 @@ function actualizarInterfazConResultado(resultado) {
 
   const outVisual = document.getElementById("out_visual_svg");
   if (outVisual) outVisual.innerHTML = generarSvgVisual(resultado, "causal");
+
+  const outPreguntasSocraticas = document.getElementById("out_preguntas_socraticas");
+  if (outPreguntasSocraticas) outPreguntasSocraticas.textContent = generarPreguntasSocraticas(document.getElementById("txt_problema").value, resultado);
+
+  const outPuntosDebiles = document.getElementById("out_puntos_debiles");
+  if (outPuntosDebiles) outPuntosDebiles.textContent = generarPuntosDebilesADefender(document.getElementById("txt_problema").value, resultado);
+
+  const outGuiaBiblio = document.getElementById("out_guia_bibliografica");
+  if (outGuiaBiblio) outGuiaBiblio.textContent = generarGuiaBusquedaBibliografica(resultado);
 }
 
 function limpiarSalidasPorErrorEdu() {
-  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica"];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) el.textContent = "—";
@@ -550,7 +559,7 @@ window.addEventListener("load", function () {
 
   if (btnClear) {
     btnClear.addEventListener("click", function () {
-      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica"];
       ids.forEach(function (id) {
         const e = document.getElementById(id);
         if (!e) return;

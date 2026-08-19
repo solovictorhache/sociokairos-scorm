@@ -178,6 +178,15 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   parts.push(headingXml("18. Advertencia académica", 2));
   parts.push(paragraphXml("SOCIOKAIROS es una herramienta heurística de apoyo a la formulación de problemas científicos. No sustituye la revisión bibliográfica sistemática, el trabajo teórico propio del investigador ni la discusión metodológica detallada. El uso responsable de sus sugerencias exige contrastarlas con la literatura, los datos disponibles y las condiciones concretas del campo de estudio."));
 
+  parts.push(headingXml("19. Consejos de tu director de tesis", 2));
+  parts.push(paragraphXml("Un profesor senior de metodología no se limita a decir qué está bien: anticipa lo que preguntaría un director de tesis o un tribunal. Lo que sigue se construye a partir de tu problema concreto, no es un texto genérico.", { italic: true }));
+  parts.push(paragraphXml("Preguntas que te haría tu director/a:", { bold: true }));
+  generarPreguntasSocraticas(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
+  parts.push(paragraphXml("Puntos débiles a defender:", { bold: true }));
+  generarPuntosDebilesADefender(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
+  parts.push(paragraphXml("Guía de búsqueda bibliográfica:", { bold: true }));
+  generarGuiaBusquedaBibliografica(resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
+
   if (disenoCabeceraPie) {
     parts.push(dashedRuleXml());
     const lineasPie = piePagina.split("\n");

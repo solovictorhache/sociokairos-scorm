@@ -54,6 +54,15 @@ async function main() {
   assert(transparencia.includes('detectado a partir de "delincuencia"'), "transparencia explica VD por 'delincuencia'");
   assert(transparencia.includes("MARCOS TEÓRICOS SUGERIDOS"), "transparencia muestra bloque de marcos");
 
+  // --- Consejos de tu director de tesis (preguntas socráticas, puntos
+  // débiles a defender, guía bibliográfica) ---
+  const preguntasSocraticas = await page.textContent("#out_preguntas_socraticas");
+  assert(preguntasSocraticas.includes("¿"), "preguntas socráticas presentes tras el análisis");
+  const puntosDebiles = await page.textContent("#out_puntos_debiles");
+  assert(puntosDebiles.trim().length > 0, "puntos débiles a defender presentes tras el análisis");
+  const guiaBiblio = await page.textContent("#out_guia_bibliografica");
+  assert(guiaBiblio.includes("Google Scholar"), "guía de búsqueda bibliográfica presente tras el análisis");
+
   // --- Historial local ---
   const historialItems = await page.$$("#sk_historial_lista .sk-historial-item");
   assert(historialItems.length === 1, "historial tiene 1 entrada tras el primer análisis");
@@ -105,6 +114,8 @@ async function main() {
   const xml = fs.readFileSync(path.join(unzipDir, "word", "document.xml"), "utf-8");
   assert(xml.includes("Justificaci"), "el docx contiene el encabezado de justificación teórica");
   assert(xml.includes("anomia explica bien la tensi"), "el docx contiene literalmente el texto escrito por el estudiante");
+  assert(xml.includes("19. Consejos de tu director de tesis"), "el docx contiene la nueva sección de consejos de director de tesis");
+  assert(xml.includes("Google Scholar"), "el docx contiene la guía de búsqueda bibliográfica");
 
   console.log("OK: informe con justificación en", docxPath);
 }

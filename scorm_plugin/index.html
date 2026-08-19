@@ -704,6 +704,15 @@ body.sk-dark .sk-historial-item .sk-historial-fecha{
         </div>
         <div id="out_visual_svg" class="visual-svg-box" style="overflow-x:auto; border:1px solid rgba(0,0,0,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.45);"></div>
 
+        <h3>2.15 Consejos de tu director de tesis</h3>
+        <p class="meta sk-tutor" style="font-size:0.78rem;">Un profesor senior de metodología no se limita a decir qué está bien: anticipa lo que te preguntaría un director de tesis o un tribunal. Preguntas socráticas de seguimiento, puntos débiles a defender y una guía práctica de búsqueda bibliográfica — construidos a partir de tu problema concreto, no genéricos.</p>
+        <h4 style="margin:14px 0 4px; font-size:0.85rem;">Preguntas que te haría tu director/a</h4>
+        <pre id="out_preguntas_socraticas"></pre>
+        <h4 style="margin:14px 0 4px; font-size:0.85rem;">Puntos débiles a defender</h4>
+        <pre id="out_puntos_debiles"></pre>
+        <h4 style="margin:14px 0 4px; font-size:0.85rem;">Guía de búsqueda bibliográfica</h4>
+        <pre id="out_guia_bibliografica"></pre>
+
       </section>
     </div>
   </main>
@@ -3070,6 +3079,92 @@ function generarDisenos(txt, resultado) {
   return uniq(salidas).slice(0, 6).join("\n");
 }
 
+/* ================= consejos de director de tesis ================= */
+/* Tres bloques en el tono de un profesor senior de metodología de la
+ * investigación: no listan fortalezas del problema (eso ya lo hacen otras
+ * secciones), sino que anticipan lo que preguntaría/objetaría un director
+ * de tesis o un tribunal — construidos a partir del resultado real
+ * (VI/VD, diseño, fuentes, enfoque), no como texto genérico repetido para
+ * cualquier problema. */
+
+function generarPreguntasSocraticas(txt, resultado) {
+  resultado = resultado || {};
+  const t = (txt || "").toLowerCase();
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const viTxt = skJoin(vi, "tu variable independiente");
+  const vdTxt = skJoin(vd, "tu variable dependiente");
+  const diseno = (resultado.diseno || "").toLowerCase();
+  const preguntas = [];
+
+  preguntas.push("• ¿Por qué esta población, este territorio y este periodo, y no otro comparable? ¿Qué cambiaría en tus conclusiones si compararas con otro grupo, ciudad o momento?");
+  preguntas.push(`• Más allá de ${viTxt}, ¿qué explicación rival podría producir el mismo efecto sobre ${vdTxt}? ¿Cómo la vas a descartar o controlar, y no solo mencionar?`);
+
+  if (diseno.includes("transversal") || skHas(t, ["transversal"])) {
+    preguntas.push(`• Tu diseño es transversal — una sola medición en el tiempo. Si el tribunal pregunta cómo sabes que ${viTxt} precede a ${vdTxt} y no al revés, ¿qué vas a responder?`);
+  } else {
+    preguntas.push(`• Si encuentras una asociación entre ${viTxt} y ${vdTxt}, ¿qué evidencia adicional necesitarías para defender que es una relación causal y no una coincidencia estadística?`);
+  }
+
+  if ((resultado.enfoque || "") === "cuantitativo") {
+    preguntas.push("• Tus datos podrán decirte SI hay asociación. Si alguien te pregunta POR QUÉ ocurre — el mecanismo, no solo el patrón — ¿qué le respondes con lo que has diseñado hasta ahora?");
+  }
+
+  return preguntas.slice(0, 4).join("\n");
+}
+
+function generarPuntosDebilesADefender(txt, resultado) {
+  resultado = resultado || {};
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const diseno = (resultado.diseno || "").toLowerCase();
+  const debiles = [];
+
+  if (diseno.includes("transversal")) {
+    debiles.push("• Diseño transversal: una sola medición no permite establecer secuencia temporal ni descartar causalidad inversa. Defiéndelo explícitamente en el trabajo — no lo des por supuesto.");
+  }
+
+  if ((resultado.fuentes || []).length <= 1) {
+    debiles.push("• Dependencia de una única fuente de datos: si esa fuente cambia de metodología, deja de publicarse o tiene sesgos de cobertura, todo el estudio queda expuesto. Busca al menos una fuente de contraste.");
+  }
+
+  if (vi.length > 1) {
+    debiles.push(`• Con más de una VI (${skJoin(vi)}), hay riesgo de confusión entre ellas: si no las mides ni controlas por separado, no podrás atribuir el efecto sobre ${skJoin(vd, "la VD")} a una en concreto.`);
+  }
+
+  if ((resultado.enfoque || "") === "cuantitativo") {
+    debiles.push("• Enfoque solo cuantitativo: podrás afirmar SI existe asociación, pero difícilmente explicarás POR QUÉ ocurre sin datos cualitativos complementarios sobre significados y mecanismos.");
+  }
+
+  debiles.push("• Tamaño y representatividad de la muestra: sin especificar cuántos casos y cómo se seleccionaron, cualquier hallazgo es, en el mejor de los casos, provisional.");
+
+  return uniq(debiles).slice(0, 5).join("\n");
+}
+
+function generarGuiaBusquedaBibliografica(resultado) {
+  resultado = resultado || {};
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const areas = resultado.areas || [resultado.area || ""];
+  const limpiar = (x) => String(x || "").replace(/^(el|la|los|las|un|una)\s+/i, "").trim();
+  const terminos = uniq(vi.concat(vd).map(limpiar).filter(Boolean));
+  const guia = [];
+
+  guia.push("• Bases de datos: Google Scholar y Dialnet para literatura en español; Scopus y Web of Science para cobertura internacional; INE/IAEST/Eurostat (según el ámbito geográfico) para datos oficiales.");
+
+  if (terminos.length >= 2) {
+    guia.push(`• Combinaciones de búsqueda a probar: "${terminos[0]}" AND "${terminos[1]}"; repite la búsqueda con la traducción al inglés de ambos términos — muchas bases indexan mejor en inglés incluso para temas locales.`);
+  } else if (terminos.length === 1) {
+    guia.push(`• Combina "${terminos[0]}" con el nombre de tu área sociológica (${areas[0] || "tu área"}) para acotar los resultados.`);
+  }
+
+  guia.push("• Bola de nieve hacia atrás: revisa la bibliografía de los 2-3 artículos más relevantes que encuentres — te llevará a los autores fundacionales del marco teórico.");
+  guia.push("• Bola de nieve hacia adelante: usa la opción «Citado por» de Google Scholar sobre esos mismos artículos para encontrar aplicaciones o críticas más recientes.");
+  guia.push("• Criterio de corte: prioriza fuentes de los últimos 10 años, salvo que sean el texto fundacional del marco teórico que estés usando.");
+
+  return guia.join("\n");
+}
+
 /* ================= visualización SVG heurística ================= */
 
 function skSvgEscape(value) {
@@ -3713,6 +3808,15 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   parts.push(headingXml("18. Advertencia académica", 2));
   parts.push(paragraphXml("SOCIOKAIROS es una herramienta heurística de apoyo a la formulación de problemas científicos. No sustituye la revisión bibliográfica sistemática, el trabajo teórico propio del investigador ni la discusión metodológica detallada. El uso responsable de sus sugerencias exige contrastarlas con la literatura, los datos disponibles y las condiciones concretas del campo de estudio."));
 
+  parts.push(headingXml("19. Consejos de tu director de tesis", 2));
+  parts.push(paragraphXml("Un profesor senior de metodología no se limita a decir qué está bien: anticipa lo que preguntaría un director de tesis o un tribunal. Lo que sigue se construye a partir de tu problema concreto, no es un texto genérico.", { italic: true }));
+  parts.push(paragraphXml("Preguntas que te haría tu director/a:", { bold: true }));
+  generarPreguntasSocraticas(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
+  parts.push(paragraphXml("Puntos débiles a defender:", { bold: true }));
+  generarPuntosDebilesADefender(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
+  parts.push(paragraphXml("Guía de búsqueda bibliográfica:", { bold: true }));
+  generarGuiaBusquedaBibliografica(resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
+
   if (disenoCabeceraPie) {
     parts.push(dashedRuleXml());
     const lineasPie = piePagina.split("\n");
@@ -4117,10 +4221,19 @@ function actualizarInterfazConResultado(resultado) {
 
   const outVisual = document.getElementById("out_visual_svg");
   if (outVisual) outVisual.innerHTML = generarSvgVisual(resultado, "causal");
+
+  const outPreguntasSocraticas = document.getElementById("out_preguntas_socraticas");
+  if (outPreguntasSocraticas) outPreguntasSocraticas.textContent = generarPreguntasSocraticas(document.getElementById("txt_problema").value, resultado);
+
+  const outPuntosDebiles = document.getElementById("out_puntos_debiles");
+  if (outPuntosDebiles) outPuntosDebiles.textContent = generarPuntosDebilesADefender(document.getElementById("txt_problema").value, resultado);
+
+  const outGuiaBiblio = document.getElementById("out_guia_bibliografica");
+  if (outGuiaBiblio) outGuiaBiblio.textContent = generarGuiaBusquedaBibliografica(resultado);
 }
 
 function limpiarSalidasPorErrorEdu() {
-  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica"];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) el.textContent = "—";
@@ -4283,7 +4396,7 @@ window.addEventListener("load", function () {
 
   if (btnClear) {
     btnClear.addEventListener("click", function () {
-      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus"];
+      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica"];
       ids.forEach(function (id) {
         const e = document.getElementById(id);
         if (!e) return;

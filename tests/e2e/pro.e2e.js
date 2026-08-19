@@ -89,6 +89,13 @@ async function main() {
   await page.waitForTimeout(200);
   assert(await page.isVisible('.sk-step[data-stage="ejecutar"].active'), "clic en la campana de alertas cambia a la etapa 'Ejecutar'");
 
+  // --- Consejos de tu director de tesis (preguntas socráticas, puntos
+  // débiles a defender, guía bibliográfica) ---
+  const preguntasSocraticas = await page.textContent("#out_preguntas_socraticas");
+  assert(preguntasSocraticas.includes("¿"), "preguntas socráticas presentes en la etapa Ejecutar");
+  const guiaBiblio = await page.textContent("#out_guia_bibliografica");
+  assert(guiaBiblio.includes("Google Scholar"), "guía de búsqueda bibliográfica presente en la etapa Ejecutar");
+
   // --- Historial: buscador filtra de verdad ---
   await page.click('.sk-sidebar-item[data-scrollto="sk_historial_panel"]');
   await page.waitForTimeout(150);
@@ -125,6 +132,8 @@ async function main() {
   assert(xml.includes("INFORME") && xml.includes("RESEARCH SUITE"), "subtítulo de la cabecera presente");
   assert(xml.includes('w:val="dashed"'), "la cabecera y el pie usan la línea discontinua del nuevo patrón visual");
   assert(xml.includes("Heuristic software developed by Victor Hugo Pérez Gallo"), "crédito del pie en inglés presente");
+  assert(xml.includes("19. Consejos de tu director de tesis"), "docx contiene la nueva sección de consejos de director de tesis");
+  assert(xml.includes("Google Scholar"), "docx contiene la guía de búsqueda bibliográfica");
   assert(!xml.includes("Universidad de Zaragoza: consulta"), "docx sin la nota específica de la Universidad de Zaragoza");
 
   console.log("OK: informe profesional en", docxPath);
