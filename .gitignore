@@ -6,3 +6,6 @@ node_modules/
 
 # Salida de tests/e2e/scorm.e2e.js
 .e2e-output/
+
+# Bytecode compilado de Python (build_common.py importado desde build.py)
+__pycache__/

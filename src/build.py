@@ -13,14 +13,28 @@ scorm_plugin/logo.png) con un único <script> que concatena, en este orden:
   6. src/wiring.js       -- SCORM + validación EDU + wiring de la interfaz
 
 Resultado: HTML autocontenido, sin llamadas de red en tiempo de ejecución.
+
+El script final se minifica con terser (compress + mangle) si está
+disponible en node_modules/.bin/ — reduce el peso del código en torno a
+un 25% (el HTML final baja menos en términos relativos porque el logo va
+embebido en base64 y eso no se minifica) sin cambiar el comportamiento
+(nombres de variables/funciones locales, ninguna referencia externa
+depende de ellos). Si terser no está
+instalado (p. ej. no se ha corrido "npm install" todavía), se avisa por
+stderr y se sigue con el script sin minificar: nunca rompe el build por
+falta de esta optimización.
 """
 import base64
 import pathlib
 import re
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
 PLUGIN = ROOT / "scorm_plugin"
+
+sys.path.insert(0, str(SRC))
+from build_common import minify_js  # noqa: E402
 
 
 def strip_module_exports(js: str) -> str:
@@ -38,10 +52,10 @@ def main() -> None:
     informe_word = (SRC / "informe-word.js").read_text(encoding="utf-8")
     wiring = (SRC / "wiring.js").read_text(encoding="utf-8")
 
-    script = (
-        f'const LOGO_BASE64 = "{logo_b64}";\n\n'
-        + geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + wiring
-    )
+    # El LOGO_BASE64 no pasa por terser: es un blob de datos, no código —
+    # minificarlo no ahorra nada y solo alarga el tiempo de build.
+    codigo = geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + wiring
+    script = f'const LOGO_BASE64 = "{logo_b64}";\n\n' + minify_js(ROOT, codigo)
 
     if "/*__SCRIPT__*/" not in body:
         raise SystemExit("src/body.html no contiene el marcador /*__SCRIPT__*/")

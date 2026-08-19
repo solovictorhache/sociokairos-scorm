@@ -176,10 +176,44 @@ const VOCABULARIO_DOMINIO = [
 
 const VOCABULARIO_DOMINIO_NORM = new Set(VOCABULARIO_DOMINIO.map(skNormalizar));
 
+// Índice del vocabulario agrupado por longitud normalizada: detectarErratasSospechosas
+// necesita comparar cada palabra sospechosa solo contra los términos de
+// longitud ±1 (la tolerancia de edición que usa), no contra las ~370
+// palabras del vocabulario entero — y sin volver a normalizar cada término
+// en cada comparación, ya que skNormalizar() se ejecuta aquí una sola vez
+// por palabra al cargar el motor, no una vez por cada token del texto.
+const VOCABULARIO_DOMINIO_POR_LONGITUD = (() => {
+  const mapa = new Map();
+  for (const palabra of VOCABULARIO_DOMINIO) {
+    const norm = skNormalizar(palabra);
+    if (!mapa.has(norm.length)) mapa.set(norm.length, []);
+    mapa.get(norm.length).push({ palabra, norm });
+  }
+  return mapa;
+})();
+
+/**
+ * Formas singulares candidatas de una palabra normalizada, quitando una
+ * "s" o "es" final regular. Se usa solo para reconocer que el PLURAL de un
+ * término del vocabulario también es válido (p. ej. "practicas" es el
+ * plural de "practica", ya en VOCABULARIO_DOMINIO) sin tener que listar a
+ * mano cada plural — evita una clase entera de falsos positivos: un
+ * término de dominio en singular está cubierto, pero cualquier estudiante
+ * que lo use en plural (muy común: "las viviendas", "las experiencias",
+ * "los discursos"...) disparaba antes el pop-up de errata por error.
+ */
+function skFormasSingularesCandidatas(norm) {
+  const candidatas = [norm];
+  if (norm.length > 6 && /es$/.test(norm)) candidatas.push(norm.slice(0, -2));
+  if (norm.length > 5 && /s$/.test(norm)) candidatas.push(norm.slice(0, -1));
+  return candidatas;
+}
+
 /**
  * Recorre el texto en busca de palabras "sospechosas": no coinciden
- * exactamente con ningún término del vocabulario de dominio, pero están a
- * una distancia de edición muy pequeña de alguno (p. ej. "delicnuencia" de
+ * exactamente con ningún término del vocabulario de dominio (ni en plural
+ * regular, ver skFormasSingularesCandidatas), pero están a una distancia
+ * de edición muy pequeña de alguno (p. ej. "delicnuencia" de
  * "delincuencia"). Nunca corrige nada por sí sola — solo devuelve
  * candidatas para que la interfaz se lo pregunte al estudiante. Como el
  * vocabulario contiene solo términos de dominio (no palabras comunes del
@@ -197,7 +231,7 @@ function detectarErratasSospechosas(texto) {
     const norm = skNormalizar(original);
     if (norm.length < 8) continue;
     if (vistos.has(norm)) continue;
-    if (VOCABULARIO_DOMINIO_NORM.has(norm)) continue;
+    if (skFormasSingularesCandidatas(norm).some(c => VOCABULARIO_DOMINIO_NORM.has(c))) continue;
     // Tope de 1 SIEMPRE, sin importar lo larga que sea la palabra: a
     // distancia 2 aparecen demasiados pares de palabras españolas
     // distintas y perfectamente correctas ("diversidad"/"universidad",
@@ -207,12 +241,14 @@ function detectarErratasSospechosas(texto) {
     // "delincuencia", una transposición) se sigue detectando.
     const tol = 1;
     const candidatas = [];
-    for (const palabraVocab of VOCABULARIO_DOMINIO) {
-      const vn = skNormalizar(palabraVocab);
-      if (vn === norm) continue;
-      if (Math.abs(vn.length - norm.length) > tol) continue;
-      const d = skDistanciaEdicion(norm, vn);
-      if (d >= 1 && d <= tol) candidatas.push({ palabra: palabraVocab, dist: d });
+    for (let len = norm.length - tol; len <= norm.length + tol; len++) {
+      const bucket = VOCABULARIO_DOMINIO_POR_LONGITUD.get(len);
+      if (!bucket) continue;
+      for (const { palabra: palabraVocab, norm: vn } of bucket) {
+        if (vn === norm) continue;
+        const d = skDistanciaEdicion(norm, vn);
+        if (d >= 1 && d <= tol) candidatas.push({ palabra: palabraVocab, dist: d });
+      }
     }
     if (candidatas.length) {
       candidatas.sort((a, b) => a.dist - b.dist || a.palabra.localeCompare(b.palabra));

@@ -12,11 +12,15 @@ Uso: python3 native-app/pro-src/build_pro.py
 import base64
 import pathlib
 import re
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 SRC = ROOT / "src"
 PRO_SRC = ROOT / "native-app" / "pro-src"
 OUT_DIR = ROOT / "native-app" / "dist_pro"
+
+sys.path.insert(0, str(SRC))
+from build_common import minify_js  # noqa: E402
 
 
 def strip_module_exports(js: str) -> str:
@@ -38,10 +42,10 @@ def main() -> None:
     informe_word = (SRC / "informe-word.js").read_text(encoding="utf-8")
     wiring = (PRO_SRC / "wiring.js").read_text(encoding="utf-8")
 
-    script = (
-        f'const LOGO_BASE64 = "{logo_b64}";\n\n'
-        + geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + wiring
-    )
+    # El LOGO_BASE64 no pasa por terser: es un blob de datos, no código —
+    # minificarlo no ahorra nada y solo alarga el tiempo de build.
+    codigo = geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + wiring
+    script = f'const LOGO_BASE64 = "{logo_b64}";\n\n' + minify_js(ROOT, codigo)
 
     if "/*__SCRIPT__*/" not in body:
         raise SystemExit("pro-src/body.html no contiene el marcador /*__SCRIPT__*/")

@@ -13,6 +13,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      - run: npm ci
       - run: npm test
 
   end-to-end:
@@ -24,6 +25,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      - run: npm ci
 
       - name: Construir scorm_plugin/index.html (línea 1, SCORM/EDU)
         run: python3 src/build.py

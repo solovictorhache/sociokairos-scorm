@@ -7,5 +7,8 @@
     "build": "python3 src/build.py",
     "test": "node --test"
   },
-  "license": "SEE LICENSE IN scorm_plugin/LICENCIA.txt"
+  "license": "SEE LICENSE IN scorm_plugin/LICENCIA.txt",
+  "devDependencies": {
+    "terser": "^5.50.0"
+  }
 }

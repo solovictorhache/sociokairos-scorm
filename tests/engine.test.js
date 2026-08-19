@@ -298,6 +298,48 @@ describe("detectarErratasSospechosas (pop-up de corrección)", () => {
     const e = eng.detectarErratasSospechosas("¿Porque los hombrs con bajo nivel de instrucion ejercen mas violencia de genero en zaragoza en el 2025??");
     assert.deepEqual(e, []);
   });
+
+  test("una forma verbal conjugada de un término de dominio no dispara pop-up (caso reportado: 'relaciona')", () => {
+    const e = eng.detectarErratasSospechosas("¿Cómo se relaciona el nivel de instrucción con el nivel de empleo en Zaragoza en 2025?");
+    assert.deepEqual(e, []);
+  });
+
+  test("el plural regular de un término de dominio no dispara pop-up (caso reportado: 'políticas')", () => {
+    const e = eng.detectarErratasSospechosas("¿Cómo provocan las políticas de vivienda la gentrificación urbana en Madrid en 2025?");
+    assert.deepEqual(e, []);
+  });
+
+  // Barrido sistemático: para CADA término del vocabulario de dominio, si
+  // su plural regular (+s / +es) no está ya listado tal cual, comprueba
+  // que ese plural tampoco dispare el pop-up de errata. Esto no prueba un
+  // caso concreto, sino toda la CLASE de bug que motivó los dos tests de
+  // arriba (un término en singular está cubierto, pero su plural no lo
+  // estaba automáticamente) — para que no haga falta ir descubriendo cada
+  // plural uno a uno según lo van escribiendo estudiantes reales.
+  test("ningún plural regular de un término del vocabulario de dominio dispara falso positivo", () => {
+    function normalizarSinAcentos(s) {
+      return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    }
+    function pluralesRegulares(palabra) {
+      const formas = [];
+      if (/[aeiou]$/i.test(palabra)) formas.push(palabra + "s");
+      else if (/[^ns]$/i.test(palabra)) formas.push(palabra + "es");
+      return formas;
+    }
+    const vocabNorm = new Set(eng.VOCABULARIO_DOMINIO.map(normalizarSinAcentos));
+    const fallos = [];
+    for (const palabra of eng.VOCABULARIO_DOMINIO) {
+      for (const plural of pluralesRegulares(palabra)) {
+        if (vocabNorm.has(normalizarSinAcentos(plural))) continue;
+        const texto = `el problema habla de ${plural} en la ciudad en 2025`;
+        const erratas = eng.detectarErratasSospechosas(texto);
+        if (erratas.some(e => normalizarSinAcentos(e.original) === normalizarSinAcentos(plural))) {
+          fallos.push(`${palabra} -> ${plural}`);
+        }
+      }
+    }
+    assert.deepEqual(fallos, [], `plurales que disparan falso positivo: ${fallos.join(", ")}`);
+  });
 });
 
 describe("transparencia de detección (por qué se sugirió cada VD/VI/área/marco)", () => {
