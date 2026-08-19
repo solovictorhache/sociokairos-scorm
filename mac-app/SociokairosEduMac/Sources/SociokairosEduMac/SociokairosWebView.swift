@@ -2,17 +2,6 @@ import SwiftUI
 import WebKit
 import AppKit
 
-/// Envuelve un WKWebView que carga scorm_plugin/index.html tal cual (mismo
-/// motor/interfaz que Moodle, sin ninguna copia ni modificación) y le
-/// inyecta un puente JS que IMITA la forma de `window.__TAURI__` que ya
-/// espera `descargarBlob()` en src/wiring.js — así no hace falta tocar ni
-/// una línea del motor para que "Exportar Word/CSV" use el diálogo nativo
-/// "Guardar como…" de macOS en vez del hack de descarga del navegador.
-///
-/// El puente usa el WKScriptMessageHandler clásico (sin "WithReply", más
-/// sensible a la versión exacta del SDK) más un registro de promesas por
-/// ID en JS que se resuelve llamando de vuelta con evaluateJavaScript —
-/// el patrón estándar y estable para este tipo de puente nativo↔JS.
 /// Subclase mínima de WKWebView que se pide a sí misma el foco del teclado
 /// en cuanto AppKit la ancla de verdad a una ventana. `viewDidMoveToWindow()`
 /// es el punto determinista del ciclo de vida de NSView para esto — a
@@ -24,10 +13,40 @@ import AppKit
 final class FocusableWKWebView: WKWebView {
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
-        window?.makeFirstResponder(self)
+        claimFocus()
+    }
+
+    /// Además de pedir el foco, se asegura de que la propia ventana sea la
+    /// "key window" (makeKeyAndOrderFront) — si la app entera no está en
+    /// primer plano (ver AppDelegate en SociokairosEduMacApp.swift),
+    /// ninguna ventana suya llega a ser key y makeFirstResponder no tiene
+    /// ningún efecto real aunque no falle. Se reintenta una vez más tras un
+    /// instante por si esta primera llamada llega antes de que la app haya
+    /// terminado de activarse (arranque en frío desde Xcode).
+    private func claimFocus() {
+        guard let window else { return }
+        window.makeKeyAndOrderFront(nil)
+        window.makeFirstResponder(self)
+    }
+
+    func retryClaimFocusShortly() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.claimFocus()
+        }
     }
 }
 
+/// Envuelve un WKWebView que carga scorm_plugin/index.html tal cual (mismo
+/// motor/interfaz que Moodle, sin ninguna copia ni modificación) y le
+/// inyecta un puente JS que IMITA la forma de `window.__TAURI__` que ya
+/// espera `descargarBlob()` en src/wiring.js — así no hace falta tocar ni
+/// una línea del motor para que "Exportar Word/CSV" use el diálogo nativo
+/// "Guardar como…" de macOS en vez del hack de descarga del navegador.
+///
+/// El puente usa el WKScriptMessageHandler clásico (sin "WithReply", más
+/// sensible a la versión exacta del SDK) más un registro de promesas por
+/// ID en JS que se resuelve llamando de vuelta con evaluateJavaScript —
+/// el patrón estándar y estable para este tipo de puente nativo↔JS.
 struct SociokairosWebView: NSViewRepresentable {
     func makeNSView(context: Context) -> WKWebView {
         let contentController = WKUserContentController()
@@ -46,6 +65,7 @@ struct SociokairosWebView: NSViewRepresentable {
 
         let webView = FocusableWKWebView(frame: .zero, configuration: config)
         context.coordinator.webView = webView
+        webView.retryClaimFocusShortly()
 
         if let htmlURL = Bundle.module.url(forResource: "index", withExtension: "html", subdirectory: "scorm_plugin") {
             let readAccessDir = htmlURL.deletingLastPathComponent()
