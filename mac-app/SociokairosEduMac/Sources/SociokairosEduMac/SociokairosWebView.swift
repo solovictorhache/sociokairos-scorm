@@ -13,6 +13,21 @@ import AppKit
 /// sensible a la versión exacta del SDK) más un registro de promesas por
 /// ID en JS que se resuelve llamando de vuelta con evaluateJavaScript —
 /// el patrón estándar y estable para este tipo de puente nativo↔JS.
+/// Subclase mínima de WKWebView que se pide a sí misma el foco del teclado
+/// en cuanto AppKit la ancla de verdad a una ventana. `viewDidMoveToWindow()`
+/// es el punto determinista del ciclo de vida de NSView para esto — a
+/// diferencia de un `DispatchQueue.main.async` en `makeNSView`, que puede
+/// ejecutarse ANTES de que la vista tenga ventana todavía (la ventana de
+/// SwiftUI puede tardar más de un tick de runloop en aparecer al arrancar),
+/// dejando el `makeFirstResponder` en un no-op silencioso y el textarea sin
+/// poder recibir texto.
+final class FocusableWKWebView: WKWebView {
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        window?.makeFirstResponder(self)
+    }
+}
+
 struct SociokairosWebView: NSViewRepresentable {
     func makeNSView(context: Context) -> WKWebView {
         let contentController = WKUserContentController()
@@ -29,7 +44,7 @@ struct SociokairosWebView: NSViewRepresentable {
         let config = WKWebViewConfiguration()
         config.userContentController = contentController
 
-        let webView = WKWebView(frame: .zero, configuration: config)
+        let webView = FocusableWKWebView(frame: .zero, configuration: config)
         context.coordinator.webView = webView
 
         if let htmlURL = Bundle.module.url(forResource: "index", withExtension: "html", subdirectory: "scorm_plugin") {
@@ -42,28 +57,15 @@ struct SociokairosWebView: NSViewRepresentable {
             )
         }
 
-        // Al incrustar un WKWebView dentro de SwiftUI (NSViewRepresentable),
-        // nadie le pide el foco del teclado automáticamente: se ve todo bien
-        // pero no se puede escribir en el textarea del problema. Se fuerza
-        // aquí, una vez que la vista ya está insertada en la jerarquía de
-        // ventanas (por eso el async, no funciona todavía en este mismo
-        // punto de makeNSView).
-        DispatchQueue.main.async {
-            webView.window?.makeFirstResponder(webView)
-        }
-
         return webView
     }
 
     func updateNSView(_ nsView: WKWebView, context: Context) {
-        // Refuerzo: si por cualquier motivo (reaparición de la ventana,
-        // cambios de foco de SwiftUI) el primer respondedor deja de ser el
-        // WKWebView, se recupera aquí también.
-        if nsView.window?.firstResponder !== nsView {
-            DispatchQueue.main.async {
-                nsView.window?.makeFirstResponder(nsView)
-            }
-        }
+        // Sin refuerzo aquí a propósito: reclamar el foco en cada paso de
+        // SwiftUI competiría con el foco interno que WebKit gestiona para
+        // el propio contenido editable (el textarea) mientras el usuario
+        // escribe. El foco inicial ya queda garantizado por
+        // FocusableWKWebView.viewDidMoveToWindow().
     }
 
     func makeCoordinator() -> Coordinator {
