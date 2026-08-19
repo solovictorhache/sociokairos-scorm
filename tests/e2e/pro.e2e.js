@@ -1,8 +1,10 @@
 "use strict";
 // Prueba end-to-end del build "Profesional" (native-app/pro-src, track 2):
-// confirma que no queda SCORM ni identidad EDU/UNIZAR (overlay de arranque,
-// estado SCORM, correo de contacto, pie e informe Word), y que el motor
-// funciona exactamente igual que en el SCORM (mismo engine.js compartido).
+// confirma que no queda SCORM ni identidad EDU/UNIZAR (estado SCORM, correo
+// de contacto, pie e informe Word), que la estructura nueva (topbar +
+// stepper + sidebar + panel de stats real) funciona de verdad — no solo
+// visualmente — y que el motor funciona exactamente igual que en el SCORM
+// (mismo engine.js compartido).
 const { chromium } = require("playwright");
 const path = require("path");
 const fs = require("fs");
@@ -29,12 +31,24 @@ async function main() {
   assert((await page.$("#sociokairosStartOverlay")) === null, "no existe el overlay de arranque (quitado en pro)");
   assert((await page.$("#scorm_status")) === null, "no existe el div scorm_status (quitado en pro)");
 
-  const headerText = await page.textContent("header h1");
-  assert(headerText.trim() === "SOCIOKAIROS", "título de cabecera sin EDU/UNIZAR: " + headerText);
+  const headerText = await page.textContent(".sk-topbar-title");
+  assert(headerText.replace(/\s+/g, " ").trim().startsWith("SOCIOKAIROS"), "título de la topbar: " + headerText);
+  assert(!headerText.includes("EDU") && !headerText.includes("UNIZAR"), "título sin EDU/UNIZAR: " + headerText);
 
   const authorHtml = await page.innerHTML(".sk-author-top");
-  assert(authorHtml.includes("contacto@sociokairos.com"), "correo de contacto actualizado en la cabecera");
-  assert(!authorHtml.includes("unizar.es"), "cabecera sin correo unizar.es");
+  assert(authorHtml.includes("contacto@sociokairos.com"), "correo de contacto presente (en el pie del sidebar)");
+  assert(!authorHtml.includes("unizar.es"), "sin correo unizar.es");
+
+  // --- Estructura nueva: topbar con stepper de 5 etapas, sidebar, panel derecho ---
+  const stepCount = await page.$$eval("#sk_stepper .sk-step", els => els.length);
+  assert(stepCount === 5, "el stepper tiene 5 etapas (Definir/Analizar/Diseñar/Ejecutar/Comunicar): " + stepCount);
+  assert(await page.isVisible('.sk-step[data-stage="definir"].active'), "la etapa activa al arrancar es 'Definir'");
+  assert(await page.isVisible(".sk-sidebar"), "sidebar visible");
+  assert(await page.isVisible(".sk-rightpanel"), "panel derecho de estadísticas visible");
+
+  // Antes de reformular, los stats están vacíos (no hay números inventados)
+  const statVariablesAntes = await page.textContent("#sk_stat_variables");
+  assert(statVariablesAntes.trim() === "–", "stats vacíos antes de analizar (sin datos fabricados): " + statVariablesAntes);
 
   await page.fill("#txt_problema", PROBLEMA);
   await page.click("#btn_reformular");
@@ -43,15 +57,62 @@ async function main() {
   const status = await page.textContent("#status");
   assert(status.includes("Análisis completado"), "análisis completado con el mismo motor que el SCORM");
 
+  // Tras reformular, el stepper debe pasar solo a la etapa "Analizar"
+  assert(await page.isVisible('.sk-step[data-stage="analizar"].active'), "el stepper avanza automáticamente a 'Analizar' tras reformular");
+  assert(await page.isVisible("#out_variables"), "la sección de variables es visible en la etapa activa");
+
   const transparencia = await page.textContent("#out_transparencia");
   assert(transparencia.includes("VARIABLE DEPENDIENTE"), "transparencia del análisis funciona igual que en SCORM");
 
+  // --- Panel de estadísticas: números REALES, no inventados ---
+  const statVariables = await page.textContent("#sk_stat_variables");
+  const statAreas = await page.textContent("#sk_stat_areas");
+  const statMarcos = await page.textContent("#sk_stat_marcos");
+  const statFuentes = await page.textContent("#sk_stat_fuentes");
+  assert(Number(statVariables) >= 1, "estadística de variables es un número real > 0: " + statVariables);
+  assert(Number(statAreas) >= 1, "estadística de áreas es un número real > 0: " + statAreas);
+  assert(Number(statMarcos) >= 1, "estadística de marcos teóricos es un número real > 0: " + statMarcos);
+  assert(Number(statFuentes) >= 1, "estadística de fuentes es un número real > 0: " + statFuentes);
+
+  const fuentesPreviewHtml = await page.innerHTML("#sk_fuentes_preview");
+  assert(fuentesPreviewHtml.includes("sk-fuente-item"), "el panel de fuentes recomendadas muestra fuentes reales del motor");
+  assert(!fuentesPreviewHtml.includes("García, M."), "no hay citas académicas de ejemplo fabricadas");
+
+  // --- Navegación de la sidebar es funcional (cambia de etapa) ---
+  await page.click('.sk-sidebar-item[data-scrollto="out_fuentes"]');
+  await page.waitForTimeout(200);
+  assert(await page.isVisible('.sk-step[data-stage="disenar"].active'), "clic en 'Fuentes' del sidebar cambia a la etapa 'Diseñar'");
+  assert(await page.isVisible("#out_fuentes"), "la sección de fuentes es visible tras la navegación");
+
+  // --- La campana de alertas es funcional ---
+  await page.click("#sk_btn_alertas");
+  await page.waitForTimeout(200);
+  assert(await page.isVisible('.sk-step[data-stage="ejecutar"].active'), "clic en la campana de alertas cambia a la etapa 'Ejecutar'");
+
+  // --- Historial: buscador filtra de verdad ---
+  await page.click('.sk-sidebar-item[data-scrollto="sk_historial_panel"]');
+  await page.waitForTimeout(150);
+  const historialAntes = await page.$$eval("#sk_historial_lista .sk-historial-item", els => els.length);
+  assert(historialAntes === 1, "historial tiene 1 entrada tras el análisis");
+  await page.fill("#sk_historial_buscar", "xyznoexiste");
+  await page.waitForTimeout(150);
+  const historialFiltrado = await page.$$eval("#sk_historial_lista .sk-historial-item", els => els.length);
+  assert(historialFiltrado === 0, "el buscador del historial filtra de verdad (sin resultados para un texto que no coincide)");
+  await page.fill("#sk_historial_buscar", "");
+  await page.waitForTimeout(150);
+
+  // --- Exportar Word: navegar a la etapa "Comunicar" primero (el botón está ahí) ---
+  await page.click('.sk-step[data-stage="comunicar"]');
+  await page.waitForTimeout(150);
   const [downloadWord] = await Promise.all([
     page.waitForEvent("download"),
     page.click("#btn_export_word"),
   ]);
   const docxPath = path.join(OUT_DIR, "informe_pro.docx");
   await downloadWord.saveAs(docxPath);
+
+  await browser.close();
+  if (errors.length) throw new Error("Errores de página durante la prueba:\n" + errors.join("\n"));
 
   const unzipDir = path.join(OUT_DIR, "unzipped-pro");
   fs.rmSync(unzipDir, { recursive: true, force: true });
@@ -62,9 +123,6 @@ async function main() {
   assert(!xml.includes("unizar.es"), "docx sin el correo antiguo de unizar.es");
   assert(xml.includes("Informe SOCIOKAIROS") && !xml.includes("Informe SOCIOKAIROS EDU"), "título del informe sin 'EDU'");
   assert(!xml.includes("Universidad de Zaragoza: consulta"), "docx sin la nota específica de la Universidad de Zaragoza");
-
-  await browser.close();
-  if (errors.length) throw new Error("Errores de página durante la prueba:\n" + errors.join("\n"));
 
   console.log("OK: informe profesional en", docxPath);
 }

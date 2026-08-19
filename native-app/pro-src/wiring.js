@@ -133,19 +133,24 @@ function formatearFechaHistorial(ts) {
   }
 }
 
-function renderizarHistorial() {
+function renderizarHistorial(filtro) {
   const cont = document.getElementById("sk_historial_lista");
   const btnBorrar = document.getElementById("btn_historial_borrar");
   if (!cont) return;
-  const lista = cargarHistorial();
+  const listaCompleta = cargarHistorial();
+  const q = (filtro || "").trim().toLowerCase();
+  const lista = q ? listaCompleta.filter(item => (item.texto || "").toLowerCase().includes(q)) : listaCompleta;
+
+  if (btnBorrar) btnBorrar.style.display = listaCompleta.length ? "" : "none";
 
   if (!lista.length) {
     cont.innerHTML = "";
     const vacio = document.createElement("p");
     vacio.className = "sk-historial-vacio";
-    vacio.textContent = "Todavía no has analizado ningún problema en este dispositivo.";
+    vacio.textContent = q
+      ? "Ningún problema del historial coincide con «" + filtro.trim() + "»."
+      : "Todavía no has analizado ningún problema en este dispositivo.";
     cont.appendChild(vacio);
-    if (btnBorrar) btnBorrar.style.display = "none";
     return;
   }
 
@@ -287,7 +292,106 @@ function actualizarInterfazConResultado(resultado) {
   if (outDisPlus) outDisPlus.textContent = generarDisenos(document.getElementById("txt_problema").value, resultado);
 
   const outVisual = document.getElementById("out_visual_svg");
-  if (outVisual) outVisual.innerHTML = generarSvgVisual(resultado, "causal");
+  if (outVisual) outVisual.innerHTML = generarSvgVisual(resultado, "red");
+
+  actualizarResumenReal(resultado);
+}
+
+/**
+ * Panel derecho "Resumen del análisis": solo conteos reales calculados a
+ * partir del propio resultado del motor (número de variables, áreas,
+ * marcos, categorías, fuentes y alertas detectadas) — nunca una puntuación
+ * de "confianza" inventada ni citas de ejemplo. También alimenta el
+ * contador de la campana de alertas en la barra superior.
+ */
+function actualizarResumenReal(resultado) {
+  const alertasTexto = generarAlertasMetodologicas(document.getElementById("txt_problema").value, resultado);
+  const numAlertas = (alertasTexto.match(/^•/gm) || []).length;
+
+  const stats = {
+    sk_stat_variables: (resultado.vi.length + resultado.vd.length),
+    sk_stat_areas: (resultado.areas || []).length,
+    sk_stat_marcos: (resultado.marcos || []).length,
+    sk_stat_categorias: (resultado.categoriasExplicativas || []).length,
+    sk_stat_fuentes: (resultado.fuentes || []).length,
+    sk_stat_alertas: numAlertas
+  };
+  for (const id in stats) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(stats[id]);
+  }
+
+  const badgeAlertas = document.getElementById("sk_alertas_badge");
+  if (badgeAlertas) {
+    if (numAlertas > 0) { badgeAlertas.textContent = String(numAlertas); badgeAlertas.style.display = ""; }
+    else badgeAlertas.style.display = "none";
+  }
+
+  const fuentesPreview = document.getElementById("sk_fuentes_preview");
+  if (fuentesPreview) {
+    const fuentes = resultado.fuentes || [];
+    if (!fuentes.length) {
+      fuentesPreview.innerHTML = '<p class="sk-historial-vacio">No se identificaron fuentes específicas para este problema.</p>';
+    } else {
+      fuentesPreview.innerHTML = "";
+      fuentes.slice(0, 5).forEach(f => {
+        const div = document.createElement("div");
+        div.className = "sk-fuente-item";
+        const m = f.match(/^(.*?)\s+—\s+(https?:\/\/\S+)$/);
+        if (m) {
+          const nombre = document.createTextNode(m[1] + " — ");
+          div.appendChild(nombre);
+          const a = document.createElement("a");
+          a.href = m[2];
+          a.textContent = m[2];
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          div.appendChild(a);
+        } else {
+          div.textContent = f;
+        }
+        fuentesPreview.appendChild(div);
+      });
+    }
+  }
+}
+
+/* ================= Navegación: stepper + sidebar (todas las secciones son reales, no un wizard con pasos falsos) ================= */
+
+function activarEtapa(stage) {
+  document.querySelectorAll(".sk-stage").forEach(sec => {
+    sec.style.display = (sec.getAttribute("data-stage") === stage) ? "" : "none";
+  });
+  document.querySelectorAll("#sk_stepper .sk-step").forEach(btn => {
+    btn.classList.toggle("active", btn.getAttribute("data-stage") === stage);
+  });
+  document.querySelectorAll(".sk-sidebar-item[data-stage]").forEach(btn => {
+    btn.classList.toggle("active", btn.getAttribute("data-stage") === stage);
+  });
+}
+
+function inicializarNavegacion() {
+  document.querySelectorAll("#sk_stepper .sk-step").forEach(btn => {
+    btn.addEventListener("click", () => activarEtapa(btn.getAttribute("data-stage")));
+  });
+  document.querySelectorAll(".sk-sidebar-item[data-scrollto]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const stage = btn.getAttribute("data-stage");
+      if (stage) activarEtapa(stage);
+      document.querySelectorAll(".sk-sidebar-item").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const target = document.getElementById(btn.getAttribute("data-scrollto"));
+      if (target) setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), stage ? 60 : 0);
+    });
+  });
+  const btnAlertas = document.getElementById("sk_btn_alertas");
+  if (btnAlertas) {
+    btnAlertas.addEventListener("click", () => {
+      activarEtapa("ejecutar");
+      const target = document.getElementById("out_alertas");
+      if (target) setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+    });
+  }
 }
 
 function limpiarSalidasPorErrorEdu() {
@@ -305,6 +409,15 @@ function limpiarSalidasPorErrorEdu() {
   ultimoResultado = null;
   const btnSwap = document.getElementById("btn_swap_vivd");
   if (btnSwap) { btnSwap.disabled = true; btnSwap.textContent = "⇄ Intercambiar VI ↔ VD"; }
+
+  ["sk_stat_variables", "sk_stat_areas", "sk_stat_marcos", "sk_stat_categorias", "sk_stat_fuentes", "sk_stat_alertas"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = "–";
+  });
+  const badgeAlertas = document.getElementById("sk_alertas_badge");
+  if (badgeAlertas) badgeAlertas.style.display = "none";
+  const fuentesPreview = document.getElementById("sk_fuentes_preview");
+  if (fuentesPreview) fuentesPreview.innerHTML = '<p class="sk-historial-vacio">Reformula un problema para ver fuentes de datos recomendadas.</p>';
 }
 
 function activarSalidasValidasEdu() {
@@ -370,12 +483,21 @@ window.addEventListener("load", function () {
     if (localStorage.getItem("sk_theme") === "dark") document.body.classList.add("sk-dark");
   } catch (e) { /* localStorage no disponible */ }
 
+  inicializarNavegacion();
+
   renderizarHistorial();
+  const btnHistorialBuscar = document.getElementById("sk_historial_buscar");
+  if (btnHistorialBuscar) {
+    btnHistorialBuscar.addEventListener("input", function () {
+      renderizarHistorial(btnHistorialBuscar.value);
+    });
+  }
   const btnHistorialBorrar = document.getElementById("btn_historial_borrar");
   if (btnHistorialBorrar) {
     btnHistorialBorrar.addEventListener("click", function () {
       borrarHistorialGuardado();
-      renderizarHistorial();
+      const buscador = document.getElementById("sk_historial_buscar");
+      renderizarHistorial(buscador ? buscador.value : "");
     });
   }
 
@@ -421,7 +543,9 @@ window.addEventListener("load", function () {
         const resultado = analizarProblema(txt, { intercambiarViVd: false });
         actualizarInterfazConResultado(resultado);
         guardarEnHistorial(txt, resultado);
-        renderizarHistorial();
+        const buscadorActivo = document.getElementById("sk_historial_buscar");
+        renderizarHistorial(buscadorActivo ? buscadorActivo.value : "");
+        activarEtapa("analizar");
         if (statusEl) statusEl.textContent = "Análisis completado. Puedes exportar a Word o CSV.";
       } catch (e) {
         if (statusEl) statusEl.textContent = "Error interno del motor: " + e.message;
@@ -465,6 +589,15 @@ window.addEventListener("load", function () {
       viVdIntercambiado = false;
       const btnSwap = document.getElementById("btn_swap_vivd");
       if (btnSwap) { btnSwap.disabled = true; btnSwap.textContent = "⇄ Intercambiar VI ↔ VD"; }
+      ["sk_stat_variables", "sk_stat_areas", "sk_stat_marcos", "sk_stat_categorias", "sk_stat_fuentes", "sk_stat_alertas"].forEach(id => {
+        const e = document.getElementById(id);
+        if (e) e.textContent = "–";
+      });
+      const badgeAlertas = document.getElementById("sk_alertas_badge");
+      if (badgeAlertas) badgeAlertas.style.display = "none";
+      const fuentesPreview = document.getElementById("sk_fuentes_preview");
+      if (fuentesPreview) fuentesPreview.innerHTML = '<p class="sk-historial-vacio">Reformula un problema para ver fuentes de datos recomendadas.</p>';
+      activarEtapa("definir");
       if (statusEl) statusEl.textContent = "Problema borrado. Introduce un nuevo problema científico.";
     });
   }

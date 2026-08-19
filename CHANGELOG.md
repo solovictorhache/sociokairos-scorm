@@ -1,5 +1,49 @@
 # CHANGELOG — SOCIOKAIROS SCORM Plugin
 
+## Rediseño estructural de la línea Profesional: sidebar + stepper + panel de stats real 2026-08-19
+
+Solo afecta a la línea 2 (`native-app/pro-src/`); la línea SCORM/EDU no
+cambia. Reestructuración completa del layout siguiendo la estructura
+pedida por el usuario (sidebar de navegación, cabecera con stepper de 5
+etapas, panel lateral de estadísticas), reutilizando sin tocar los mismos
+elementos e IDs de salida que ya existían (ninguna lógica de
+`actualizarInterfazConResultado()` cambió, solo su agrupación visual):
+
+- **Cabecera con stepper de 5 etapas** (Definir · Analizar · Diseñar ·
+  Ejecutar · Comunicar): cada etapa agrupa las secciones de salida ya
+  existentes; el stepper avanza automáticamente a "Analizar" al completar
+  un análisis, y es clicable manualmente en cualquier momento
+  (`activarEtapa()`, `inicializarNavegacion()` en `wiring.js`).
+- **Sidebar de navegación** con accesos directos a variables, conceptos,
+  fuentes y exportación, más el historial local (con buscador que ahora
+  filtra de verdad) y el pie con el correo de contacto.
+- **Panel de estadísticas con números reales**, no inventados: cuenta
+  directamente `resultado.vi/vd/areas/marcos/categoriasExplicativas/fuentes`
+  y las alertas metodológicas — nada de porcentajes de confianza ni cifras
+  de relleno. Antes de analizar, todos los contadores muestran "–" en vez
+  de un cero o un valor de ejemplo.
+- **Sin citas académicas fabricadas**: el panel de "fuentes recomendadas"
+  muestra únicamente las fuentes reales que devuelve el motor (INE, IAEST,
+  CIS, Ayuntamiento, datos.gob.es, etc. según el problema), nunca citas de
+  ejemplo tipo "García, M. (2023)".
+- **Fix de motor compartido** (`src/engine.js`, `generarSvgVisual()`): las
+  tres visualizaciones SVG (red sociológica, capas sociales, mapa causal)
+  ahora dibujan su propio rectángulo de fondo claro fijo en vez de
+  depender del fondo de la página — el texto/los nodos usan colores
+  oscuros codificados que se volvían ilegibles en modo oscuro al quedar
+  sin fondo propio. Afecta a ambas líneas de producto (el bug era
+  preexistente en el motor compartido, solo se hizo visible al dar más
+  protagonismo a la visualización en el nuevo diseño); no cambia ningún
+  otro comportamiento del motor.
+
+`tests/e2e/pro.e2e.js` reescrito para probar la estructura nueva de
+verdad: existencia y funcionamiento del stepper de 5 etapas, navegación
+real del sidebar, campana de alertas funcional, buscador de historial que
+filtra, estadísticas numéricas reales (>0, sin datos fabricados) y ausencia
+de citas de ejemplo. 46/46 tests unitarios y las tres suites e2e
+(`scorm.e2e.js`, `mejoras.e2e.js`, `pro.e2e.js`) en verde, con validación
+de los tres `.docx` exportados.
+
 ## Separación en dos líneas de producto: SCORM/EDU y Profesional 2026-08-18
 
 A partir de ahora el proyecto se desarrolla en dos líneas independientes que

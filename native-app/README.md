@@ -13,7 +13,10 @@ lógica. Lo que diverge entre las dos es la interfaz y el empaquetado, que
 viven aquí en `pro-src/`:
 
 - `pro-src/head.html` / `pro-src/body.html` — interfaz propia (verde, sin
-  overlay de arranque, sin el estado SCORM en pantalla).
+  overlay de arranque, sin el estado SCORM en pantalla): cabecera con
+  stepper de 5 etapas (Definir · Analizar · Diseñar · Ejecutar ·
+  Comunicar), sidebar de navegación e historial, y panel lateral de
+  estadísticas con conteos reales del análisis (nunca inventados).
 - `pro-src/wiring.js` — copia de `../src/wiring.js` sin la integración SCORM
   (nada de `scormInit`/`scormMarkCompleted`/etc.).
 - `pro-src/build_pro.py` — ensambla `dist_pro/index.html` juntando lo de
