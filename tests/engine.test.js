@@ -446,3 +446,23 @@ describe("terminología adaptada al enfoque metodológico (cualitativo vs cuanti
     assert.ok([...tipos].every(t => t === "VI" || t === "VD"));
   });
 });
+
+describe("marcos teóricos para las áreas que antes no tenían teóricos propios", () => {
+  const casos = [
+    { texto: "¿cómo afecta la pobreza y la exclusión social a las familias en zaragoza en 2025?", area: "Sociología de la pobreza y la desigualdad", autor: "Sen" },
+    { texto: "¿cómo afecta la pobreza energética y la vivienda a las familias en zaragoza en 2025?", area: "Sociología de la vivienda y la energía", autor: "Bouzarovski" },
+    { texto: "¿por qué influye la juventud y ser jóvenes en la participación social en zaragoza en 2025?", area: "Sociología de la juventud", autor: "Mannheim" },
+    { texto: "¿cómo influyen las emociones y el miedo en la soledad de las personas en zaragoza en 2025?", area: "Sociología de las emociones", autor: "Hochschild" },
+    { texto: "¿cómo influye la identidad cultural y los valores en la cohesión social en zaragoza en 2025?", area: "Sociología de la cultura", autor: "Geertz" },
+    { texto: "¿por qué influye la radicalización política en la participación en zaragoza en 2025?", area: "Sociología política", autor: "Gramsci" },
+    { texto: "¿cómo influye el sentido común y el conocimiento cotidiano en las decisiones en zaragoza en 2025?", area: "Sociología del conocimiento", autor: "Mannheim" },
+  ];
+
+  for (const { texto, area, autor } of casos) {
+    test(`"${area}" activa marcos teóricos propios (incluye a ${autor})`, () => {
+      const r = eng.analizarProblema(texto);
+      assert.ok(r.areas.includes(area), `se esperaba el área "${area}" en ${JSON.stringify(r.areas)}`);
+      assert.ok(r.marcos.some(m => m.includes(autor)), `se esperaba un marco de ${autor} en ${JSON.stringify(r.marcos)}`);
+    });
+  }
+});

@@ -1529,6 +1529,36 @@ function sugerirMarcosTeoricos(lower, vi, vd, motivosOut) {
     add("Durkheim: formas elementales de la vida religiosa");
     add("Berger: el dosel sagrado y la secularización");
   }
+  if (hasAny(["pobreza energética", "pobreza energetica", "pobreza", "exclusión social", "exclusion social", "condiciones económicas", "condiciones economicas"])) {
+    add("Simmel: el pobre como posición relacional dentro de la estructura social");
+    add("Townsend: pobreza relativa y privación como incapacidad de participar en la vida social");
+    add("Sen: enfoque de capacidades, pobreza multidimensional más allá del ingreso");
+  }
+  if (hasAny(["energética", "energetica", "vivienda", "residencial", "habitacional", "suministro energético", "suministro energetico"])) {
+    add("Harvey: derecho a la ciudad y valor de cambio de la vivienda");
+    add("Bouzarovski: pobreza energética y vulnerabilidad energética del hogar");
+  }
+  if (hasAny(["jóvenes", "jovenes", "juventud", "juvenil", "adolescentes", "18 a 25"])) {
+    add("Mannheim: generaciones como unidad de experiencia histórica y social");
+    add("Furlong y Cartmel: individualización y riesgo en las trayectorias juveniles");
+  }
+  if (hasAny(["emociones", "afectos", "miedo", "ira", "soledad"])) {
+    add("Hochschild: trabajo emocional y reglas de sentimiento");
+    add("Illouz: capitalismo emocional, emociones y racionalidad económica");
+  }
+  if (hasAny(["cultura", "identidad", "representaciones", "valores"])) {
+    add("Geertz: descripción densa y cultura como sistema de significados compartidos");
+    add("Swidler: cultura como \"caja de herramientas\" de estrategias de acción");
+  }
+  if (hasAny(["política", "politica", "voto", "partido", "hegemonía", "hegemonia", "radicalización", "radicalizacion"])) {
+    add("Weber: tipos de dominación y fuentes de legitimidad política");
+    add("Gramsci: hegemonía, sociedad civil y dirección cultural");
+    add("Putnam: capital social y declive de la participación cívica");
+  }
+  if (hasAny(["conocimiento", "normalidad", "sentido común", "sentido comun", "cognitivo"])) {
+    add("Berger y Luckmann: construcción social del conocimiento y la realidad cotidiana");
+    add("Mannheim: sociología del conocimiento, perspectiva social e ideología");
+  }
 
   if (marcos.length === 0) {
     ultimoMotivo = "ningún término de dominio reconocible en el texto; marcos generales por defecto";
