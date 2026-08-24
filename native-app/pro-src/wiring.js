@@ -334,6 +334,16 @@ function actualizarInterfazConResultado(resultado) {
   if (outGuiaBiblio) outGuiaBiblio.textContent = generarGuiaBusquedaBibliografica(resultado);
 
   actualizarResumenReal(resultado);
+  actualizarRevisionCoherencia();
+}
+
+function actualizarRevisionCoherencia() {
+  const outCoherencia = document.getElementById("out_revision_coherencia");
+  if (!outCoherencia) return;
+  const txtJustificacion = document.getElementById("txt_justificacion_marco");
+  outCoherencia.textContent = ultimoResultado
+    ? generarRevisionCoherencia(ultimoResultado, txtJustificacion ? txtJustificacion.value : "")
+    : "—";
 }
 
 /**
@@ -439,7 +449,7 @@ function inicializarNavegacion() {
 }
 
 function limpiarSalidasPorErrorEdu() {
-  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica"];
+  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia"];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) el.textContent = "—";
@@ -617,9 +627,14 @@ window.addEventListener("load", function () {
     });
   }
 
+  const txtJustificacionMarco = document.getElementById("txt_justificacion_marco");
+  if (txtJustificacionMarco) {
+    txtJustificacionMarco.addEventListener("input", actualizarRevisionCoherencia);
+  }
+
   if (btnClear) {
     btnClear.addEventListener("click", function () {
-      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica"];
+      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia"];
       ids.forEach(function (id) {
         const e = document.getElementById(id);
         if (!e) return;

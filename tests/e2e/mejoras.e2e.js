@@ -84,6 +84,17 @@ async function main() {
   const varsRestauradas = await page.textContent("#out_variables");
   assert(!varsRestauradas.includes("intercambiada manualmente"), "nota de intercambio desaparece tras deshacer swap");
 
+  // --- Revisión de coherencia (enfoque detectado vs. justificación libre), en vivo ---
+  await page.fill("#txt_justificacion_marco", "El fenómeno central se explica por las condiciones explicativas del contexto familiar.");
+  await page.waitForTimeout(150);
+  const coherenciaAviso = await page.textContent("#out_revision_coherencia");
+  assert(coherenciaAviso.includes("Revisión de coherencia"), "revisión de coherencia avisa en vivo al escribir lenguaje incoherente");
+
+  await page.fill("#txt_justificacion_marco", "Elijo Merton porque la asociación diferencial de Sutherland explica esta dinámica.");
+  await page.waitForTimeout(150);
+  const coherenciaOk = await page.textContent("#out_revision_coherencia");
+  assert(coherenciaOk.includes("no ha detectado incoherencias"), "revisión de coherencia no avisa con justificación coherente");
+
   // --- Justificación teórica en el Word exportado ---
   await page.fill("#txt_justificacion_marco", JUSTIFICACION);
 
@@ -116,6 +127,7 @@ async function main() {
   assert(xml.includes("anomia explica bien la tensi"), "el docx contiene literalmente el texto escrito por el estudiante");
   assert(xml.includes("19. Consejos de tu director de tesis"), "el docx contiene la nueva sección de consejos de director de tesis");
   assert(xml.includes("Google Scholar"), "el docx contiene la guía de búsqueda bibliográfica");
+  assert(xml.includes("Revisión de coherencia"), "el docx contiene la sección de revisión de coherencia");
 
   console.log("OK: informe con justificación en", docxPath);
 }

@@ -64,6 +64,19 @@ async function main() {
   const transparencia = await page.textContent("#out_transparencia");
   assert(transparencia.includes("VARIABLE DEPENDIENTE"), "transparencia del análisis funciona igual que en SCORM");
 
+  // --- Revisión de coherencia (enfoque detectado vs. justificación libre), en
+  // vivo — la justificación se escribe en la etapa "Analizar" (visible aquí),
+  // el panel se lee en la etapa "Ejecutar" (aún no visible, pero el DOM ya
+  // tiene el texto actualizado por el listener de "input") ---
+  await page.fill("#txt_justificacion_marco", "El fenómeno central se explica por las condiciones explicativas del contexto familiar.");
+  await page.waitForTimeout(150);
+  const coherenciaAviso = await page.textContent("#out_revision_coherencia");
+  assert(coherenciaAviso.includes("Revisión de coherencia"), "revisión de coherencia avisa en vivo al escribir lenguaje incoherente");
+  await page.fill("#txt_justificacion_marco", "Elijo Merton porque la asociación diferencial de Sutherland explica esta dinámica.");
+  await page.waitForTimeout(150);
+  const coherenciaOk = await page.textContent("#out_revision_coherencia");
+  assert(coherenciaOk.includes("no ha detectado incoherencias"), "revisión de coherencia no avisa con justificación coherente");
+
   // --- Panel de estadísticas: números REALES, no inventados ---
   const statVariables = await page.textContent("#sk_stat_variables");
   const statAreas = await page.textContent("#sk_stat_areas");
@@ -134,6 +147,7 @@ async function main() {
   assert(xml.includes("Heuristic software developed by Victor Hugo Pérez Gallo"), "crédito del pie en inglés presente");
   assert(xml.includes("19. Consejos de tu director de tesis"), "docx contiene la nueva sección de consejos de director de tesis");
   assert(xml.includes("Google Scholar"), "docx contiene la guía de búsqueda bibliográfica");
+  assert(xml.includes("Revisión de coherencia"), "docx contiene la sección de revisión de coherencia");
   assert(!xml.includes("Universidad de Zaragoza: consulta"), "docx sin la nota específica de la Universidad de Zaragoza");
 
   console.log("OK: informe profesional en", docxPath);

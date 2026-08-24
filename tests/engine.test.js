@@ -466,3 +466,48 @@ describe("marcos teóricos para las áreas que antes no tenían teóricos propio
     });
   }
 });
+
+describe("revisión de coherencia entre enfoque detectado y justificación teórica libre", () => {
+  const textoCualitativo = "¿Cómo viven y qué sentido dan las mujeres migrantes a su experiencia de precariedad laboral en Zaragoza en 2025?";
+  const textoMixto = "cuales son las causas familiares del alto indice de delincuencia en zaragoza en el 2025?";
+
+  test("avisa si un problema cualitativo tiene una justificación con lenguaje VI/VD/correlación/hipótesis", () => {
+    const r = eng.analizarProblema(textoCualitativo);
+    const rev = eng.generarRevisionCoherencia(r, "Elijo este marco porque predice una correlación significativa entre la VI y la VD.");
+    assert.match(rev, /^Revisión de coherencia:/);
+    assert.match(rev, /VI/);
+    assert.match(rev, /correlación/);
+  });
+
+  test("no avisa si la justificación de un problema cualitativo usa lenguaje coherente", () => {
+    const r = eng.analizarProblema(textoCualitativo);
+    const rev = eng.generarRevisionCoherencia(r, "Elijo Bourdieu porque el habitus explica cómo estas mujeres dan sentido a su experiencia.");
+    assert.match(rev, /no ha detectado incoherencias/);
+  });
+
+  test("no avisa si la justificación está vacía (nada que revisar todavía)", () => {
+    const r = eng.analizarProblema(textoCualitativo);
+    assert.match(eng.generarRevisionCoherencia(r, ""), /no ha detectado incoherencias/);
+    assert.match(eng.generarRevisionCoherencia(r, undefined), /no ha detectado incoherencias/);
+  });
+
+  test("avisa si un problema no cualitativo tiene una justificación con lenguaje de fenómeno central/condición explicativa", () => {
+    const r = eng.analizarProblema(textoMixto);
+    const rev = eng.generarRevisionCoherencia(r, "El fenómeno central se explica por las condiciones explicativas del contexto familiar.");
+    assert.match(rev, /^Revisión de coherencia:/);
+    assert.match(rev, /fenómeno central/);
+  });
+
+  test("avisa si se intercambió VI/VD manualmente y la justificación quedó vacía", () => {
+    const r = eng.analizarProblema(textoMixto, { intercambiarViVd: true });
+    const rev = eng.generarRevisionCoherencia(r, "");
+    assert.match(rev, /^Revisión de coherencia:/);
+    assert.match(rev, /has intercambiado/i);
+  });
+
+  test("no avisa por el intercambio si ya se escribió una justificación (aunque no mencione el cambio)", () => {
+    const r = eng.analizarProblema(textoMixto, { intercambiarViVd: true });
+    const rev = eng.generarRevisionCoherencia(r, "Bourdieu explica bien esta dinámica social.");
+    assert.match(rev, /no ha detectado incoherencias/);
+  });
+});

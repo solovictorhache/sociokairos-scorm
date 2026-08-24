@@ -191,6 +191,13 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   generarPuntosDebilesADefender(txtBase, resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
   parts.push(paragraphXml("Guía de búsqueda bibliográfica:", { bold: true }));
   generarGuiaBusquedaBibliografica(resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { bullet: true })));
+  parts.push(paragraphXml("Revisión de coherencia:", { bold: true }));
+  const coherencia = generarRevisionCoherencia(resultado, justificacionMarcos);
+  if (coherencia.startsWith("Revisión de coherencia:")) {
+    coherencia.split("\n").slice(1).forEach(l => parts.push(paragraphXml(l, { bullet: true })));
+  } else {
+    parts.push(paragraphXml(coherencia, { italic: true }));
+  }
 
   if (disenoCabeceraPie) {
     parts.push(dashedRuleXml());

@@ -2356,6 +2356,60 @@ function generarGuiaBusquedaBibliografica(resultado) {
   return guia.join("\n");
 }
 
+/* ================= revisión de coherencia final ================= */
+/* Un director de tesis no solo revisa que el problema esté bien
+ * formulado: revisa que lo que el estudiante ESCRIBE de su puño y letra
+ * (la justificación teórica libre) no contradiga el enfoque metodológico
+ * que el propio problema activó. Esta revisión es determinista: busca
+ * marcadores léxicos concretos y, si encuentra alguno, dice exactamente
+ * cuál — nunca "hay un problema" sin más (mismo principio de
+ * transparencia que motivosVi/motivosVd). No evalúa el contenido teórico
+ * en sí (eso sigue siendo criterio del estudiante), solo la coherencia
+ * terminológica entre enfoque y justificación. */
+const MARCADORES_CUANTI_EN_TEXTO_LIBRE = [
+  { patron: /\bvi\b/i, etiqueta: "VI" },
+  { patron: /\bvd\b/i, etiqueta: "VD" },
+  { patron: /variable\s+independiente/i, etiqueta: "variable independiente" },
+  { patron: /variable\s+dependiente/i, etiqueta: "variable dependiente" },
+  { patron: /correlaci[oó]n/i, etiqueta: "correlación" },
+  { patron: /hip[oó]tesis/i, etiqueta: "hipótesis" },
+  { patron: /\bh1\.?\b/i, etiqueta: "H1" },
+  { patron: /significativ(o|a|amente)/i, etiqueta: "significatividad estadística" },
+  { patron: /regresi[oó]n/i, etiqueta: "regresión" },
+  { patron: /coeficiente/i, etiqueta: "coeficiente" },
+  { patron: /p-valor|valor\s+p\b/i, etiqueta: "p-valor" },
+];
+const MARCADORES_CUALI_EN_TEXTO_LIBRE = [
+  { patron: /fen[oó]meno\s+central/i, etiqueta: "fenómeno central" },
+  { patron: /condici[oó]n(es)?\s+explicativa/i, etiqueta: "condición explicativa" },
+  { patron: /proposici[oó]n(es)?\s+orientadora/i, etiqueta: "proposición orientadora" },
+];
+
+function generarRevisionCoherencia(resultado, justificacionMarcos) {
+  resultado = resultado || {};
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
+  const texto = justificacionMarcos || "";
+  const avisos = [];
+
+  if (texto.trim()) {
+    const marcadores = et.esCualitativo ? MARCADORES_CUANTI_EN_TEXTO_LIBRE : MARCADORES_CUALI_EN_TEXTO_LIBRE;
+    const encontrados = uniq(marcadores.filter(m => m.patron.test(texto)).map(m => m.etiqueta));
+    if (encontrados.length) {
+      const enfoqueTxt = et.esCualitativo ? "cualitativo" : (resultado.enfoque || "cuantitativo/mixto");
+      avisos.push(`• SOCIOKAIROS detectó tu problema como de enfoque ${enfoqueTxt}, pero tu justificación teórica usa lenguaje de ${et.esCualitativo ? "la tradición cuantitativa" : "la tradición cualitativa"} (${encontrados.join(", ")}). Revisa si es un desliz de redacción o si el enfoque real de tu estudio es otro — en ese caso, reformula el problema con vocabulario acorde antes de entregarlo.`);
+    }
+  }
+
+  if (resultado.intercambiado && !texto.trim()) {
+    avisos.push(`• Has intercambiado la dirección ${et.esCualitativo ? "de condición explicativa / fenómeno central" : "VI ↔ VD"} respecto a la sugerida por el motor, pero tu justificación teórica está vacía: argumenta por escrito por qué esta dirección es la correcta para tu problema.`);
+  }
+
+  if (avisos.length === 0) {
+    return "SOCIOKAIROS no ha detectado incoherencias terminológicas entre el enfoque metodológico detectado y tu justificación teórica.";
+  }
+  return "Revisión de coherencia:\n" + avisos.join("\n");
+}
+
 /* ================= visualización SVG heurística ================= */
 
 function skSvgEscape(value) {
@@ -2529,6 +2583,6 @@ if (typeof module !== "undefined") {
     construirExplicacionDeteccion, skContieneAlgunoTrack,
     generarPreguntasSocraticas, generarPuntosDebilesADefender, generarGuiaBusquedaBibliografica,
     construirPreguntasCualitativas, construirRelacionesCualitativas, construirProposicionesCualitativas,
-    etiquetasEnfoque,
+    etiquetasEnfoque, generarRevisionCoherencia,
   };
 }
