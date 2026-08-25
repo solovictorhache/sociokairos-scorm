@@ -210,6 +210,24 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
     generarValidezConfiabilidad(resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { sinSangria: true })));
     parts.push(paragraphXml("Sesgos metodológicos a vigilar:", { bold: true }));
     generarSesgosMetodologicos(resultado, txtBase).split("\n").forEach(l => parts.push(paragraphXml(l, { sinSangria: true })));
+
+    parts.push(headingXml("21. Mediación y moderación", 2));
+    generarMediacionModeracion(resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { sinSangria: true })));
+
+    parts.push(headingXml("22. Unidad de análisis vs. unidad de observación", 2));
+    generarUnidadAnalisisObservacion(resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { sinSangria: true })));
+
+    parts.push(headingXml("23. Tamaño muestral y potencia estadística", 2));
+    generarTamanoMuestralPotencia(resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { sinSangria: true })));
+
+    parts.push(headingXml("24. Consentimiento informado", 2));
+    generarConsentimientoInformado(resultado, txtBase).split("\n").forEach(l => parts.push(paragraphXml(l, { sinSangria: true })));
+
+    parts.push(headingXml("25. Cronograma y factibilidad", 2));
+    generarCronogramaFactibilidad(resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { sinSangria: true })));
+
+    parts.push(headingXml("26. Preregistro y ciencia abierta", 2));
+    generarPreregistroCienciaAbierta(resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { sinSangria: true })));
   }
 
   if (disenoCabeceraPie) {

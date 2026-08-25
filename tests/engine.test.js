@@ -551,3 +551,84 @@ describe("validez, confiabilidad y sesgos metodológicos (solo motor; el wiring 
     assert.match(eng.generarSesgosMetodologicos(rMixto, textoMixto), /Sesgo de no respuesta/);
   });
 });
+
+describe("mediación/moderación, consentimiento informado, cronograma, preregistro, unidad de análisis/observación y tamaño muestral (solo motor; exclusivo de la línea Profesional)", () => {
+  const textoCualitativo = "¿Cómo viven y qué sentido dan las mujeres migrantes a su experiencia de precariedad laboral en Zaragoza en 2025?";
+  const textoMixto = "cuales son las causas familiares del alto indice de delincuencia en zaragoza en el 2025?";
+  const textoMenores = "¿cómo influye la violencia intrafamiliar en el rendimiento escolar de los niños en zaragoza en 2025?";
+
+  test("mediación/moderación sugiere variables coherentes con el dominio detectado (trabajo/familia)", () => {
+    const r = eng.analizarProblema(textoMixto);
+    const m = eng.generarMediacionModeracion(r);
+    assert.match(m, /MEDIADORAS/);
+    assert.match(m, /MODERADORAS/);
+    assert.match(m, /clima emocional|composición del hogar/);
+  });
+
+  test("mediación/moderación usa lenguaje de mecanismos y contexto (no variables estadísticas) en cualitativo", () => {
+    const r = eng.analizarProblema(textoCualitativo);
+    const m = eng.generarMediacionModeracion(r);
+    assert.match(m, /MECANISMOS/);
+  });
+
+  test("el consentimiento informado añade cláusula de menores solo si el problema los involucra", () => {
+    const rMenores = eng.analizarProblema(textoMenores);
+    assert.match(eng.generarConsentimientoInformado(rMenores, textoMenores), /tutor legal/);
+
+    const rSinMenores = eng.analizarProblema(textoMixto);
+    assert.doesNotMatch(eng.generarConsentimientoInformado(rSinMenores, textoMixto), /tutor legal/);
+  });
+
+  test("el consentimiento informado añade protocolo de derivación en temas sensibles", () => {
+    const r = eng.analizarProblema(textoMenores);
+    assert.match(eng.generarConsentimientoInformado(r, textoMenores), /protocolo de derivación/);
+  });
+
+  test("el cronograma distingue fases cualitativas (saturación/codificación) de cuantitativas (análisis estadístico)", () => {
+    const rCuali = eng.analizarProblema(textoCualitativo);
+    const cCuali = eng.generarCronogramaFactibilidad(rCuali);
+    assert.match(cCuali, /saturación/);
+    assert.match(cCuali, /codificación/);
+
+    const rMixto = eng.analizarProblema(textoMixto);
+    const cMixto = eng.generarCronogramaFactibilidad(rMixto);
+    assert.match(cMixto, /análisis estadístico/);
+  });
+
+  test("el cronograma añade una fase de seguimiento si el diseño es longitudinal", () => {
+    const r = eng.analizarProblema("evolución de la precariedad laboral en jóvenes de zaragoza: seguimiento longitudinal 2020-2025");
+    assert.match(eng.generarCronogramaFactibilidad(r), /Ola\(s\) de seguimiento/);
+  });
+
+  test("preregistro: cualitativo recibe protocolo de investigación, no hipótesis fijadas de antemano", () => {
+    const r = eng.analizarProblema(textoCualitativo);
+    const p = eng.generarPreregistroCienciaAbierta(r);
+    assert.match(p, /protocolo de investigación/);
+    assert.doesNotMatch(p, /OSF \(/);
+  });
+
+  test("preregistro: cuantitativo/mixto recibe recomendación de preregistrar hipótesis en OSF", () => {
+    const r = eng.analizarProblema(textoMixto);
+    assert.match(eng.generarPreregistroCienciaAbierta(r), /osf\.io/);
+  });
+
+  test("unidad de análisis vs. observación distingue el caso territorial del individual", () => {
+    const rTerritorial = eng.analizarProblema("segregación residencial y calidad de vida en los barrios de zaragoza en 2025");
+    assert.match(eng.generarUnidadAnalisisObservacion(rTerritorial), /territorial/);
+
+    const rIndividual = eng.analizarProblema(textoMixto);
+    assert.match(eng.generarUnidadAnalisisObservacion(rIndividual), /falacia ecológica/);
+  });
+
+  test("tamaño muestral: cualitativo recibe orientación de saturación, cuantitativo recibe la fórmula", () => {
+    const rCuali = eng.analizarProblema(textoCualitativo);
+    const sCuali = eng.generarTamanoMuestralPotencia(rCuali);
+    assert.match(sCuali, /SATURACIÓN TEÓRICA/);
+    assert.doesNotMatch(sCuali, /Z² ×/);
+
+    const rMixto = eng.analizarProblema(textoMixto);
+    const sMixto = eng.generarTamanoMuestralPotencia(rMixto);
+    assert.match(sMixto, /Z² ×/);
+    assert.match(sMixto, /n ≈ 384/);
+  });
+});

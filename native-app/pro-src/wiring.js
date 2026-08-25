@@ -339,6 +339,24 @@ function actualizarInterfazConResultado(resultado) {
   const outSesgos = document.getElementById("out_sesgos_metodologicos");
   if (outSesgos) outSesgos.textContent = generarSesgosMetodologicos(resultado, document.getElementById("txt_problema").value);
 
+  const outMediacion = document.getElementById("out_mediacion_moderacion");
+  if (outMediacion) outMediacion.textContent = generarMediacionModeracion(resultado);
+
+  const outUnidadObs = document.getElementById("out_unidad_analisis_observacion");
+  if (outUnidadObs) outUnidadObs.textContent = generarUnidadAnalisisObservacion(resultado);
+
+  const outMuestral = document.getElementById("out_tamano_muestral");
+  if (outMuestral) outMuestral.textContent = generarTamanoMuestralPotencia(resultado);
+
+  const outConsentimiento = document.getElementById("out_consentimiento_informado");
+  if (outConsentimiento) outConsentimiento.textContent = generarConsentimientoInformado(resultado, document.getElementById("txt_problema").value);
+
+  const outCronograma = document.getElementById("out_cronograma_factibilidad");
+  if (outCronograma) outCronograma.textContent = generarCronogramaFactibilidad(resultado);
+
+  const outPreregistro = document.getElementById("out_preregistro_ciencia_abierta");
+  if (outPreregistro) outPreregistro.textContent = generarPreregistroCienciaAbierta(resultado);
+
   actualizarResumenReal(resultado);
   actualizarRevisionCoherencia();
 }
@@ -455,7 +473,7 @@ function inicializarNavegacion() {
 }
 
 function limpiarSalidasPorErrorEdu() {
-  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos"];
+  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos", "out_mediacion_moderacion", "out_unidad_analisis_observacion", "out_tamano_muestral", "out_consentimiento_informado", "out_cronograma_factibilidad", "out_preregistro_ciencia_abierta"];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) el.textContent = "—";
@@ -642,7 +660,7 @@ window.addEventListener("load", function () {
 
   if (btnClear) {
     btnClear.addEventListener("click", function () {
-      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos"];
+      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos", "out_mediacion_moderacion", "out_unidad_analisis_observacion", "out_tamano_muestral", "out_consentimiento_informado", "out_cronograma_factibilidad", "out_preregistro_ciencia_abierta"];
       ids.forEach(function (id) {
         const e = document.getElementById(id);
         if (!e) return;

@@ -133,6 +133,7 @@ async function main() {
   assert(xml.includes("Google Scholar"), "el docx contiene la guía de búsqueda bibliográfica");
   assert(xml.includes("Revisión de coherencia"), "el docx contiene la sección de revisión de coherencia");
   assert(!xml.includes("Validez, confiabilidad y sesgos metodológicos"), "el docx del SCORM no incluye la sección exclusiva Pro de validez/confiabilidad/sesgos");
+  assert(!xml.includes("Mediación y moderación") && !xml.includes("Consentimiento informado") && !xml.includes("Cronograma y factibilidad") && !xml.includes("Preregistro y ciencia abierta"), "el docx del SCORM no incluye las secciones nuevas exclusivas de Profesional (mediación, consentimiento, cronograma, preregistro)");
 
   console.log("OK: informe con justificación en", docxPath);
 }

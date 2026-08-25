@@ -1333,6 +1333,11 @@ function clasificarEnfoqueMetodologico(lower) {
   return { enfoque: "mixto", motivo: "el problema no marca explícitamente una tradición: se sugiere un diseño mixto para medir la asociación y explicar sus mecanismos." };
 }
 
+// Reutilizada por sugerirDisenoEstudio (aviso de ética) y, en la línea
+// Profesional, por generarConsentimientoInformado (plantilla adaptada).
+const TEMAS_SENSIBLES = ["violencia", "maltrato", "feminicidio", "salud mental", "ansiedad", "depresión", "depresion", "menor", "menores", "niño", "niños", "niña", "niñas", "infancia", "adolescente"];
+const TEMAS_MENORES = ["menor", "menores", "niño", "niños", "niña", "niñas", "infancia", "adolescente"];
+
 function sugerirDisenoEstudio(lower) {
   let tipo = "un estudio descriptivo-correlacional de corte transversal";
   let tecnicas = ["Encuesta estructurada", "Entrevistas semiestructuradas a informantes clave"];
@@ -1403,7 +1408,7 @@ function sugerirDisenoEstudio(lower) {
   resumen.push("");
   resumen.push("Notas: Ajustar el diseño al acceso real al campo, recursos disponibles y criterios éticos; combinar, cuando sea posible, al menos una técnica cuantitativa y una cualitativa.");
 
-  if (skContieneAlguno(lower, ["violencia", "maltrato", "feminicidio", "salud mental", "ansiedad", "depresión", "depresion", "menor", "menores", "niño", "niños", "niña", "niñas", "infancia", "adolescente"])) {
+  if (skContieneAlguno(lower, TEMAS_SENSIBLES)) {
     resumen.push("Este problema toca un tema sensible (violencia, salud mental y/o menores de edad): prevé consentimiento informado explícito, protocolos de derivación ante revelación de riesgo, anonimización estricta de los datos y aprobación de un comité de ética antes de recoger cualquier dato.");
   }
 
@@ -2478,6 +2483,215 @@ function generarSesgosMetodologicos(resultado, txt) {
   return sesgos.join("\n");
 }
 
+/* ================= mediación, moderación, consentimiento, cronograma,
+   preregistro, unidad de análisis/observación y tamaño muestral ================
+   Igual que la sección anterior: exclusivo de la línea Profesional,
+   determinista y derivado de lo ya detectado (área, VI/VD, enfoque, diseño)
+   — no inventa datos del estudio concreto, solo la pauta de qué considerar
+   y por qué, adaptada al caso. */
+
+function generarMediacionModeracion(resultado) {
+  resultado = resultado || {};
+  const areas = (resultado.areas || [resultado.area || ""]).join(" ").toLowerCase();
+  const vi = resultado.vi || [];
+  const vd = resultado.vd || [];
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
+  const total = areas + " " + vi.join(" ").toLowerCase() + " " + vd.join(" ").toLowerCase();
+
+  const mediadoras = [];
+  const moderadoras = [];
+  const add = (arr, x) => { if (!arr.includes(x)) arr.push(x); };
+
+  if (skHas(total, ["trabajo", "empleo", "laboral", "precar"])) {
+    add(mediadoras, "el estrés económico percibido (¿la VI afecta al fenómeno directamente, o a través de la presión económica que genera?)");
+    add(moderadoras, "la red de apoyo familiar disponible (¿la relación es distinta según haya o no red de apoyo?)");
+  }
+  if (skHas(total, ["educ", "instrucción", "instruccion", "escolar"])) {
+    add(mediadoras, "las expectativas y la autopercepción académica del alumnado");
+    add(moderadoras, "el nivel socioeconómico del centro o del hogar (¿la relación es igual de fuerte en todos los niveles?)");
+  }
+  if (skHas(total, ["género", "genero", "masculinidad"])) {
+    add(mediadoras, "las normas de masculinidad interiorizadas");
+    add(moderadoras, "la edad o la generación (¿la relación cambia entre cohortes?)");
+  }
+  if (skHas(total, ["familia", "hogar"])) {
+    add(mediadoras, "el clima emocional y comunicativo del hogar");
+    add(moderadoras, "la composición del hogar (monoparental, extensa, etc.)");
+  }
+  if (skHas(total, ["pobreza", "renta", "desigualdad", "clase"])) {
+    add(mediadoras, "el acceso efectivo a recursos y prestaciones (no solo el nivel de renta)");
+    add(moderadoras, "el territorio de residencia (¿la relación es igual en zonas urbanas y rurales?)");
+  }
+  if (skHas(total, ["barrio", "territorio", "urbano", "segreg"])) {
+    add(mediadoras, "la cohesión social y el control social informal del barrio");
+    add(moderadoras, "el tiempo de residencia en el barrio");
+  }
+  if (skHas(total, ["redes sociales", "digital", "algorit", "internet"])) {
+    add(mediadoras, "la intensidad y el tipo de uso, no solo el acceso");
+    add(moderadoras, "la edad o la alfabetización digital previa");
+  }
+  if (skHas(total, ["violencia", "control", "dominación", "dominacion"])) {
+    add(mediadoras, "el aislamiento social de la persona afectada");
+    add(moderadoras, "la existencia de redes de apoyo o recursos de salida");
+  }
+  if (skHas(total, ["salud", "salud mental", "ansiedad", "depres"])) {
+    add(mediadoras, "el apoyo social percibido");
+    add(moderadoras, "el acceso a recursos y servicios de salud");
+  }
+  if (skHas(total, ["delincuencia", "criminalidad"])) {
+    add(mediadoras, "la asociación con pares desviados");
+    add(moderadoras, "el control social informal del entorno");
+  }
+
+  if (mediadoras.length === 0) {
+    add(mediadoras, "variables de proceso propias del fenómeno que aún no aparecen en tu problema (piensa en qué mecanismo conecta la causa con el efecto)");
+  }
+  if (moderadoras.length === 0) {
+    add(moderadoras, "condiciones sociodemográficas básicas (edad, sexo, nivel educativo) que podrían hacer más fuerte o más débil la relación en distintos subgrupos");
+  }
+
+  const lineas = [];
+  lineas.push(et.esCualitativo
+    ? "En un diseño cualitativo, mediación y moderación se piensan como MECANISMOS (¿a través de qué proceso ocurre el fenómeno?) y CONDICIONES DE CONTEXTO (¿en qué situaciones cambia?), más que como variables estadísticas — pero conviene tenerlas presentes al analizar el material."
+    : `Tu modelo actual conecta ${skJoin(vi, "las VI")} con ${skJoin(vd, "la VD")} de forma directa. Antes de darlo por bueno, pregúntate si esa relación es realmente directa o si pasa por variables intermedias, y si es igual de fuerte para todos los casos de tu muestra.`);
+  lineas.push("");
+  lineas.push("Posibles variables MEDIADORAS a explorar (el mecanismo por el que la VI podría producir la VD):");
+  mediadoras.forEach(m => lineas.push(`- ${m}`));
+  lineas.push("");
+  lineas.push("Posibles variables MODERADORAS a explorar (condiciones que podrían cambiar la fuerza o el sentido de la relación):");
+  moderadoras.forEach(m => lineas.push(`- ${m}`));
+  lineas.push("");
+  lineas.push("Nota metodológica: son candidatas de partida, no un modelo confirmado — decide con tu marco teórico cuáles tiene sentido incorporar, y ten en cuenta que un diseño transversal no permite establecer con certeza el orden causal entre VI, mediadora y VD.");
+  return lineas.join("\n");
+}
+
+function generarConsentimientoInformado(resultado, txt) {
+  resultado = resultado || {};
+  const t = (txt || "").toLowerCase();
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
+  const esSensible = skContieneAlguno(t, TEMAS_SENSIBLES);
+  const implicaMenores = skContieneAlguno(t, TEMAS_MENORES);
+  const tecnica = et.esCualitativo ? "entrevista / participación en el estudio" : "encuesta / participación en el estudio";
+
+  const lineas = [];
+  lineas.push("Plantilla orientativa de consentimiento informado — adáptala a las exigencias de tu comité de ética, no la uses tal cual:");
+  lineas.push("");
+  lineas.push(`«Le invito a participar en una investigación sobre ${skJoin(resultado.vd, "el fenómeno estudiado")}. Su participación consiste en una ${tecnica} de duración aproximada de [completar]. La participación es voluntaria y puede retirarse en cualquier momento sin ninguna consecuencia. Sus datos serán tratados de forma confidencial y anonimizada, y se usarán únicamente con fines de investigación académica. [Si aplica: la sesión se grabará en audio/vídeo únicamente para su transcripción, y la grabación se eliminará una vez finalizado el análisis.] Puede contactar con [nombre de quien investiga y correo de contacto] para cualquier duda.»`);
+  lineas.push("");
+  lineas.push("Casillas a incluir: fecha, firma de la persona participante, firma de quien investiga, y declaración expresa de haber comprendido la información.");
+  if (implicaMenores) {
+    lineas.push("");
+    lineas.push("Tu problema involucra a menores de edad: necesitas, además, el consentimiento informado de madre/padre/tutor legal, y — cuando la edad y la madurez lo permitan — el asentimiento informado del propio menor, en un lenguaje adaptado a su edad.");
+  }
+  if (esSensible) {
+    lineas.push("");
+    lineas.push("Tu problema toca un tema sensible: incluye un protocolo de derivación (a qué servicio remitir a la persona si revela una situación de riesgo durante la recogida de datos) y prevé información de apoyo disponible tras la participación.");
+  }
+  lineas.push("");
+  lineas.push("Antes de recoger cualquier dato, presenta el proyecto y este consentimiento al comité de ética de tu institución y espera su aprobación.");
+  return lineas.join("\n");
+}
+
+function generarCronogramaFactibilidad(resultado) {
+  resultado = resultado || {};
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
+  const diseno = (resultado.diseno || "").toLowerCase();
+  const esLongitudinal = diseno.includes("longitudinal");
+  const esExperimental = diseno.includes("experimental");
+
+  const fases = [];
+  fases.push(["Revisión bibliográfica y marco teórico", "4–6 semanas"]);
+  fases.push(["Diseño del instrumento (cuestionario / guía de entrevista) y validación piloto", "2–4 semanas"]);
+  fases.push(["Solicitud y espera de aprobación del comité de ética", "2–6 semanas (variable según la institución)"]);
+  if (et.esCualitativo) {
+    fases.push(["Trabajo de campo: entrevistas / observación hasta alcanzar saturación", "6–10 semanas"]);
+    fases.push(["Transcripción y codificación (Atlas.ti / MAXQDA / NVivo)", "4–8 semanas"]);
+    fases.push(["Análisis temático/interpretativo y redacción de resultados", "4–6 semanas"]);
+  } else {
+    fases.push(["Trabajo de campo: recogida de la encuesta o acceso a datos secundarios", esExperimental ? "8–14 semanas (incluye la fase de intervención)" : "4–8 semanas"]);
+    fases.push(["Limpieza y análisis estadístico de los datos", "3–5 semanas"]);
+    fases.push(["Redacción de resultados y discusión", "3–5 semanas"]);
+  }
+  fases.push(["Revisión final, formato y entrega", "2–3 semanas"]);
+  if (esLongitudinal) {
+    fases.push(["Ola(s) de seguimiento adicionales", "añade el intervalo entre olas definido en tu diseño (meses o años)"]);
+  }
+
+  const lineas = [];
+  lineas.push("Cronograma orientativo por fases (ajusta las duraciones a tu contexto real: dedicación, acceso al campo y calendario académico):");
+  fases.forEach(([fase, dur]) => lineas.push(`- ${fase}: ${dur}`));
+  lineas.push("");
+  lineas.push("Factibilidad: antes de comprometerte con este diseño, valora si tienes acceso real a la población o los datos, si el plazo disponible cubre las fases anteriores, y si cuentas con los recursos (económicos, técnicos, de desplazamiento) que requiere el trabajo de campo. Si el plazo es corto, prioriza reducir el alcance (menos casos, un único territorio, fuentes secundarias) antes que recortar fases enteras.");
+  return lineas.join("\n");
+}
+
+function generarPreregistroCienciaAbierta(resultado) {
+  resultado = resultado || {};
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
+  const lineas = [];
+
+  if (et.esCualitativo) {
+    lineas.push("El preregistro clásico (hipótesis y análisis fijados antes de los datos) encaja mal con la lógica inductiva de un diseño cualitativo — pero puedes adoptar prácticas de ciencia abierta equivalentes:");
+    lineas.push("- Registra un protocolo de investigación (pregunta, criterios de selección de casos, guía de entrevista inicial) antes de empezar el trabajo de campo, dejando explícito que las categorías podrán evolucionar.");
+    lineas.push("- Redacta una declaración de reflexividad/posicionamiento de quien investiga, y consérvala junto al resto de materiales del estudio.");
+    lineas.push("- Planifica desde el principio qué materiales podrás compartir (transcripciones anonimizadas, libro de códigos final) y cuáles no, por motivos de confidencialidad.");
+  } else {
+    lineas.push("Para un diseño cuantitativo, considera preregistrar tu estudio (por ejemplo en OSF — osf.io) antes de recoger los datos:");
+    lineas.push("- Fija por escrito las hipótesis, las variables y el plan de análisis estadístico antes de ver los datos.");
+    lineas.push("- Esto distingue con claridad el análisis confirmatorio (lo que preregistraste) del exploratorio (lo que encuentres después), y refuerza la credibilidad de tus resultados ante un tribunal o revisores.");
+    lineas.push("- Complementa con un plan de gestión y compartición de datos: qué vas a compartir (dataset anonimizado, script de análisis) y dónde (repositorio institucional, OSF, Zenodo).");
+  }
+  lineas.push("");
+  lineas.push("Ninguna de estas prácticas es obligatoria para un TFG/TFM, pero cada vez se valoran más — y cuestan poco si las incorporas desde el diseño, en vez de intentar reconstruirlas al final.");
+  return lineas.join("\n");
+}
+
+function generarUnidadAnalisisObservacion(resultado) {
+  resultado = resultado || {};
+  const unidad = (resultado.unidad || "").toLowerCase();
+  const lineas = [];
+  lineas.push("Distinción metodológica frecuente y fácil de confundir:");
+  lineas.push("- UNIDAD DE OBSERVACIÓN: de quién o de qué recoges directamente los datos (a quién encuestas, entrevistas, o de qué caso extraes el registro).");
+  lineas.push("- UNIDAD DE ANÁLISIS: el nivel sobre el que finalmente sacas conclusiones (individuo, hogar, barrio, organización, país...).");
+  lineas.push("");
+
+  let ejemplo;
+  if (skHas(unidad, ["territorial", "barrio", "comunidad"])) {
+    ejemplo = "Tu unidad de análisis sugerida es territorial (barrios/comunidades), pero es fácil que termines observando y encuestando a INDIVIDUOS dentro de esos territorios. Si es tu caso, deja explícito cómo vas a agregar los datos individuales al nivel territorial (medias, proporciones, índices) para que la conclusión sea coherente con el nivel que analizas.";
+  } else {
+    ejemplo = "Tu unidad de análisis sugerida son individuos. Revisa que no estés en realidad observando o preguntando por fenómenos de otro nivel (por ejemplo, preguntarle a una sola persona por dinámicas del hogar, o a un/a docente por el aula completa): si es así, tu unidad de observación real es otra (hogar, aula), y debes justificar cómo pasas de esos datos a conclusiones sobre individuos, o ajustar la unidad de análisis a ese nivel.";
+  }
+  lineas.push(ejemplo);
+  lineas.push("");
+  lineas.push("Confundir ambos niveles es una de las causas más comunes de la falacia ecológica (atribuir a los individuos patrones que solo se observaron a nivel agregado) o de su inversa, la falacia atomística — revisa que tus conclusiones se mantengan en el mismo nivel en el que realmente mediste.");
+  return lineas.join("\n");
+}
+
+function generarTamanoMuestralPotencia(resultado) {
+  resultado = resultado || {};
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
+  const lineas = [];
+
+  if (et.esCualitativo) {
+    lineas.push("En diseños cualitativos no se calcula un tamaño muestral estadístico: el criterio es la SATURACIÓN TEÓRICA (dejar de encontrar información nueva relevante para tus categorías).");
+    lineas.push("- Como orientación de partida (no una regla fija): poblaciones relativamente homogéneas suelen alcanzar saturación en torno a 12-20 entrevistas en profundidad; poblaciones más heterogéneas o con varios subgrupos de comparación pueden requerir 25-40 o más.");
+    lineas.push("- Documenta en qué entrevista dejaste de encontrar categorías nuevas: es tu evidencia de saturación, no un número decidido de antemano.");
+  } else {
+    lineas.push("Fórmula orientativa para muestreo aleatorio simple, con el nivel de confianza y el margen de error que decidas:");
+    lineas.push("n = (Z² × p × (1−p)) / e²   (si tu población es finita y conocida, corrige con: n_ajustado = n / (1 + (n−1)/N))");
+    lineas.push("- Z: valor crítico según el nivel de confianza (1.96 para 95%; 2.58 para 99%).");
+    lineas.push("- p: proporción esperada del fenómeno (usa 0.5 si no tienes estimación previa: es el escenario más conservador, el que exige más muestra).");
+    lineas.push("- e: margen de error que aceptas (habitual: 0.05, es decir, ±5 puntos porcentuales).");
+    lineas.push("- N: tamaño de la población, si es finita y la conoces.");
+    lineas.push("- Ejemplo de referencia: con 95% de confianza, p=0.5 y margen de error del 5%, n ≈ 384 (prácticamente independiente del tamaño de la población, si esta es grande).");
+    lineas.push("");
+    lineas.push("Si tu análisis va a comparar grupos (por ejemplo, con una prueba de hipótesis), el tamaño muestral también depende de la potencia estadística deseada (habitual: 80%) y del tamaño del efecto que esperas detectar — para ese cálculo más preciso, usa software como G*Power antes de salir al campo.");
+  }
+  lineas.push("");
+  lineas.push("En cualquier caso, documenta y justifica por escrito cómo llegaste al tamaño final de tu muestra: es una de las primeras preguntas que hará un tribunal.");
+  return lineas.join("\n");
+}
+
 /* ================= visualización SVG heurística ================= */
 
 function skSvgEscape(value) {
@@ -2653,5 +2867,8 @@ if (typeof module !== "undefined") {
     construirPreguntasCualitativas, construirRelacionesCualitativas, construirProposicionesCualitativas,
     etiquetasEnfoque, generarRevisionCoherencia,
     generarValidezConfiabilidad, generarSesgosMetodologicos,
+    generarMediacionModeracion, generarConsentimientoInformado,
+    generarCronogramaFactibilidad, generarPreregistroCienciaAbierta,
+    generarUnidadAnalisisObservacion, generarTamanoMuestralPotencia,
   };
 }

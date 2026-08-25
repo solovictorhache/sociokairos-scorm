@@ -115,6 +115,22 @@ async function main() {
   const sesgosMetodologicos = await page.textContent("#out_sesgos_metodologicos");
   assert(sesgosMetodologicos.includes("Sesgo de selección"), "sesgos metodológicos presentes en la etapa Ejecutar (exclusivo Pro)");
 
+  // --- Rigor metodológico avanzado: mediación/moderación, unidad de
+  // análisis/observación, tamaño muestral, consentimiento informado,
+  // cronograma/factibilidad, preregistro/ciencia abierta (exclusivo Pro) ---
+  const mediacionModeracion = await page.textContent("#out_mediacion_moderacion");
+  assert(mediacionModeracion.includes("MEDIADORAS") && mediacionModeracion.includes("MODERADORAS"), "mediación/moderación presente en la etapa Ejecutar (exclusivo Pro)");
+  const unidadAnalisisObservacion = await page.textContent("#out_unidad_analisis_observacion");
+  assert(unidadAnalisisObservacion.includes("UNIDAD DE OBSERVACIÓN") && unidadAnalisisObservacion.includes("UNIDAD DE ANÁLISIS"), "unidad de análisis vs. observación presente en la etapa Ejecutar (exclusivo Pro)");
+  const tamanoMuestral = await page.textContent("#out_tamano_muestral");
+  assert(tamanoMuestral.length > 0, "tamaño muestral/potencia estadística presente en la etapa Ejecutar (exclusivo Pro)");
+  const consentimientoInformado = await page.textContent("#out_consentimiento_informado");
+  assert(consentimientoInformado.includes("consentimiento informado"), "plantilla de consentimiento informado presente en la etapa Ejecutar (exclusivo Pro)");
+  const cronogramaFactibilidad = await page.textContent("#out_cronograma_factibilidad");
+  assert(cronogramaFactibilidad.includes("Cronograma orientativo"), "cronograma y factibilidad presente en la etapa Ejecutar (exclusivo Pro)");
+  const preregistroCienciaAbierta = await page.textContent("#out_preregistro_ciencia_abierta");
+  assert(preregistroCienciaAbierta.length > 0, "preregistro y ciencia abierta presente en la etapa Ejecutar (exclusivo Pro)");
+
   // --- Historial: buscador filtra de verdad ---
   await page.click('.sk-sidebar-item[data-scrollto="sk_historial_panel"]');
   await page.waitForTimeout(150);
@@ -155,6 +171,12 @@ async function main() {
   assert(xml.includes("Google Scholar"), "docx contiene la guía de búsqueda bibliográfica");
   assert(xml.includes("Revisión de coherencia"), "docx contiene la sección de revisión de coherencia");
   assert(xml.includes("20. Validez, confiabilidad y sesgos metodológicos"), "docx contiene la sección de validez/confiabilidad/sesgos (exclusivo Pro)");
+  assert(xml.includes("21. Mediación y moderación"), "docx contiene la sección de mediación y moderación (exclusivo Pro)");
+  assert(xml.includes("22. Unidad de análisis vs. unidad de observación"), "docx contiene la sección de unidad de análisis vs. observación (exclusivo Pro)");
+  assert(xml.includes("23. Tamaño muestral y potencia estadística"), "docx contiene la sección de tamaño muestral (exclusivo Pro)");
+  assert(xml.includes("24. Consentimiento informado"), "docx contiene la sección de consentimiento informado (exclusivo Pro)");
+  assert(xml.includes("25. Cronograma y factibilidad"), "docx contiene la sección de cronograma y factibilidad (exclusivo Pro)");
+  assert(xml.includes("26. Preregistro y ciencia abierta"), "docx contiene la sección de preregistro y ciencia abierta (exclusivo Pro)");
   assert(!xml.includes("Universidad de Zaragoza: consulta"), "docx sin la nota específica de la Universidad de Zaragoza");
 
   console.log("OK: informe profesional en", docxPath);
