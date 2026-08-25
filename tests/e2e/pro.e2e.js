@@ -198,7 +198,7 @@ async function main() {
   const unzipDirTranscripcion = path.join(OUT_DIR, "unzipped-transcripcion");
   fs.rmSync(unzipDirTranscripcion, { recursive: true, force: true });
   fs.mkdirSync(unzipDirTranscripcion, { recursive: true });
-  execSync(`unzip -o "${transcripcionDocxPath}" word/document.xml word/comments.xml "[Content_Types].xml" word/_rels/document.xml.rels -d "${unzipDirTranscripcion}"`);
+  execSync(`unzip -o "${transcripcionDocxPath}" -d "${unzipDirTranscripcion}"`);
   const xmlTranscripcion = fs.readFileSync(path.join(unzipDirTranscripcion, "word", "document.xml"), "utf-8");
   assert(xmlTranscripcion.includes("María: "), "docx de la transcripción conserva el nombre del interlocutor al inicio del turno");
   assert(xmlTranscripcion.includes("Entrevistador: "), "docx de la transcripción distingue los dos interlocutores");
