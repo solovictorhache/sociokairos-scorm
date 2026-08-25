@@ -85,12 +85,9 @@
     .sk-topbar-logo{
       height:38px;
       width:38px;
-      border-radius:9px;
-      box-shadow:0 4px 14px rgba(20,60,38,.16), 0 0 0 1px var(--sk-border), 0 0 22px var(--sk-glow), inset 0 0 0 1px rgba(255,255,255,.35);
-      background:rgba(255,255,255,.16);
-      backdrop-filter: blur(10px) saturate(160%);
-      -webkit-backdrop-filter: blur(10px) saturate(160%);
-      padding:4px;
+      filter:
+        drop-shadow(-1px -1px 1px rgba(255,255,255,.7))
+        drop-shadow(1.5px 2px 2.5px rgba(20,60,38,.35));
     }
     .sk-topbar-title{
       font-size:16px;
@@ -649,6 +646,11 @@
     body.sk-dark .sk-stat,
     body.sk-dark .sk-fuente-item{ background:#12201a; }
     body.sk-dark .sk-step:not(.active) .sk-step-num{ background:rgba(62,207,142,.14); color:var(--sk-accent); }
+    body.sk-dark .sk-topbar-logo{
+      filter:
+        drop-shadow(-1px -1px 1.5px rgba(120,200,150,.25))
+        drop-shadow(1.5px 2.5px 3px rgba(0,0,0,.6));
+    }
 
     .sk-historial-lista{ display:flex; flex-direction:column; gap:6px; margin:0 0 4px; }
     .sk-historial-item{

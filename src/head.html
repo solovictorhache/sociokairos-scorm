@@ -48,12 +48,9 @@
     header img {
       height:72px !important;
       width:72px !important;
-      border-radius:14px;
-      box-shadow:0 12px 28px rgba(8,62,112,.15), inset 0 0 0 1px rgba(255,255,255,.35);
-      background:rgba(255,255,255,.14);
-      backdrop-filter: blur(16px) saturate(160%);
-      -webkit-backdrop-filter: blur(16px) saturate(160%);
-      padding:6px;
+      filter:
+        drop-shadow(-1px -1px 1.5px rgba(255,255,255,.35))
+        drop-shadow(2px 3px 5px rgba(0,0,0,.5));
     }
     header h1 {
       margin: 0;
