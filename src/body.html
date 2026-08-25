@@ -4,28 +4,28 @@
   <div style="max-width:850px;padding:40px;">
     <img src="logo.png" style="width:140px;border-radius:28px;box-shadow:0 12px 38px rgba(0,0,0,.35);">
     <h1 style="font-size:42px;margin:24px 0 12px;">SOCIOKAIROS</h1>
-    <p style="font-size:22px;line-height:1.5;">Research Suite · Reformulación dinámica de problemas científicos</p>
-    <button onclick="startSociokairosFullscreen()" style="margin-top:24px;padding:16px 28px;border:none;border-radius:18px;background:#0a72c8;color:white;font-weight:800;font-size:18px;cursor:pointer;">Entrar en pantalla completa</button>
+    <p data-i18n="scorm.overlay.tagline" style="font-size:22px;line-height:1.5;">Research Suite · Reformulación dinámica de problemas científicos</p>
+    <button data-i18n="scorm.overlay.enterFullscreen" onclick="startSociokairosFullscreen()" style="margin-top:24px;padding:16px 28px;border:none;border-radius:18px;background:#0a72c8;color:white;font-weight:800;font-size:18px;cursor:pointer;">Entrar en pantalla completa</button>
   </div>
 </div>
 
 <div id="skTypoModal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(7,20,33,.72);align-items:center;justify-content:center;padding:20px;">
   <div style="max-width:520px;width:100%;background:#0e2438;color:#f5f9ff;border-radius:22px;padding:28px 26px;box-shadow:0 25px 60px rgba(0,0,0,.4);text-align:left;">
-    <h3 style="margin:0 0 10px;font-size:19px;">Posible errata en tu problema</h3>
+    <h3 data-i18n="common.typo.title" style="margin:0 0 10px;font-size:19px;">Posible errata en tu problema</h3>
     <p style="margin:0 0 16px;font-size:14.5px;line-height:1.5;color:#cfe0f9;">
-      No reconocemos la palabra «<strong id="skTypoPalabra"></strong>». Puede ser una errata de una palabra clave para el análisis. ¿Quisiste decir...?
+      <span data-i18n="common.typo.intro1">No reconocemos la palabra «</span><strong id="skTypoPalabra"></strong><span data-i18n="common.typo.intro2">». Puede ser una errata de una palabra clave para el análisis. ¿Quisiste decir...?</span>
     </p>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
       <button id="skTypoBtnSug1" type="button" class="secondary" style="text-align:left;"></button>
       <button id="skTypoBtnSug2" type="button" class="secondary" style="text-align:left;"></button>
     </div>
-    <p style="margin:0 0 8px;font-size:13px;color:#9fb6cf;">O escribe tú la palabra correcta:</p>
+    <p data-i18n="common.typo.manualLabel" style="margin:0 0 8px;font-size:13px;color:#9fb6cf;">O escribe tú la palabra correcta:</p>
     <div style="display:flex;gap:8px;margin-bottom:18px;">
-      <input id="skTypoInputManual" type="text" placeholder="palabra correcta" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-size:14px;">
-      <button id="skTypoBtnManual" type="button" class="secondary">Usar esta</button>
+      <input id="skTypoInputManual" type="text" data-i18n-placeholder="common.typo.manualPlaceholder" placeholder="palabra correcta" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-size:14px;">
+      <button id="skTypoBtnManual" type="button" class="secondary" data-i18n="common.typo.useThis">Usar esta</button>
     </div>
     <div style="text-align:right;">
-      <button id="skTypoBtnContinuar" type="button" style="background:transparent;color:#9fb6cf;box-shadow:none;font-weight:600;">Continuar sin corregir</button>
+      <button id="skTypoBtnContinuar" type="button" data-i18n="common.typo.continue" style="background:transparent;color:#9fb6cf;box-shadow:none;font-weight:600;">Continuar sin corregir</button>
     </div>
   </div>
 </div>
@@ -36,7 +36,7 @@
 <img src="logo.png" alt="SOCIOKAIROS">
 <div>
 <h1>SOCIOKAIROS EDU V32 — UNIZAR</h1>
-<p>Entrenamiento heurístico, formulación de problemas científicos y aprendizaje metodológico</p>
+<p data-i18n="scorm.header.tagline">Entrenamiento heurístico, formulación de problemas científicos y aprendizaje metodológico</p>
 <div class="sk-author-top">
   Dr. Víctor Hugo Pérez Gallo · Universidad de Zaragoza ·
   <a href="mailto:victorhugo.perez@unizar.es?subject=SOCIOKAIROS%20EDU&body=Estimado%20Dr.%20V%C3%ADctor%20Hugo%20P%C3%A9rez%20Gallo%3A%0A%0ALe%20escribo%20sobre%20SOCIOKAIROS%20EDU.%0A%0AUn%20saludo%2C">victorhugo.perez@unizar.es</a>
@@ -46,13 +46,18 @@
 </div>
 
 <div class="sk-controls-clean">
-  <button class="sk-theme-toggle-clean" onclick="toggleSKTheme()" title="Alternar modo claro/oscuro" type="button">
+  <div class="sk-lang-switcher">
+    <button class="sk-lang-btn active" data-lang="es" onclick="skSetIdioma('es')" title="Español" type="button">🇪🇸</button>
+    <button class="sk-lang-btn" data-lang="en" onclick="skSetIdioma('en')" title="English" type="button">🇺🇸</button>
+    <button class="sk-lang-btn" data-lang="pt" onclick="skSetIdioma('pt')" title="Português" type="button">🇧🇷</button>
+  </div>
+  <button class="sk-theme-toggle-clean" onclick="toggleSKTheme()" data-i18n-title="common.theme.title" title="Alternar modo claro/oscuro" type="button">
     <span class="sk-sun">☀</span>
     <span class="sk-track"><span class="sk-knob"></span></span>
     <span class="sk-moon">☾</span>
   </button>
-  <button class="sk-icon-btn-clean" onclick="document.documentElement.requestFullscreen()" title="Ampliar pantalla" type="button">⛶</button>
-  <button class="sk-icon-btn-clean" onclick="salirPantallaCompleta()" title="Salir de pantalla completa" type="button">↗</button>
+  <button class="sk-icon-btn-clean" onclick="document.documentElement.requestFullscreen()" data-i18n-title="scorm.fullscreen.enter.title" title="Ampliar pantalla" type="button">⛶</button>
+  <button class="sk-icon-btn-clean" onclick="salirPantallaCompleta()" data-i18n-title="common.fullscreen.exit.title" title="Salir de pantalla completa" type="button">↗</button>
 </div>
 </div>
 </header>
@@ -60,119 +65,119 @@
   <main>
     <div class="grid">
       <section class="panel">
-        <h2>1. Problema científico inicial</h2>
-        <textarea id="txt_problema" placeholder="Escribe aquí el problema científico tal como lo formularía un estudiante o investigador..."></textarea>
+        <h2 data-i18n="scorm.h1.title">1. Problema científico inicial</h2>
+        <textarea id="txt_problema" data-i18n-placeholder="scorm.txt_problema.placeholder" placeholder="Escribe aquí el problema científico tal como lo formularía un estudiante o investigador..."></textarea>
         <div>
-          <button id="btn_reformular">Reformular problema y sugerir variables</button>
-          <button id="btn_clear" class="secondary">Borrar problema</button>
+          <button id="btn_reformular" data-i18n="common.btn.reformular">Reformular problema y sugerir variables</button>
+          <button id="btn_clear" class="secondary" data-i18n="common.btn.clear">Borrar problema</button>
         </div>
         <div>
-          <button id="btn_export_word" class="secondary">Exportar informe Word</button>
-          <button id="btn_export_csv" class="secondary">Exportar operacionalización (CSV)</button>
+          <button id="btn_export_word" class="secondary" data-i18n="common.btn.exportWord">Exportar informe Word</button>
+          <button id="btn_export_csv" class="secondary" data-i18n="common.btn.exportCsv">Exportar operacionalización (CSV)</button>
         </div>
-        <div id="status" class="status">Listo.</div>
+        <div id="status" class="status" data-i18n="common.status.listo">Listo.</div>
         <div id="scorm_status" class="status"></div>
         <div class="tags">
-          <span class="badge">#preguntas_de_investigación</span>
-          <span class="badge">#variables</span>
-          <span class="badge">#hipótesis</span>
-          <span class="badge">#operacionalización</span>
-          <span class="badge">#área_sociológica</span>
-          <span class="badge">#unidad_de_análisis</span>
-          <span class="badge">#fuentes_de_datos</span>
+          <span class="badge" data-i18n="common.badge.preguntas">#preguntas_de_investigación</span>
+          <span class="badge" data-i18n="common.badge.variables">#variables</span>
+          <span class="badge" data-i18n="common.badge.hipotesis">#hipótesis</span>
+          <span class="badge" data-i18n="common.badge.operacionalizacion">#operacionalización</span>
+          <span class="badge" data-i18n="common.badge.area">#área_sociológica</span>
+          <span class="badge" data-i18n="common.badge.unidad">#unidad_de_análisis</span>
+          <span class="badge" data-i18n="common.badge.fuentes">#fuentes_de_datos</span>
         </div>
 
-        <h3 style="margin-top:22px;">Historial de problemas trabajados (en este dispositivo)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS guarda tus últimos problemas analizados en este navegador para que puedas retomarlos y comparar versiones sucesivas mientras los vas puliendo. No se envía a ningún servidor: vive solo en este dispositivo.</p>
+        <h3 data-i18n="scorm.h.historial.title" style="margin-top:22px;">Historial de problemas trabajados (en este dispositivo)</h3>
+        <p data-i18n="scorm.h.historial.tutor" class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS guarda tus últimos problemas analizados en este navegador para que puedas retomarlos y comparar versiones sucesivas mientras los vas puliendo. No se envía a ningún servidor: vive solo en este dispositivo.</p>
         <div id="sk_historial_lista" class="sk-historial-lista"></div>
-        <button id="btn_historial_borrar" class="secondary" type="button" style="display:none;">Borrar historial</button>
+        <button id="btn_historial_borrar" class="secondary" type="button" data-i18n="common.historial.borrar" style="display:none;">Borrar historial</button>
       </section>
       <section class="panel">
-        <h2>2. Salida SOCIOKAIROS</h2>
-        <p class="meta sk-tutor" style="font-size:0.82rem; margin:2px 0 14px;">SOCIOKAIROS actúa como un tutor de metodología: no solo entrega resultados, sino que explica en cada bloque qué está haciendo y por qué, para que aprendas a formular problemas de investigación mientras los construyes.</p>
+        <h2 data-i18n="scorm.h2.title">2. Salida SOCIOKAIROS</h2>
+        <p data-i18n="scorm.h2.tutor" class="meta sk-tutor" style="font-size:0.82rem; margin:2px 0 14px;">SOCIOKAIROS actúa como un tutor de metodología: no solo entrega resultados, sino que explica en cada bloque qué está haciendo y por qué, para que aprendas a formular problemas de investigación mientras los construyes.</p>
 
         <div id="badge_area" class="badge-area"></div>
 
-        <h3>2.1 Problema científico definitivo (síntesis)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">El tutor funde tu problema inicial con el resto del análisis en un párrafo ya redactado, del tipo que abriría un capítulo de planteamiento del problema en una tesis.</p>
+        <h3 data-i18n="scorm.h21.title">2.1 Problema científico definitivo (síntesis)</h3>
+        <p data-i18n="scorm.h21.tutor" class="meta sk-tutor" style="font-size:0.78rem;">El tutor funde tu problema inicial con el resto del análisis en un párrafo ya redactado, del tipo que abriría un capítulo de planteamiento del problema en una tesis.</p>
         <pre id="out_problema_perfecto"></pre>
 
-        <h3>2.2 Tres versiones del problema en forma de pregunta</h3>
+        <h3 data-i18n="scorm.h22.title">2.2 Tres versiones del problema en forma de pregunta</h3>
         <pre id="out_reformulacion"></pre>
 
         <div id="selector_version" class="version-selector" style="display:none;">
-          <p class="meta" style="font-size:0.8rem;">
+          <p data-i18n="common.version.selectLabel" class="meta" style="font-size:0.8rem;">
             Selecciona la versión que quieres usar como problema de trabajo para la exportación (Word/CSV):
           </p>
-          <label><input type="radio" name="vers_sel" value="1"> Versión descriptiva (P1)</label><br>
-          <label><input type="radio" name="vers_sel" value="2"> Versión <span id="lbl_p2_etiqueta">relacional / explicativa</span> (P2)</label><br>
-          <label><input type="radio" name="vers_sel" value="3"> Versión crítica / estratégica (P3)</label>
+          <label><input type="radio" name="vers_sel" value="1"> <span data-i18n="common.version.p1">Versión descriptiva</span> (P1)</label><br>
+          <label><input type="radio" name="vers_sel" value="2"> <span data-i18n="common.version.prefix">Versión</span> <span id="lbl_p2_etiqueta">relacional / explicativa</span> (P2)</label><br>
+          <label><input type="radio" name="vers_sel" value="3"> <span data-i18n="common.version.p3">Versión crítica / estratégica</span> (P3)</label>
           <p id="version_elegida_hint" class="meta" style="font-size:0.75rem; margin-top:4px;">
-            Si no seleccionas ninguna, SOCIOKAIROS usará por defecto la versión <span id="lbl_p2_etiqueta_hint">relacional</span> (P2).
+            <span data-i18n="common.version.hintPrefix">Si no seleccionas ninguna, SOCIOKAIROS usará por defecto la versión</span> <span id="lbl_p2_etiqueta_hint">relacional</span> <span data-i18n="common.version.hintSuffix">(P2).</span>
           </p>
         </div>
 
-        <h3 id="h_seccion_variables">2.3 Variables sugeridas (VI / VD)</h3>
-        <p id="txt_intro_variables" class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS asigna VI/VD por convención léxica (ver la nota al final de este bloque); esa dirección causal es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí: se recalculan las preguntas, correlaciones, hipótesis y operacionalización, no solo la etiqueta.</p>
+        <h3 id="h_seccion_variables" data-i18n="scorm.h23.title">2.3 Variables sugeridas (VI / VD)</h3>
+        <p id="txt_intro_variables" data-i18n="scorm.txt_intro_variables" class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS asigna VI/VD por convención léxica (ver la nota al final de este bloque); esa dirección causal es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí: se recalculan las preguntas, correlaciones, hipótesis y operacionalización, no solo la etiqueta.</p>
         <pre id="out_variables"></pre>
-        <button id="btn_swap_vivd" class="secondary" type="button" disabled>⇄ Intercambiar VI ↔ VD</button>
+        <button id="btn_swap_vivd" class="secondary" type="button" disabled data-i18n="common.swap.btn">⇄ Intercambiar VI ↔ VD</button>
 
-        <h3 id="h_seccion_correlaciones">2.4 Correlaciones, hipótesis y marcos teóricos</h3>
+        <h3 id="h_seccion_correlaciones" data-i18n="scorm.h24.title">2.4 Correlaciones, hipótesis y marcos teóricos</h3>
         <pre id="out_notas"></pre>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Los marcos de arriba los propone SOCIOKAIROS por afinidad léxica con tu texto; que un marco sea pertinente es una decisión teórica tuya, no del motor. Escribe aquí por qué el marco que elijas explica tu problema concreto — este texto se inserta literalmente en el informe Word exportado.</p>
-        <textarea id="txt_justificacion_marco" style="min-height:110px;" placeholder="Ej.: elijo la violencia simbólica de Bourdieu porque el problema describe una relación de dominación aceptada, no solo impuesta por la fuerza..."></textarea>
+        <p data-i18n="scorm.h24.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Los marcos de arriba los propone SOCIOKAIROS por afinidad léxica con tu texto; que un marco sea pertinente es una decisión teórica tuya, no del motor. Escribe aquí por qué el marco que elijas explica tu problema concreto — este texto se inserta literalmente en el informe Word exportado.</p>
+        <textarea id="txt_justificacion_marco" style="min-height:110px;" data-i18n-placeholder="common.justificacion.placeholder" placeholder="Ej.: elijo la violencia simbólica de Bourdieu porque el problema describe una relación de dominación aceptada, no solo impuesta por la fuerza..."></textarea>
 
 
-        <h3>2.5 Por qué SOCIOKAIROS sugirió esto (transparencia del análisis)</h3>
-        <p id="txt_intro_transparencia" class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS es determinista, no una caja negra: aquí se explica, VD por VD, VI por VI, área por área y marco por marco, qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto. Útil para detectar falsos positivos léxicos por ti mismo/a.</p>
+        <h3 data-i18n="scorm.h25.title">2.5 Por qué SOCIOKAIROS sugirió esto (transparencia del análisis)</h3>
+        <p id="txt_intro_transparencia" data-i18n="scorm.txt_intro_transparencia" class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS es determinista, no una caja negra: aquí se explica, VD por VD, VI por VI, área por área y marco por marco, qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto. Útil para detectar falsos positivos léxicos por ti mismo/a.</p>
         <pre id="out_transparencia"></pre>
 
-        <h3>2.6 Categorías explicativas para tu problema concreto</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Más allá de una lista de autores: si tu problema describe una dinámica que cuesta explicar a primera vista (por ejemplo, por qué alguien permanece, calla o no cambia de opinión pese a la evidencia), aquí SOCIOKAIROS propone un concepto teórico concreto que puede explicarla, con el razonamiento aplicado a tu caso — no solo el nombre del autor.</p>
+        <h3 data-i18n="scorm.h26.title">2.6 Categorías explicativas para tu problema concreto</h3>
+        <p data-i18n="scorm.h26.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Más allá de una lista de autores: si tu problema describe una dinámica que cuesta explicar a primera vista (por ejemplo, por qué alguien permanece, calla o no cambia de opinión pese a la evidencia), aquí SOCIOKAIROS propone un concepto teórico concreto que puede explicarla, con el razonamiento aplicado a tu caso — no solo el nombre del autor.</p>
         <pre id="out_categorias_explicativas"></pre>
 
-        <h3>2.7 Unidad de análisis, diseño de estudio y enfoque metodológico</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS decide si tu problema pide un abordaje cualitativo, cuantitativo o mixto, y adapta a partir de ahí el diseño, el software de apoyo y el tipo de muestreo sugeridos.</p>
+        <h3 data-i18n="scorm.h27.title">2.7 Unidad de análisis, diseño de estudio y enfoque metodológico</h3>
+        <p data-i18n="scorm.h27.tutor" class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS decide si tu problema pide un abordaje cualitativo, cuantitativo o mixto, y adapta a partir de ahí el diseño, el software de apoyo y el tipo de muestreo sugeridos.</p>
         <pre id="out_diseno"></pre>
 
-        <h3>2.8 Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Un punto de partida para trabajo cualitativo, pensado para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real, o para usarse directamente en análisis manual o en la redacción de tesis.</p>
+        <h3 data-i18n="scorm.h28.title">2.8 Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
+        <p data-i18n="scorm.h28.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Un punto de partida para trabajo cualitativo, pensado para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real, o para usarse directamente en análisis manual o en la redacción de tesis.</p>
         <pre id="out_guia_codigos"></pre>
         <pre id="out_guia_preguntas"></pre>
 
-        <h3>2.9 Fuentes de datos / bases recomendadas</h3>
+        <h3 data-i18n="scorm.h29.title">2.9 Fuentes de datos / bases recomendadas</h3>
         <pre id="out_fuentes"></pre>
 
-        <h3>2.10 Alertas metodológicas</h3>
+        <h3 data-i18n="scorm.h210.title">2.10 Alertas metodológicas</h3>
         <pre id="out_alertas"></pre>
 
-        <h3>2.11 Tradiciones sociológicas compatibles</h3>
+        <h3 data-i18n="scorm.h211.title">2.11 Tradiciones sociológicas compatibles</h3>
         <pre id="out_tradiciones"></pre>
 
-        <h3>2.12 Mapa lógico del problema</h3>
+        <h3 data-i18n="scorm.h212.title">2.12 Mapa lógico del problema</h3>
         <pre id="out_mapa"></pre>
 
-        <h3>2.13 Diseños metodológicos sugeridos</h3>
+        <h3 data-i18n="scorm.h213.title">2.13 Diseños metodológicos sugeridos</h3>
         <pre id="out_disenos_plus"></pre>
 
-        <h3>2.14 Visualización heurística del problema</h3>
+        <h3 data-i18n="scorm.h214.title">2.14 Visualización heurística del problema</h3>
         <div class="visual-controls" style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px 0;">
-          <button id="btn_visual_causal" class="secondary" type="button">Modo 1 · Mapa causal</button>
-          <button id="btn_visual_red" class="secondary" type="button">Modo 2 · Red sociológica</button>
-          <button id="btn_visual_capas" class="secondary" type="button">Modo 3 · Capas sociales</button>
+          <button id="btn_visual_causal" class="secondary" type="button" data-i18n="scorm.btn.modo1">Modo 1 · Mapa causal</button>
+          <button id="btn_visual_red" class="secondary" type="button" data-i18n="scorm.btn.modo2">Modo 2 · Red sociológica</button>
+          <button id="btn_visual_capas" class="secondary" type="button" data-i18n="scorm.btn.modo3">Modo 3 · Capas sociales</button>
         </div>
         <div id="out_visual_svg" class="visual-svg-box" style="overflow-x:auto; border:1px solid rgba(0,0,0,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.45);"></div>
 
-        <h3>2.15 Consejos de tu director de tesis</h3>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Un profesor senior de metodología no se limita a decir qué está bien: anticipa lo que te preguntaría un director de tesis o un tribunal. Preguntas socráticas de seguimiento, puntos débiles a defender y una guía práctica de búsqueda bibliográfica — construidos a partir de tu problema concreto, no genéricos.</p>
-        <h4 style="margin:14px 0 4px; font-size:0.85rem;">Preguntas que te haría tu director/a</h4>
+        <h3 data-i18n="scorm.h215.title">2.15 Consejos de tu director de tesis</h3>
+        <p data-i18n="scorm.h215.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Un profesor senior de metodología no se limita a decir qué está bien: anticipa lo que te preguntaría un director de tesis o un tribunal. Preguntas socráticas de seguimiento, puntos débiles a defender y una guía práctica de búsqueda bibliográfica — construidos a partir de tu problema concreto, no genéricos.</p>
+        <h4 data-i18n="common.h.preguntasDirector" style="margin:14px 0 4px; font-size:0.85rem;">Preguntas que te haría tu director/a</h4>
         <pre id="out_preguntas_socraticas"></pre>
-        <h4 style="margin:14px 0 4px; font-size:0.85rem;">Puntos débiles a defender</h4>
+        <h4 data-i18n="common.h.puntosDebiles" style="margin:14px 0 4px; font-size:0.85rem;">Puntos débiles a defender</h4>
         <pre id="out_puntos_debiles"></pre>
-        <h4 style="margin:14px 0 4px; font-size:0.85rem;">Guía de búsqueda bibliográfica</h4>
+        <h4 data-i18n="common.h.guiaBiblio" style="margin:14px 0 4px; font-size:0.85rem;">Guía de búsqueda bibliográfica</h4>
         <pre id="out_guia_bibliografica"></pre>
-        <h4 style="margin:14px 0 4px; font-size:0.85rem;">Revisión de coherencia</h4>
-        <p class="meta sk-tutor" style="font-size:0.78rem;">Comprueba que el vocabulario de tu justificación teórica (arriba, en «2.4 Correlaciones, hipótesis y marcos teóricos») no contradiga el enfoque metodológico detectado. Se actualiza sola mientras escribes.</p>
+        <h4 data-i18n="common.h.revisionCoherencia" style="margin:14px 0 4px; font-size:0.85rem;">Revisión de coherencia</h4>
+        <p data-i18n="scorm.revisionCoherencia.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Comprueba que el vocabulario de tu justificación teórica (arriba, en «2.4 Correlaciones, hipótesis y marcos teóricos») no contradiga el enfoque metodológico detectado. Se actualiza sola mientras escribes.</p>
         <pre id="out_revision_coherencia"></pre>
 
       </section>

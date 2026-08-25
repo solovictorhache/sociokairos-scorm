@@ -26,7 +26,7 @@ function scormInit() {
   try {
     scormAPI = scormGetAPI();
     if (!scormAPI) {
-      if (statusEl) statusEl.textContent = "Modo independiente: no se detectó ningún LMS (sin seguimiento SCORM).";
+      if (statusEl) statusEl.textContent = skT("scorm.status.standalone");
       return false;
     }
     const result = scormVersion === "2004" ? scormAPI.Initialize("") : scormAPI.LMSInitialize("");
@@ -37,15 +37,15 @@ function scormInit() {
       if (!already || already === "not attempted" || already === "unknown") {
         scormSetStatus("incomplete");
       }
-      if (statusEl) statusEl.textContent = `Conectado al LMS (SCORM ${scormVersion}). El progreso se registrará en Moodle.`;
+      if (statusEl) statusEl.textContent = skT("scorm.status.scormConnected").replace("{v}", scormVersion);
       return true;
     }
     scormAPI = null;
-    if (statusEl) statusEl.textContent = "No se pudo inicializar la conexión SCORM con el LMS.";
+    if (statusEl) statusEl.textContent = skT("scorm.status.scormFailInit");
     return false;
   } catch (e) {
     scormAPI = null;
-    if (statusEl) statusEl.textContent = "Modo independiente: no se detectó ningún LMS (sin seguimiento SCORM).";
+    if (statusEl) statusEl.textContent = skT("scorm.status.standalone");
     return false;
   }
 }
@@ -223,7 +223,7 @@ function borrarHistorialGuardado() {
 
 function formatearFechaHistorial(ts) {
   try {
-    return new Date(ts).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+    return new Date(ts).toLocaleString(skLocale(), { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
   } catch (e) {
     return "";
   }
@@ -239,7 +239,7 @@ function renderizarHistorial() {
     cont.innerHTML = "";
     const vacio = document.createElement("p");
     vacio.className = "sk-historial-vacio";
-    vacio.textContent = "Todavía no has analizado ningún problema en este dispositivo.";
+    vacio.textContent = skT("common.historial.vacio");
     cont.appendChild(vacio);
     if (btnBorrar) btnBorrar.style.display = "none";
     return;
@@ -452,12 +452,12 @@ function limpiarSalidasPorErrorEdu() {
   const outVisual = document.getElementById("out_visual_svg");
   if (outVisual) outVisual.innerHTML = "";
   const badge = document.getElementById("badge_area");
-  if (badge) badge.textContent = "Validación pendiente: reformula el problema inicial.";
+  if (badge) badge.textContent = skT("common.badge.validacionPendiente");
   const selector = document.getElementById("selector_version");
   if (selector) selector.style.display = "none";
   ultimoResultado = null;
   const btnSwap = document.getElementById("btn_swap_vivd");
-  if (btnSwap) { btnSwap.disabled = true; btnSwap.textContent = "⇄ Intercambiar VI ↔ VD"; }
+  if (btnSwap) { btnSwap.disabled = true; btnSwap.textContent = skT("common.swap.btn"); }
 }
 
 function activarSalidasValidasEdu() {
@@ -523,6 +523,7 @@ function obtenerVersionSeleccionada(resultado, txtOriginal) {
 }
 
 window.addEventListener("load", function () {
+  skInitIdioma();
   scormInit();
 
   try {
@@ -553,22 +554,22 @@ window.addEventListener("load", function () {
     btnReformular.addEventListener("click", async function () {
       const txtInicial = txtEl ? txtEl.value : "";
       if (!txtInicial.trim()) {
-        if (statusEl) statusEl.textContent = "Escribe primero un problema para poder aplicar la heurística SOCIOKAIROS.";
+        if (statusEl) statusEl.textContent = skT("common.status.writeFirst");
         return;
       }
       btnReformular.disabled = true;
-      if (statusEl) statusEl.textContent = "Revisando posibles erratas…";
+      if (statusEl) statusEl.textContent = skT("common.status.checkingTypos");
 
       const txt = await resolverErratasAntesDeReformular(txtEl);
 
-      if (statusEl) statusEl.textContent = "Procesando heurística SOCIOKAIROS en el navegador…";
+      if (statusEl) statusEl.textContent = skT("common.status.processing");
 
       const validacion = validarProblemaEdu(txt);
       if (!validacion.valido) {
         const outRef = document.getElementById("out_reformulacion");
         if (outRef) outRef.textContent = construirFeedbackValidacionEdu(validacion);
         limpiarSalidasPorErrorEdu();
-        if (statusEl) statusEl.textContent = "Reformula el problema inicial: aún no cumple la estructura mínima de SOCIOKAIROS EDU.";
+        if (statusEl) statusEl.textContent = skT("scorm.status.invalidStructure");
         btnReformular.disabled = false;
         return;
       }
@@ -581,10 +582,10 @@ window.addEventListener("load", function () {
         actualizarInterfazConResultado(resultado);
         guardarEnHistorial(txt, resultado);
         renderizarHistorial();
-        if (statusEl) statusEl.textContent = "Análisis completado. Puedes exportar a Word o CSV.";
+        if (statusEl) statusEl.textContent = skT("common.status.done");
         scormMarkCompleted();
       } catch (e) {
-        if (statusEl) statusEl.textContent = "Error interno del motor: " + e.message;
+        if (statusEl) statusEl.textContent = skT("common.status.engineError") + e.message;
       } finally {
         btnReformular.disabled = false;
       }
@@ -599,10 +600,10 @@ window.addEventListener("load", function () {
         const resultado = analizarProblema(ultimoTextoAnalizado, { intercambiarViVd: viVdIntercambiado });
         actualizarInterfazConResultado(resultado);
         if (statusEl) statusEl.textContent = viVdIntercambiado
-          ? "Dirección VI/VD intercambiada: preguntas, correlaciones e hipótesis recalculadas."
-          : "Dirección VI/VD restaurada a la sugerida por el motor.";
+          ? skT("common.status.swapped")
+          : skT("common.status.swapRestored");
       } catch (e) {
-        if (statusEl) statusEl.textContent = "Error interno del motor: " + e.message;
+        if (statusEl) statusEl.textContent = skT("common.status.engineError") + e.message;
       }
     });
   }
@@ -629,8 +630,8 @@ window.addEventListener("load", function () {
       ultimoTextoAnalizado = "";
       viVdIntercambiado = false;
       const btnSwap = document.getElementById("btn_swap_vivd");
-      if (btnSwap) { btnSwap.disabled = true; btnSwap.textContent = "⇄ Intercambiar VI ↔ VD"; }
-      if (statusEl) statusEl.textContent = "Problema borrado. Introduce un nuevo problema científico.";
+      if (btnSwap) { btnSwap.disabled = true; btnSwap.textContent = skT("common.swap.btn"); }
+      if (statusEl) statusEl.textContent = skT("common.status.cleared");
     });
   }
 
@@ -654,14 +655,14 @@ window.addEventListener("load", function () {
     btnExportWord.addEventListener("click", async function () {
       const txt = txtEl ? txtEl.value.trim() : "";
       if (!txt) {
-        if (statusEl) statusEl.textContent = "Escribe primero un problema para poder exportar el informe.";
+        if (statusEl) statusEl.textContent = skT("common.status.writeFirstReport");
         return;
       }
       if (!ultimoResultado) {
-        if (statusEl) statusEl.textContent = "Reformula el problema primero (debe pasar la validación SOCIOKAIROS EDU).";
+        if (statusEl) statusEl.textContent = skT("scorm.status.reformulateFirst");
         return;
       }
-      if (statusEl) statusEl.textContent = "Generando informe Word…";
+      if (statusEl) statusEl.textContent = skT("common.status.generatingWord");
       try {
         const resultado = ultimoResultado;
         const { problemaTrabajo, versionLabel } = obtenerVersionSeleccionada(resultado, txt);
@@ -671,10 +672,10 @@ window.addEventListener("load", function () {
         const blob = new Blob([zipBytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
         const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12);
         const guardado = await descargarBlob(blob, `Informe_SOCIOKAIROS_${ts}.docx`);
-        if (statusEl) statusEl.textContent = guardado ? "Informe Word generado." : "Guardado cancelado.";
+        if (statusEl) statusEl.textContent = guardado ? skT("common.status.wordDone") : skT("common.status.saveCancelled");
         if (guardado) scormMarkCompleted();
       } catch (e) {
-        if (statusEl) statusEl.textContent = "Error al generar el informe Word: " + e.message;
+        if (statusEl) statusEl.textContent = skT("common.status.wordError") + e.message;
       }
     });
   }
@@ -683,22 +684,22 @@ window.addEventListener("load", function () {
     btnExportCsv.addEventListener("click", async function () {
       const txt = txtEl ? txtEl.value.trim() : "";
       if (!txt) {
-        if (statusEl) statusEl.textContent = "Escribe primero un problema para poder exportar la operacionalización.";
+        if (statusEl) statusEl.textContent = skT("common.status.writeFirstCsv");
         return;
       }
       if (!ultimoResultado) {
-        if (statusEl) statusEl.textContent = "Reformula el problema primero (debe pasar la validación SOCIOKAIROS EDU).";
+        if (statusEl) statusEl.textContent = skT("scorm.status.reformulateFirst");
         return;
       }
-      if (statusEl) statusEl.textContent = "Generando CSV de operacionalización…";
+      if (statusEl) statusEl.textContent = skT("common.status.generatingCsv");
       try {
         const csvText = exportarCSV(ultimoResultado);
         const blob = new Blob(["﻿" + csvText], { type: "text/csv;charset=utf-8" });
         const guardado = await descargarBlob(blob, "Operacionalizacion_SOCIOKAIROS.csv");
-        if (statusEl) statusEl.textContent = guardado ? "CSV de operacionalización generado." : "Guardado cancelado.";
+        if (statusEl) statusEl.textContent = guardado ? skT("common.status.csvDone") : skT("common.status.saveCancelled");
         if (guardado) scormMarkCompleted();
       } catch (e) {
-        if (statusEl) statusEl.textContent = "Error al generar el CSV: " + e.message;
+        if (statusEl) statusEl.textContent = skT("common.status.csvError") + e.message;
       }
     });
   }

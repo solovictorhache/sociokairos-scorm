@@ -158,6 +158,46 @@ async function main() {
   assert(!xml.includes("Universidad de Zaragoza: consulta"), "docx sin la nota específica de la Universidad de Zaragoza");
 
   console.log("OK: informe profesional en", docxPath);
+
+  // --- Selector de idioma (es/en/pt): traduce la interfaz, pero el
+  // contenido generado por el motor (los stats/variables/marcos ya
+  // renderizados arriba, en español) debe permanecer intacto — solo la
+  // interfaz es bilingüe, no el motor (ver src/i18n.js). ---
+  const browser2 = await chromium.launch();
+  const page2 = await browser2.newPage();
+  const errors2 = [];
+  page2.on("pageerror", (e) => errors2.push(String(e)));
+  await page2.goto("file://" + DIST_PRO);
+
+  const langButtons = await page2.$$(".sk-lang-btn");
+  assert(langButtons.length === 3, `debe haber 3 botones de idioma (es/en/pt): ${langButtons.length}`);
+
+  const statusEsVacio = await page2.textContent("#status");
+  await page2.click('.sk-lang-btn[data-lang="pt"]');
+  await page2.waitForTimeout(150);
+  assert((await page2.getAttribute("html", "lang")) === "pt", "html[lang] pasa a 'pt'");
+  const btnReformularPt = await page2.textContent("#btn_reformular");
+  assert(btnReformularPt.includes("Reformular problema e sugerir vari"), `botón reformular traducido al portugués: "${btnReformularPt}"`);
+
+  await page2.click("#btn_reformular");
+  await page2.waitForTimeout(100);
+  const statusPtSinTexto = await page2.textContent("#status");
+  assert(statusPtSinTexto.includes("Escreva primeiro um problema"), `mensaje de estado dinámico se traduce con el idioma activo: "${statusPtSinTexto}"`);
+  assert(statusPtSinTexto !== statusEsVacio, "el mensaje de estado cambió respecto al español");
+
+  await page2.fill("#txt_problema", PROBLEMA);
+  await page2.click("#btn_reformular");
+  await page2.waitForTimeout(500);
+  const transparenciaPt = await page2.textContent("#out_transparencia");
+  assert(transparenciaPt.includes("VARIABLE DEPENDIENTE"), "el contenido generado por el motor sigue en español con la interfaz en portugués (no se retraduce el resultado)");
+
+  await page2.reload();
+  await page2.waitForTimeout(150);
+  const activeLangTrasReload = await page2.getAttribute(".sk-lang-btn.active", "data-lang");
+  assert(activeLangTrasReload === "pt", `el idioma persiste en localStorage tras recargar: "${activeLangTrasReload}"`);
+
+  await browser2.close();
+  if (errors2.length) throw new Error("Errores de página durante la prueba de idioma:\n" + errors2.join("\n"));
 }
 
 main().catch((e) => {

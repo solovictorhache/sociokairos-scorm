@@ -36,6 +36,7 @@ def main() -> None:
     # y el pie del informe Word.
     logo_b64 = base64.b64encode((PRO_SRC / "logo.png").read_bytes()).decode("ascii")
 
+    i18n = (SRC / "i18n.js").read_text(encoding="utf-8")
     geo_data = (SRC / "geo-data.js").read_text(encoding="utf-8")
     engine = strip_module_exports((SRC / "engine.js").read_text(encoding="utf-8"))
     docxwriter = strip_module_exports((SRC / "docxwriter.js").read_text(encoding="utf-8"))
@@ -44,7 +45,7 @@ def main() -> None:
 
     # El LOGO_BASE64 no pasa por terser: es un blob de datos, no código —
     # minificarlo no ahorra nada y solo alarga el tiempo de build.
-    codigo = geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + wiring
+    codigo = i18n + "\n" + geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + wiring
     script = f'const LOGO_BASE64 = "{logo_b64}";\n\n' + minify_js(ROOT, codigo)
 
     if "/*__SCRIPT__*/" not in body:

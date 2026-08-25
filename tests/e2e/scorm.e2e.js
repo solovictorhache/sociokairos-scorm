@@ -71,6 +71,38 @@ async function main() {
   const csvPath = path.join(OUT_DIR, "operacionalizacion.csv");
   await downloadCsv.saveAs(csvPath);
 
+  // --- Selector de idioma (es/en/pt): traduce la interfaz, pero el
+  // contenido generado por el motor (ya renderizado arriba, en español)
+  // debe permanecer intacto en español — solo la interfaz es bilingüe,
+  // no el motor (ver src/i18n.js). ---
+  const langButtons = await page.$$(".sk-lang-btn");
+  assert(langButtons.length === 3, `debe haber 3 botones de idioma (es/en/pt): ${langButtons.length}`);
+
+  await page.click('.sk-lang-btn[data-lang="en"]');
+  await page.waitForTimeout(150);
+  assert((await page.getAttribute("html", "lang")) === "en", "html[lang] pasa a 'en'");
+  const btnReformularEn = await page.textContent("#btn_reformular");
+  assert(btnReformularEn.includes("Reformulate"), `botón reformular traducido al inglés: "${btnReformularEn}"`);
+  const variablesTrasEn = await page.textContent("#out_variables");
+  assert(variablesTrasEn.includes("VD sugeridas"), "el contenido generado por el motor sigue en español tras cambiar a inglés (la interfaz no re-traduce el resultado)");
+
+  await page.click('.sk-lang-btn[data-lang="pt"]');
+  await page.waitForTimeout(150);
+  assert((await page.getAttribute("html", "lang")) === "pt", "html[lang] pasa a 'pt'");
+  const btnReformularPt = await page.textContent("#btn_reformular");
+  assert(btnReformularPt.includes("Reformular problema e sugerir vari"), `botón reformular traducido al portugués: "${btnReformularPt}"`);
+  const variablesTrasPt = await page.textContent("#out_variables");
+  assert(variablesTrasPt.includes("VD sugeridas"), "el contenido generado por el motor sigue en español tras cambiar a portugués");
+
+  await page.reload();
+  await page.click("#sociokairosStartOverlay button");
+  await page.waitForTimeout(200);
+  const activeLangTrasReload = await page.getAttribute(".sk-lang-btn.active", "data-lang");
+  assert(activeLangTrasReload === "pt", `el idioma persiste en localStorage tras recargar: "${activeLangTrasReload}"`);
+
+  await page.click('.sk-lang-btn[data-lang="es"]');
+  await page.waitForTimeout(150);
+
   await browser.close();
 
   if (errors.length) {

@@ -2,21 +2,21 @@
 
 <div id="skTypoModal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(10,20,15,.55);align-items:center;justify-content:center;padding:20px;">
   <div style="max-width:520px;width:100%;background:var(--sk-card-solid);color:var(--sk-text);border-radius:22px;padding:28px 26px;box-shadow:0 25px 60px rgba(0,0,0,.35);text-align:left;border:1px solid var(--sk-border);">
-    <h3 style="margin:0 0 10px;font-size:19px;">Posible errata en tu problema</h3>
+    <h3 data-i18n="common.typo.title" style="margin:0 0 10px;font-size:19px;">Posible errata en tu problema</h3>
     <p style="margin:0 0 16px;font-size:14.5px;line-height:1.5;color:var(--sk-muted);">
-      No reconocemos la palabra «<strong id="skTypoPalabra"></strong>». Puede ser una errata de una palabra clave para el análisis. ¿Quisiste decir...?
+      <span data-i18n="common.typo.intro1">No reconocemos la palabra «</span><strong id="skTypoPalabra"></strong><span data-i18n="common.typo.intro2">». Puede ser una errata de una palabra clave para el análisis. ¿Quisiste decir...?</span>
     </p>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
       <button id="skTypoBtnSug1" type="button" class="secondary" style="text-align:left;"></button>
       <button id="skTypoBtnSug2" type="button" class="secondary" style="text-align:left;"></button>
     </div>
-    <p style="margin:0 0 8px;font-size:13px;color:var(--sk-muted);">O escribe tú la palabra correcta:</p>
+    <p data-i18n="common.typo.manualLabel" style="margin:0 0 8px;font-size:13px;color:var(--sk-muted);">O escribe tú la palabra correcta:</p>
     <div style="display:flex;gap:8px;margin-bottom:18px;">
-      <input id="skTypoInputManual" type="text" placeholder="palabra correcta" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--sk-border);background:rgba(0,0,0,.03);color:var(--sk-text);font-size:14px;">
-      <button id="skTypoBtnManual" type="button" class="secondary">Usar esta</button>
+      <input id="skTypoInputManual" type="text" data-i18n-placeholder="common.typo.manualPlaceholder" placeholder="palabra correcta" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--sk-border);background:rgba(0,0,0,.03);color:var(--sk-text);font-size:14px;">
+      <button id="skTypoBtnManual" type="button" class="secondary" data-i18n="common.typo.useThis">Usar esta</button>
     </div>
     <div style="text-align:right;">
-      <button id="skTypoBtnContinuar" type="button" style="background:transparent;color:var(--sk-muted);box-shadow:none;font-weight:600;">Continuar sin corregir</button>
+      <button id="skTypoBtnContinuar" type="button" data-i18n="common.typo.continue" style="background:transparent;color:var(--sk-muted);box-shadow:none;font-weight:600;">Continuar sin corregir</button>
     </div>
   </div>
 </div>
@@ -34,48 +34,53 @@
     </div>
 
     <nav class="sk-stepper" id="sk_stepper">
-      <button class="sk-step active" type="button" data-stage="definir"><span class="sk-step-num">1</span><span class="sk-step-label">Definir</span></button>
-      <button class="sk-step" type="button" data-stage="analizar"><span class="sk-step-num">2</span><span class="sk-step-label">Analizar</span></button>
-      <button class="sk-step" type="button" data-stage="disenar"><span class="sk-step-num">3</span><span class="sk-step-label">Diseñar</span></button>
-      <button class="sk-step" type="button" data-stage="ejecutar"><span class="sk-step-num">4</span><span class="sk-step-label">Ejecutar</span></button>
-      <button class="sk-step" type="button" data-stage="comunicar"><span class="sk-step-num">5</span><span class="sk-step-label">Comunicar</span></button>
+      <button class="sk-step active" type="button" data-stage="definir"><span class="sk-step-num">1</span><span class="sk-step-label" data-i18n="pro.stepper.definir">Definir</span></button>
+      <button class="sk-step" type="button" data-stage="analizar"><span class="sk-step-num">2</span><span class="sk-step-label" data-i18n="pro.stepper.analizar">Analizar</span></button>
+      <button class="sk-step" type="button" data-stage="disenar"><span class="sk-step-num">3</span><span class="sk-step-label" data-i18n="pro.stepper.disenar">Diseñar</span></button>
+      <button class="sk-step" type="button" data-stage="ejecutar"><span class="sk-step-num">4</span><span class="sk-step-label" data-i18n="pro.stepper.ejecutar">Ejecutar</span></button>
+      <button class="sk-step" type="button" data-stage="comunicar"><span class="sk-step-num">5</span><span class="sk-step-label" data-i18n="pro.stepper.comunicar">Comunicar</span></button>
     </nav>
 
     <div class="sk-topbar-actions">
-      <button class="sk-icon-btn-clean" id="sk_btn_alertas" title="Alertas metodológicas del problema actual" type="button">
+      <div class="sk-lang-switcher">
+        <button class="sk-lang-btn active" data-lang="es" onclick="skSetIdioma('es')" title="Español" type="button">🇪🇸</button>
+        <button class="sk-lang-btn" data-lang="en" onclick="skSetIdioma('en')" title="English" type="button">🇺🇸</button>
+        <button class="sk-lang-btn" data-lang="pt" onclick="skSetIdioma('pt')" title="Português" type="button">🇧🇷</button>
+      </div>
+      <button class="sk-icon-btn-clean" id="sk_btn_alertas" data-i18n-title="pro.alertas.title" title="Alertas metodológicas del problema actual" type="button">
         🔔<span id="sk_alertas_badge" class="sk-badge-count" style="display:none;">0</span>
       </button>
-      <button class="sk-theme-toggle-clean" onclick="toggleSKTheme()" title="Alternar modo claro/oscuro" type="button">
+      <button class="sk-theme-toggle-clean" onclick="toggleSKTheme()" data-i18n-title="common.theme.title" title="Alternar modo claro/oscuro" type="button">
         <span class="sk-sun">☀</span>
         <span class="sk-track"><span class="sk-knob"></span></span>
         <span class="sk-moon">☾</span>
       </button>
-      <button class="sk-icon-btn-clean" onclick="document.documentElement.requestFullscreen()" title="Pantalla completa" type="button">⛶</button>
-      <button class="sk-icon-btn-clean" onclick="salirPantallaCompleta()" title="Salir de pantalla completa" type="button">↗</button>
+      <button class="sk-icon-btn-clean" onclick="document.documentElement.requestFullscreen()" data-i18n-title="pro.fullscreen.enter.title" title="Pantalla completa" type="button">⛶</button>
+      <button class="sk-icon-btn-clean" onclick="salirPantallaCompleta()" data-i18n-title="common.fullscreen.exit.title" title="Salir de pantalla completa" type="button">↗</button>
     </div>
   </header>
 
   <div id="sk_statusbar" class="sk-statusbar">
-    <span id="status">Listo.</span>
+    <span id="status" data-i18n="common.status.listo">Listo.</span>
   </div>
 
   <div class="sk-body">
 
     <aside class="sk-sidebar">
       <nav class="sk-sidebar-nav">
-        <button class="sk-sidebar-item active" type="button" data-stage="definir" data-scrollto="panel_problema">📋 Workspace</button>
-        <button class="sk-sidebar-item" type="button" data-scrollto="sk_historial_panel">🗂 Problemas</button>
-        <button class="sk-sidebar-item" type="button" data-stage="analizar" data-scrollto="out_variables">🔤 Variables</button>
-        <button class="sk-sidebar-item" type="button" data-stage="analizar" data-scrollto="out_notas">🧩 Conceptos</button>
-        <button class="sk-sidebar-item" type="button" data-stage="disenar" data-scrollto="out_fuentes">📚 Fuentes</button>
-        <button class="sk-sidebar-item" type="button" data-stage="comunicar" data-scrollto="btn_export_word">📤 Exportar</button>
+        <button class="sk-sidebar-item active" type="button" data-stage="definir" data-scrollto="panel_problema" data-i18n="pro.sidebar.workspace">📋 Workspace</button>
+        <button class="sk-sidebar-item" type="button" data-scrollto="sk_historial_panel" data-i18n="pro.sidebar.problemas">🗂 Problemas</button>
+        <button class="sk-sidebar-item" type="button" data-stage="analizar" data-scrollto="out_variables" data-i18n="pro.sidebar.variables">🔤 Variables</button>
+        <button class="sk-sidebar-item" type="button" data-stage="analizar" data-scrollto="out_notas" data-i18n="pro.sidebar.conceptos">🧩 Conceptos</button>
+        <button class="sk-sidebar-item" type="button" data-stage="disenar" data-scrollto="out_fuentes" data-i18n="pro.sidebar.fuentes">📚 Fuentes</button>
+        <button class="sk-sidebar-item" type="button" data-stage="comunicar" data-scrollto="btn_export_word" data-i18n="pro.sidebar.exportar">📤 Exportar</button>
       </nav>
 
       <div class="sk-sidebar-section" id="sk_historial_panel">
-        <h3>Historial de problemas</h3>
-        <input id="sk_historial_buscar" class="sk-search-input" type="search" placeholder="Buscar en tu historial…">
+        <h3 data-i18n="pro.historial.title">Historial de problemas</h3>
+        <input id="sk_historial_buscar" class="sk-search-input" type="search" data-i18n-placeholder="pro.historial.buscarPlaceholder" placeholder="Buscar en tu historial…">
         <div id="sk_historial_lista" class="sk-historial-lista"></div>
-        <button id="btn_historial_borrar" class="secondary" type="button" style="display:none;">Borrar historial</button>
+        <button id="btn_historial_borrar" class="secondary" type="button" data-i18n="common.historial.borrar" style="display:none;">Borrar historial</button>
       </div>
 
       <div class="sk-sidebar-footer">
@@ -90,140 +95,140 @@
 
       <section class="sk-stage" data-stage="definir">
         <div class="panel" id="panel_problema">
-          <h2>1. Problema científico inicial</h2>
-          <textarea id="txt_problema" placeholder="Escribe aquí el problema científico tal como lo formularías en un proyecto de investigación..."></textarea>
+          <h2 data-i18n="pro.h1.title">1. Problema científico inicial</h2>
+          <textarea id="txt_problema" data-i18n-placeholder="pro.txt_problema.placeholder" placeholder="Escribe aquí el problema científico tal como lo formularías en un proyecto de investigación..."></textarea>
           <div>
-            <button id="btn_reformular">Reformular problema y sugerir variables</button>
-            <button id="btn_clear" class="secondary">Borrar problema</button>
+            <button id="btn_reformular" data-i18n="common.btn.reformular">Reformular problema y sugerir variables</button>
+            <button id="btn_clear" class="secondary" data-i18n="common.btn.clear">Borrar problema</button>
           </div>
           <div class="tags">
-            <span class="badge">#preguntas_de_investigación</span>
-            <span class="badge">#variables</span>
-            <span class="badge">#hipótesis</span>
-            <span class="badge">#operacionalización</span>
-            <span class="badge">#área_sociológica</span>
-            <span class="badge">#unidad_de_análisis</span>
-            <span class="badge">#fuentes_de_datos</span>
+            <span class="badge" data-i18n="common.badge.preguntas">#preguntas_de_investigación</span>
+            <span class="badge" data-i18n="common.badge.variables">#variables</span>
+            <span class="badge" data-i18n="common.badge.hipotesis">#hipótesis</span>
+            <span class="badge" data-i18n="common.badge.operacionalizacion">#operacionalización</span>
+            <span class="badge" data-i18n="common.badge.area">#área_sociológica</span>
+            <span class="badge" data-i18n="common.badge.unidad">#unidad_de_análisis</span>
+            <span class="badge" data-i18n="common.badge.fuentes">#fuentes_de_datos</span>
           </div>
         </div>
       </section>
 
       <section class="sk-stage" data-stage="analizar" style="display:none;">
         <div class="panel">
-          <h2>2. Análisis del problema de investigación</h2>
-          <p class="meta sk-tutor" style="font-size:0.82rem; margin:2px 0 14px;">SOCIOKAIROS no solo entrega resultados: explica en cada bloque qué está haciendo y por qué, para que puedas auditar y ajustar el razonamiento en cada paso.</p>
+          <h2 data-i18n="pro.h2.title">2. Análisis del problema de investigación</h2>
+          <p data-i18n="pro.h2.tutor" class="meta sk-tutor" style="font-size:0.82rem; margin:2px 0 14px;">SOCIOKAIROS no solo entrega resultados: explica en cada bloque qué está haciendo y por qué, para que puedas auditar y ajustar el razonamiento en cada paso.</p>
 
           <div id="badge_area" class="badge-area"></div>
 
-          <h3>Mapa conceptual</h3>
+          <h3 data-i18n="pro.h.mapaConceptual">Mapa conceptual</h3>
           <div class="visual-controls" style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px 0;">
-            <button id="btn_visual_causal" class="secondary" type="button">Mapa causal</button>
-            <button id="btn_visual_red" class="secondary" type="button">Red sociológica</button>
-            <button id="btn_visual_capas" class="secondary" type="button">Capas sociales</button>
+            <button id="btn_visual_causal" class="secondary" type="button" data-i18n="pro.btn.mapaCausal">Mapa causal</button>
+            <button id="btn_visual_red" class="secondary" type="button" data-i18n="pro.btn.redSociologica">Red sociológica</button>
+            <button id="btn_visual_capas" class="secondary" type="button" data-i18n="pro.btn.capasSociales">Capas sociales</button>
           </div>
           <div id="out_visual_svg" class="visual-svg-box"></div>
 
-          <h3>2.1 Problema científico definitivo (síntesis)</h3>
-          <p class="meta sk-tutor" style="font-size:0.78rem;">Se funde tu problema inicial con el resto del análisis en un párrafo ya redactado, del tipo que abriría un capítulo de planteamiento del problema.</p>
+          <h3 data-i18n="pro.h21.title">2.1 Problema científico definitivo (síntesis)</h3>
+          <p data-i18n="pro.h21.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Se funde tu problema inicial con el resto del análisis en un párrafo ya redactado, del tipo que abriría un capítulo de planteamiento del problema.</p>
           <pre id="out_problema_perfecto"></pre>
 
-          <h3>2.2 Tres versiones del problema en forma de pregunta</h3>
+          <h3 data-i18n="pro.h22.title">2.2 Tres versiones del problema en forma de pregunta</h3>
           <pre id="out_reformulacion"></pre>
 
           <div id="selector_version" class="version-selector" style="display:none;">
-            <p class="meta" style="font-size:0.8rem;">
+            <p data-i18n="common.version.selectLabel" class="meta" style="font-size:0.8rem;">
               Selecciona la versión que quieres usar como problema de trabajo para la exportación (Word/CSV):
             </p>
-            <label><input type="radio" name="vers_sel" value="1"> Versión descriptiva (P1)</label><br>
-            <label><input type="radio" name="vers_sel" value="2"> Versión <span id="lbl_p2_etiqueta">relacional / explicativa</span> (P2)</label><br>
-            <label><input type="radio" name="vers_sel" value="3"> Versión crítica / estratégica (P3)</label>
+            <label><input type="radio" name="vers_sel" value="1"> <span data-i18n="common.version.p1">Versión descriptiva</span> (P1)</label><br>
+            <label><input type="radio" name="vers_sel" value="2"> <span data-i18n="common.version.prefix">Versión</span> <span id="lbl_p2_etiqueta">relacional / explicativa</span> (P2)</label><br>
+            <label><input type="radio" name="vers_sel" value="3"> <span data-i18n="common.version.p3">Versión crítica / estratégica</span> (P3)</label>
             <p id="version_elegida_hint" class="meta" style="font-size:0.75rem; margin-top:4px;">
-              Si no seleccionas ninguna, SOCIOKAIROS usará por defecto la versión <span id="lbl_p2_etiqueta_hint">relacional</span> (P2).
+              <span data-i18n="common.version.hintPrefix">Si no seleccionas ninguna, SOCIOKAIROS usará por defecto la versión</span> <span id="lbl_p2_etiqueta_hint">relacional</span> <span data-i18n="common.version.hintSuffix">(P2).</span>
             </p>
           </div>
 
-          <h3 id="h_seccion_variables">2.3 Variables sugeridas (VI / VD)</h3>
-          <p id="txt_intro_variables" class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS asigna VI/VD por convención léxica (ver la nota al final de este bloque); esa dirección causal es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí.</p>
+          <h3 id="h_seccion_variables" data-i18n="pro.h23.title">2.3 Variables sugeridas (VI / VD)</h3>
+          <p id="txt_intro_variables" data-i18n="pro.txt_intro_variables" class="meta sk-tutor" style="font-size:0.78rem;">SOCIOKAIROS asigna VI/VD por convención léxica (ver la nota al final de este bloque); esa dirección causal es una decisión teórica tuya, no un hecho del texto. Si crees que la dirección real es la contraria, intercámbiala aquí.</p>
           <pre id="out_variables"></pre>
-          <button id="btn_swap_vivd" class="secondary" type="button" disabled>⇄ Intercambiar VI ↔ VD</button>
+          <button id="btn_swap_vivd" class="secondary" type="button" disabled data-i18n="common.swap.btn">⇄ Intercambiar VI ↔ VD</button>
 
-          <h3 id="h_seccion_correlaciones">2.4 Correlaciones, hipótesis y marcos teóricos</h3>
+          <h3 id="h_seccion_correlaciones" data-i18n="pro.h24.title">2.4 Correlaciones, hipótesis y marcos teóricos</h3>
           <pre id="out_notas"></pre>
-          <p class="meta sk-tutor" style="font-size:0.78rem;">Los marcos de arriba se proponen por afinidad léxica con tu texto; que un marco sea pertinente es una decisión teórica tuya. Escribe aquí por qué el marco que elijas explica tu problema concreto — este texto se inserta literalmente en el informe Word exportado.</p>
-          <textarea id="txt_justificacion_marco" style="min-height:110px;" placeholder="Ej.: elijo la violencia simbólica de Bourdieu porque el problema describe una relación de dominación aceptada, no solo impuesta por la fuerza..."></textarea>
+          <p data-i18n="pro.h24.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Los marcos de arriba se proponen por afinidad léxica con tu texto; que un marco sea pertinente es una decisión teórica tuya. Escribe aquí por qué el marco que elijas explica tu problema concreto — este texto se inserta literalmente en el informe Word exportado.</p>
+          <textarea id="txt_justificacion_marco" style="min-height:110px;" data-i18n-placeholder="common.justificacion.placeholder" placeholder="Ej.: elijo la violencia simbólica de Bourdieu porque el problema describe una relación de dominación aceptada, no solo impuesta por la fuerza..."></textarea>
 
-          <h3>2.5 Por qué SOCIOKAIROS sugirió esto (transparencia del análisis)</h3>
-          <p class="meta sk-tutor" style="font-size:0.78rem;">Sin caja negra: qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto.</p>
+          <h3 data-i18n="pro.h25.title">2.5 Por qué SOCIOKAIROS sugirió esto (transparencia del análisis)</h3>
+          <p data-i18n="pro.h25.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Sin caja negra: qué palabra o frase concreta de tu problema activó cada sugerencia — o, si es una candidata propuesta por el dominio, que no viene literalmente de tu texto.</p>
           <pre id="out_transparencia"></pre>
 
-          <h3>2.6 Categorías explicativas para tu problema concreto</h3>
-          <p class="meta sk-tutor" style="font-size:0.78rem;">Si tu problema describe una dinámica que cuesta explicar a primera vista, aquí se propone un concepto teórico concreto que puede explicarla.</p>
+          <h3 data-i18n="pro.h26.title">2.6 Categorías explicativas para tu problema concreto</h3>
+          <p data-i18n="pro.h26.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Si tu problema describe una dinámica que cuesta explicar a primera vista, aquí se propone un concepto teórico concreto que puede explicarla.</p>
           <pre id="out_categorias_explicativas"></pre>
         </div>
       </section>
 
       <section class="sk-stage" data-stage="disenar" style="display:none;">
         <div class="panel">
-          <h2>3. Diseño del estudio</h2>
+          <h2 data-i18n="pro.h3.title">3. Diseño del estudio</h2>
 
-          <h3>Unidad de análisis, diseño y enfoque metodológico</h3>
-          <p class="meta sk-tutor" style="font-size:0.78rem;">Se decide si tu problema pide un abordaje cualitativo, cuantitativo o mixto, y se adapta a partir de ahí el diseño, el software de apoyo y el tipo de muestreo sugeridos.</p>
+          <h3 data-i18n="pro.h.unidadDiseno">Unidad de análisis, diseño y enfoque metodológico</h3>
+          <p data-i18n="pro.h.unidadDiseno.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Se decide si tu problema pide un abordaje cualitativo, cuantitativo o mixto, y se adapta a partir de ahí el diseño, el software de apoyo y el tipo de muestreo sugeridos.</p>
           <pre id="out_diseno"></pre>
 
-          <h3>Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
-          <p class="meta sk-tutor" style="font-size:0.78rem;">Un punto de partida para trabajo cualitativo, pensado para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real.</p>
+          <h3 data-i18n="pro.h.guiaCualitativa">Guía cualitativa pre-CAQDAS (libro de códigos y guía de entrevista)</h3>
+          <p data-i18n="pro.h.guiaCualitativa.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Un punto de partida para trabajo cualitativo, pensado para importarse en Atlas.ti, MAXQDA o NVivo antes de codificar el material real.</p>
           <pre id="out_guia_codigos"></pre>
           <pre id="out_guia_preguntas"></pre>
 
-          <h3>Fuentes de datos / bases recomendadas</h3>
+          <h3 data-i18n="pro.h.fuentes">Fuentes de datos / bases recomendadas</h3>
           <pre id="out_fuentes"></pre>
 
-          <h3>Diseños metodológicos sugeridos</h3>
+          <h3 data-i18n="pro.h.disenosSugeridos">Diseños metodológicos sugeridos</h3>
           <pre id="out_disenos_plus"></pre>
         </div>
       </section>
 
       <section class="sk-stage" data-stage="ejecutar" style="display:none;">
         <div class="panel">
-          <h2>4. Ejecutar: alertas y verificación</h2>
+          <h2 data-i18n="pro.h4.title">4. Ejecutar: alertas y verificación</h2>
 
-          <h3>Alertas metodológicas</h3>
+          <h3 data-i18n="pro.h.alertas">Alertas metodológicas</h3>
           <pre id="out_alertas"></pre>
 
-          <h3>Tradiciones sociológicas compatibles</h3>
+          <h3 data-i18n="pro.h.tradiciones">Tradiciones sociológicas compatibles</h3>
           <pre id="out_tradiciones"></pre>
 
-          <h3>Mapa lógico del problema</h3>
+          <h3 data-i18n="pro.h.mapaLogico">Mapa lógico del problema</h3>
           <pre id="out_mapa"></pre>
 
-          <h3>Consejos de tu director de tesis</h3>
-          <p class="meta sk-tutor" style="font-size:0.78rem;">Un profesor senior de metodología no se limita a decir qué está bien: anticipa lo que te preguntaría un director de tesis o un tribunal. Preguntas socráticas, puntos débiles a defender y una guía de búsqueda bibliográfica, construidos a partir de tu problema concreto.</p>
-          <h4 style="margin:14px 0 4px; font-size:0.85rem;">Preguntas que te haría tu director/a</h4>
+          <h3 data-i18n="pro.h.consejosDirector">Consejos de tu director de tesis</h3>
+          <p data-i18n="pro.h.consejosDirector.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Un profesor senior de metodología no se limita a decir qué está bien: anticipa lo que te preguntaría un director de tesis o un tribunal. Preguntas socráticas, puntos débiles a defender y una guía de búsqueda bibliográfica, construidos a partir de tu problema concreto.</p>
+          <h4 data-i18n="common.h.preguntasDirector" style="margin:14px 0 4px; font-size:0.85rem;">Preguntas que te haría tu director/a</h4>
           <pre id="out_preguntas_socraticas"></pre>
-          <h4 style="margin:14px 0 4px; font-size:0.85rem;">Puntos débiles a defender</h4>
+          <h4 data-i18n="common.h.puntosDebiles" style="margin:14px 0 4px; font-size:0.85rem;">Puntos débiles a defender</h4>
           <pre id="out_puntos_debiles"></pre>
-          <h4 style="margin:14px 0 4px; font-size:0.85rem;">Guía de búsqueda bibliográfica</h4>
+          <h4 data-i18n="common.h.guiaBiblio" style="margin:14px 0 4px; font-size:0.85rem;">Guía de búsqueda bibliográfica</h4>
           <pre id="out_guia_bibliografica"></pre>
-          <h4 style="margin:14px 0 4px; font-size:0.85rem;">Revisión de coherencia</h4>
-          <p class="meta sk-tutor" style="font-size:0.78rem;">Comprueba que el vocabulario de tu justificación teórica no contradiga el enfoque metodológico detectado. Se actualiza sola mientras escribes.</p>
+          <h4 data-i18n="common.h.revisionCoherencia" style="margin:14px 0 4px; font-size:0.85rem;">Revisión de coherencia</h4>
+          <p data-i18n="pro.revisionCoherencia.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Comprueba que el vocabulario de tu justificación teórica no contradiga el enfoque metodológico detectado. Se actualiza sola mientras escribes.</p>
           <pre id="out_revision_coherencia"></pre>
 
-          <h3>Validez, confiabilidad y sesgos metodológicos</h3>
-          <p class="meta sk-tutor" style="font-size:0.78rem;">Lo que un director de tesis pregunta después de aceptar el planteamiento: ¿por qué deberíamos creer estos hallazgos? Adaptado a tu enfoque y diseño concretos, no un texto genérico.</p>
-          <h4 style="margin:14px 0 4px; font-size:0.85rem;">Validez y confiabilidad</h4>
+          <h3 data-i18n="pro.h.validezSesgos">Validez, confiabilidad y sesgos metodológicos</h3>
+          <p data-i18n="pro.h.validezSesgos.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Lo que un director de tesis pregunta después de aceptar el planteamiento: ¿por qué deberíamos creer estos hallazgos? Adaptado a tu enfoque y diseño concretos, no un texto genérico.</p>
+          <h4 data-i18n="pro.h.validezConfiabilidad" style="margin:14px 0 4px; font-size:0.85rem;">Validez y confiabilidad</h4>
           <pre id="out_validez_confiabilidad"></pre>
-          <h4 style="margin:14px 0 4px; font-size:0.85rem;">Sesgos metodológicos a vigilar</h4>
+          <h4 data-i18n="pro.h.sesgosVigilar" style="margin:14px 0 4px; font-size:0.85rem;">Sesgos metodológicos a vigilar</h4>
           <pre id="out_sesgos_metodologicos"></pre>
         </div>
       </section>
 
       <section class="sk-stage" data-stage="comunicar" style="display:none;">
         <div class="panel">
-          <h2>5. Comunicar: exportar resultados</h2>
-          <p class="meta sk-tutor" style="font-size:0.78rem;">Exporta el análisis completo a Word (informe redactado, con tu justificación teórica incluida) o a CSV (tabla de operacionalización) usando la versión del problema que elegiste en la etapa "Analizar".</p>
+          <h2 data-i18n="pro.h5.title">5. Comunicar: exportar resultados</h2>
+          <p data-i18n="pro.h5.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Exporta el análisis completo a Word (informe redactado, con tu justificación teórica incluida) o a CSV (tabla de operacionalización) usando la versión del problema que elegiste en la etapa "Analizar".</p>
           <div>
-            <button id="btn_export_word" class="secondary">Exportar informe Word</button>
-            <button id="btn_export_csv" class="secondary">Exportar operacionalización (CSV)</button>
+            <button id="btn_export_word" class="secondary" data-i18n="common.btn.exportWord">Exportar informe Word</button>
+            <button id="btn_export_csv" class="secondary" data-i18n="common.btn.exportCsv">Exportar operacionalización (CSV)</button>
           </div>
         </div>
       </section>
@@ -231,20 +236,20 @@
     </main>
 
     <aside class="sk-rightpanel">
-      <h3>Resumen del análisis</h3>
-      <p class="meta sk-tutor" style="font-size:0.74rem;">Conteos reales del análisis actual — nada de puntuaciones inventadas: cada número sale directamente del motor.</p>
+      <h3 data-i18n="pro.rightpanel.resumen">Resumen del análisis</h3>
+      <p data-i18n="pro.rightpanel.resumen.tutor" class="meta sk-tutor" style="font-size:0.74rem;">Conteos reales del análisis actual — nada de puntuaciones inventadas: cada número sale directamente del motor.</p>
       <div id="sk_stats_grid" class="sk-stats-grid">
-        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_variables">–</span><span class="sk-stat-label">Variables detectadas</span></div>
-        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_areas">–</span><span class="sk-stat-label">Áreas sociológicas</span></div>
-        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_marcos">–</span><span class="sk-stat-label">Marcos teóricos</span></div>
-        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_categorias">–</span><span class="sk-stat-label">Categorías explicativas</span></div>
-        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_fuentes">–</span><span class="sk-stat-label">Fuentes de datos</span></div>
-        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_alertas">–</span><span class="sk-stat-label">Alertas metodológicas</span></div>
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_variables">–</span><span class="sk-stat-label" data-i18n="pro.stat.variables">Variables detectadas</span></div>
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_areas">–</span><span class="sk-stat-label" data-i18n="pro.stat.areas">Áreas sociológicas</span></div>
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_marcos">–</span><span class="sk-stat-label" data-i18n="pro.stat.marcos">Marcos teóricos</span></div>
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_categorias">–</span><span class="sk-stat-label" data-i18n="pro.stat.categorias">Categorías explicativas</span></div>
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_fuentes">–</span><span class="sk-stat-label" data-i18n="pro.stat.fuentes">Fuentes de datos</span></div>
+        <div class="sk-stat"><span class="sk-stat-num" id="sk_stat_alertas">–</span><span class="sk-stat-label" data-i18n="pro.stat.alertas">Alertas metodológicas</span></div>
       </div>
 
-      <h3>Fuentes recomendadas</h3>
+      <h3 data-i18n="pro.rightpanel.fuentesRecomendadas">Fuentes recomendadas</h3>
       <div id="sk_fuentes_preview" class="sk-fuentes-preview">
-        <p class="sk-historial-vacio">Reformula un problema para ver fuentes de datos recomendadas.</p>
+        <p class="sk-historial-vacio" data-i18n="pro.fuentesPreview.vacio">Reformula un problema para ver fuentes de datos recomendadas.</p>
       </div>
     </aside>
 

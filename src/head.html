@@ -372,6 +372,42 @@ body.sk-dark .sk-knob{
 .sk-icon-btn-clean:hover,.sk-theme-toggle-clean:hover{
   background:rgba(255,255,255,.23) !important;
 }
+.sk-lang-switcher{
+  display:flex !important;
+  gap:2px !important;
+  align-items:center !important;
+  padding:4px !important;
+  border-radius:14px !important;
+  border:1px solid rgba(255,255,255,.28) !important;
+  background:rgba(255,255,255,.13) !important;
+  backdrop-filter:blur(8px) !important;
+  -webkit-backdrop-filter:blur(8px) !important;
+}
+.sk-lang-btn{
+  width:36px !important;
+  height:36px !important;
+  border-radius:10px !important;
+  border:none !important;
+  background:transparent !important;
+  font-size:19px !important;
+  line-height:1 !important;
+  cursor:pointer !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  opacity:.55 !important;
+  filter:grayscale(55%) !important;
+  transition:opacity .15s ease, filter .15s ease, background .15s ease !important;
+}
+.sk-lang-btn:hover{
+  opacity:.85 !important;
+  filter:grayscale(15%) !important;
+}
+.sk-lang-btn.active{
+  opacity:1 !important;
+  filter:grayscale(0%) !important;
+  background:rgba(255,255,255,.28) !important;
+}
 .sk-footer-author{
   margin-top:40px !important;
   width:100% !important;

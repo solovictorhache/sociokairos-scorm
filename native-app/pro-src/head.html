@@ -250,6 +250,40 @@
     .sk-icon-btn-clean:hover,.sk-theme-toggle-clean:hover{
       background:rgba(28,122,76,.16);
     }
+    .sk-lang-switcher{
+      display:flex;
+      gap:2px;
+      align-items:center;
+      padding:2px;
+      border-radius:10px;
+      border:1px solid var(--sk-border);
+      background:rgba(28,122,76,.08);
+    }
+    .sk-lang-btn{
+      width:26px;
+      height:26px;
+      border-radius:7px;
+      border:none;
+      background:transparent;
+      font-size:14px;
+      line-height:1;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      opacity:.55;
+      filter:grayscale(55%);
+      transition:opacity .15s ease, filter .15s ease, background .15s ease;
+    }
+    .sk-lang-btn:hover{
+      opacity:.85;
+      filter:grayscale(15%);
+    }
+    .sk-lang-btn.active{
+      opacity:1;
+      filter:grayscale(0%);
+      background:rgba(28,122,76,.16);
+    }
     .sk-badge-count{
       position:absolute;
       top:-4px;

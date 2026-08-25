@@ -6,11 +6,12 @@ Uso: python3 src/build.py
 Junta head.html + body.html (con el logotipo embebido en base64 a partir de
 scorm_plugin/logo.png) con un único <script> que concatena, en este orden:
   1. LOGO_BASE64
-  2. src/geo-data.js     -- tablas geográficas (ciudades/países/fuentes) y dominios SVG
-  3. src/engine.js       -- motor heurístico puro (sin dependencias de DOM)
-  4. src/docxwriter.js   -- ZIP + OOXML mínimo, sin librerías
-  5. src/informe-word.js -- ensamblado del informe .docx a partir del resultado
-  6. src/wiring.js       -- SCORM + validación EDU + wiring de la interfaz
+  2. src/i18n.js         -- internacionalización de interfaz (es/en/pt)
+  3. src/geo-data.js     -- tablas geográficas (ciudades/países/fuentes) y dominios SVG
+  4. src/engine.js       -- motor heurístico puro (sin dependencias de DOM)
+  5. src/docxwriter.js   -- ZIP + OOXML mínimo, sin librerías
+  6. src/informe-word.js -- ensamblado del informe .docx a partir del resultado
+  7. src/wiring.js       -- SCORM + validación EDU + wiring de la interfaz
 
 Resultado: HTML autocontenido, sin llamadas de red en tiempo de ejecución.
 
@@ -46,6 +47,7 @@ def main() -> None:
     body = (SRC / "body.html").read_text(encoding="utf-8")
     logo_b64 = base64.b64encode((PLUGIN / "logo.png").read_bytes()).decode("ascii")
 
+    i18n = (SRC / "i18n.js").read_text(encoding="utf-8")
     geo_data = (SRC / "geo-data.js").read_text(encoding="utf-8")
     engine = strip_module_exports((SRC / "engine.js").read_text(encoding="utf-8"))
     docxwriter = strip_module_exports((SRC / "docxwriter.js").read_text(encoding="utf-8"))
@@ -54,7 +56,7 @@ def main() -> None:
 
     # El LOGO_BASE64 no pasa por terser: es un blob de datos, no código —
     # minificarlo no ahorra nada y solo alarga el tiempo de build.
-    codigo = geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + wiring
+    codigo = i18n + "\n" + geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + wiring
     script = f'const LOGO_BASE64 = "{logo_b64}";\n\n' + minify_js(ROOT, codigo)
 
     if "/*__SCRIPT__*/" not in body:
