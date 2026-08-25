@@ -2,6 +2,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert/strict");
 const { cargarMotor } = require("./helpers/load-engine.js");
+const { cargarMotorConDocx } = require("./helpers/load-motor-docx.js");
 
 const eng = cargarMotor();
 
@@ -630,5 +631,85 @@ describe("mediación/moderación, consentimiento informado, cronograma, preregis
     const sMixto = eng.generarTamanoMuestralPotencia(rMixto);
     assert.match(sMixto, /Z² ×/);
     assert.match(sMixto, /n ≈ 384/);
+  });
+});
+
+describe("transcripción pre-CAQDAS: detección de turnos, anotación con el libro de códigos y exportación .docx con comentarios nativos (exclusivo de la línea Profesional)", () => {
+  const TRANSCRIPCION = "María: Pues yo creo que la precariedad laboral afecta mucho a mi salud mental.\nEntrevistador: ¿Por qué lo dices?\nMaría: Porque no tengo horario fijo\ny eso me genera mucha ansiedad.";
+
+  test("detecta interlocutores por el patrón \"Nombre:\" y une líneas sueltas al turno en curso", () => {
+    const { turnos, detectado } = eng.detectarTurnosHabla(TRANSCRIPCION);
+    assert.equal(detectado, true);
+    assert.equal(turnos.length, 3);
+    assert.equal(turnos[0].interlocutor, "María");
+    assert.equal(turnos[1].interlocutor, "Entrevistador");
+    assert.equal(turnos[2].texto, "Porque no tengo horario fijo y eso me genera mucha ansiedad.");
+  });
+
+  test("descarta la marca de tiempo delante del interlocutor", () => {
+    const { turnos, detectado } = eng.detectarTurnosHabla("[00:01:23] María: Hola, buenas tardes.");
+    assert.equal(detectado, true);
+    assert.equal(turnos[0].interlocutor, "María");
+    assert.equal(turnos[0].texto, "Hola, buenas tardes.");
+  });
+
+  test("si no se reconoce ningún interlocutor, devuelve un único turno sin etiquetar y detectado:false", () => {
+    const { turnos, detectado } = eng.detectarTurnosHabla("esto es un párrafo suelto sin ningún formato de entrevista reconocible.");
+    assert.equal(detectado, false);
+    assert.equal(turnos.length, 1);
+    assert.equal(turnos[0].interlocutor, null);
+  });
+
+  test("anota los turnos con las categorías del libro de códigos que aparecen literalmente en el texto", () => {
+    const { turnos } = eng.detectarTurnosHabla(TRANSCRIPCION);
+    const codigos = [
+      { categoria: "La Precariedad Laboral", tipo: "x", definicion: "def. precariedad" },
+      { categoria: "Micro · Salud Mental", tipo: "x", definicion: "def. salud mental" },
+    ];
+    const anotados = eng.anotarTurnosConCodigos(turnos, codigos);
+    assert.equal(anotados[0].anotaciones.length, 2);
+    assert.equal(anotados[0].texto.slice(anotados[0].anotaciones[0].inicio, anotados[0].anotaciones[0].fin).toLowerCase(), "la precariedad laboral");
+    assert.equal(anotados[1].anotaciones.length, 0);
+  });
+
+  test("no anota nada si ninguna categoría del libro de códigos aparece en el texto", () => {
+    const { turnos } = eng.detectarTurnosHabla("Entrevistador: buenos días.\nMaría: buenos días también.");
+    const anotados = eng.anotarTurnosConCodigos(turnos, [{ categoria: "El Desempleo Juvenil", tipo: "x", definicion: "def" }]);
+    assert.equal(anotados.every(t => t.anotaciones.length === 0), true);
+  });
+
+  test("no genera anotaciones solapadas si dos categorías coinciden en el mismo fragmento", () => {
+    const { turnos } = eng.detectarTurnosHabla("María: la precariedad laboral es un problema.");
+    const anotados = eng.anotarTurnosConCodigos(turnos, [
+      { categoria: "La Precariedad Laboral", tipo: "x", definicion: "def1" },
+      { categoria: "Precariedad", tipo: "x", definicion: "def2" },
+    ]);
+    const spans = anotados[0].anotaciones;
+    for (let i = 1; i < spans.length; i++) assert.ok(spans[i].inicio >= spans[i - 1].fin, "los spans no deben solaparse");
+  });
+
+  test("construirTranscripcionWord genera un .docx válido con un comentario nativo de Word por cada anotación", () => {
+    const engDocx = cargarMotorConDocx();
+    const { turnos } = engDocx.detectarTurnosHabla(TRANSCRIPCION);
+    const codigos = [{ categoria: "La Precariedad Laboral", tipo: "x", definicion: "def. precariedad" }];
+    const anotados = engDocx.anotarTurnosConCodigos(turnos, codigos);
+    const zipBytes = engDocx.construirTranscripcionWord(anotados, { tituloInforme: "Prueba" });
+    assert.ok(zipBytes.length > 0, "genera bytes de zip no vacíos");
+
+    // El zip empieza por la firma local de fichero PK\x03\x04 — comprobación
+    // mínima de que es un .docx (zip) real, no una cadena vacía o basura.
+    assert.equal(zipBytes[0], 0x50);
+    assert.equal(zipBytes[1], 0x4B);
+
+    // El zip usa el método "store" (sin compresión), así que el XML de
+    // cada parte queda literal dentro del zip — buscar substrings ASCII
+    // directamente sobre los bytes decodificados como UTF-8 es válido
+    // (se evitan acentos para no depender de cómo Node reconstruye
+    // secuencias UTF-8 partidas al decodificar bytes binarios de zip).
+    const zipText = Buffer.from(zipBytes).toString("utf-8");
+    assert.match(zipText, /word\/comments\.xml/);
+    assert.match(zipText, /SUGERIDO/);
+    assert.match(zipText, /commentRangeStart/);
+    assert.match(zipText, /commentReference/);
   });
 });

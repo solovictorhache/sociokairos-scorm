@@ -153,6 +153,22 @@ async function main() {
   const docxPath = path.join(OUT_DIR, "informe_pro.docx");
   await downloadWord.saveAs(docxPath);
 
+  // --- Transcripción cualitativa (pre-CAQDAS): formatea una transcripción
+  // pegada por el usuario en un .docx con comentarios nativos de Word,
+  // anclados a las categorías del libro de códigos del análisis actual
+  // (exclusivo Pro) ---
+  const TRANSCRIPCION = "María: Pues yo creo que las dinámicas familiares afectan mucho a la delincuencia.\nEntrevistador: ¿Por qué lo dices?\nMaría: Porque en mi barrio hay poco control social informal.";
+  await page.fill("#txt_transcripcion", TRANSCRIPCION);
+  const [downloadTranscripcion] = await Promise.all([
+    page.waitForEvent("download"),
+    page.click("#btn_formatear_transcripcion"),
+  ]);
+  const transcripcionDocxPath = path.join(OUT_DIR, "transcripcion_pro.docx");
+  await downloadTranscripcion.saveAs(transcripcionDocxPath);
+  const previewTranscripcion = await page.textContent("#out_transcripcion_preview");
+  assert(previewTranscripcion.includes("3 turno(s) de habla detectado(s)"), `la vista previa detecta los 3 turnos de la transcripción: "${previewTranscripcion}"`);
+  assert(/\d+ fragmento\(s\) anotado/.test(previewTranscripcion), `la vista previa informa de las anotaciones encontradas: "${previewTranscripcion}"`);
+
   await browser.close();
   if (errors.length) throw new Error("Errores de página durante la prueba:\n" + errors.join("\n"));
 
@@ -178,6 +194,21 @@ async function main() {
   assert(xml.includes("25. Cronograma y factibilidad"), "docx contiene la sección de cronograma y factibilidad (exclusivo Pro)");
   assert(xml.includes("26. Preregistro y ciencia abierta"), "docx contiene la sección de preregistro y ciencia abierta (exclusivo Pro)");
   assert(!xml.includes("Universidad de Zaragoza: consulta"), "docx sin la nota específica de la Universidad de Zaragoza");
+
+  const unzipDirTranscripcion = path.join(OUT_DIR, "unzipped-transcripcion");
+  fs.rmSync(unzipDirTranscripcion, { recursive: true, force: true });
+  fs.mkdirSync(unzipDirTranscripcion, { recursive: true });
+  execSync(`unzip -o "${transcripcionDocxPath}" word/document.xml word/comments.xml "[Content_Types].xml" word/_rels/document.xml.rels -d "${unzipDirTranscripcion}"`);
+  const xmlTranscripcion = fs.readFileSync(path.join(unzipDirTranscripcion, "word", "document.xml"), "utf-8");
+  assert(xmlTranscripcion.includes("María: "), "docx de la transcripción conserva el nombre del interlocutor al inicio del turno");
+  assert(xmlTranscripcion.includes("Entrevistador: "), "docx de la transcripción distingue los dos interlocutores");
+  assert(xmlTranscripcion.includes("commentRangeStart") && xmlTranscripcion.includes("commentReference"), "docx de la transcripción ancla comentarios nativos de Word en el texto");
+  const commentsXml = fs.readFileSync(path.join(unzipDirTranscripcion, "word", "comments.xml"), "utf-8");
+  assert(commentsXml.includes("CÓDIGO SUGERIDO"), "comments.xml contiene el texto del código sugerido");
+  const contentTypesTranscripcion = fs.readFileSync(path.join(unzipDirTranscripcion, "[Content_Types].xml"), "utf-8");
+  assert(contentTypesTranscripcion.includes("wordprocessingml.comments+xml"), "el .docx registra el content-type de comments.xml");
+  const relsTranscripcion = fs.readFileSync(path.join(unzipDirTranscripcion, "word", "_rels", "document.xml.rels"), "utf-8");
+  assert(relsTranscripcion.includes("relationships/comments"), "el .docx registra la relación hacia comments.xml");
 
   console.log("OK: informe profesional en", docxPath);
 

@@ -11,7 +11,8 @@ scorm_plugin/logo.png) con un único <script> que concatena, en este orden:
   4. src/engine.js       -- motor heurístico puro (sin dependencias de DOM)
   5. src/docxwriter.js   -- ZIP + OOXML mínimo, sin librerías
   6. src/informe-word.js -- ensamblado del informe .docx a partir del resultado
-  7. src/wiring.js       -- SCORM + validación EDU + wiring de la interfaz
+  7. src/transcripcion-word.js -- .docx de transcripción anotada, pre-CAQDAS (exclusivo Profesional)
+  8. src/wiring.js       -- SCORM + validación EDU + wiring de la interfaz
 
 Resultado: HTML autocontenido, sin llamadas de red en tiempo de ejecución.
 
@@ -52,11 +53,12 @@ def main() -> None:
     engine = strip_module_exports((SRC / "engine.js").read_text(encoding="utf-8"))
     docxwriter = strip_module_exports((SRC / "docxwriter.js").read_text(encoding="utf-8"))
     informe_word = (SRC / "informe-word.js").read_text(encoding="utf-8")
+    transcripcion_word = (SRC / "transcripcion-word.js").read_text(encoding="utf-8")
     wiring = (SRC / "wiring.js").read_text(encoding="utf-8")
 
     # El LOGO_BASE64 no pasa por terser: es un blob de datos, no código —
     # minificarlo no ahorra nada y solo alarga el tiempo de build.
-    codigo = i18n + "\n" + geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + wiring
+    codigo = i18n + "\n" + geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + transcripcion_word + "\n" + wiring
     script = f'const LOGO_BASE64 = "{logo_b64}";\n\n' + minify_js(ROOT, codigo)
 
     if "/*__SCRIPT__*/" not in body:

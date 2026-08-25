@@ -199,6 +199,14 @@ const SK_I18N = {
     "pro.historial.sinCoincidencias": "Ningún problema del historial coincide con «{q}».",
     "pro.status.invalidStructure": "Reformula el problema inicial: aún no cumple la estructura mínima de SOCIOKAIROS.",
     "pro.status.reformulateFirst": "Reformula el problema primero (debe pasar la validación SOCIOKAIROS).",
+    "pro.h.transcripcion": "Transcripción cualitativa (pre-CAQDAS)",
+    "pro.h.transcripcion.tutor": "Pega aquí la transcripción ya recogida de una entrevista o grupo focal. SOCIOKAIROS detecta los turnos de habla y los anota, con comentarios nativos de Word, con el libro de códigos de tu análisis actual — genera un .docx listo para importar como documento primario en Atlas.ti, MAXQDA o NVivo (no un archivo de proyecto nativo de esos programas).",
+    "pro.transcripcion.placeholder": "Pega aquí la transcripción, con el interlocutor al inicio de cada línea (p. ej. «María: ...», «Entrevistador: ...»)...",
+    "pro.btn.formatearTranscripcion": "Formatear para Atlas.ti / MAXQDA / NVivo",
+    "pro.status.writeTranscriptFirst": "Pega primero una transcripción para poder formatearla.",
+    "pro.status.generatingTranscript": "Generando la transcripción anotada...",
+    "pro.status.transcriptDone": "Transcripción anotada generada. Impórtala en Atlas.ti/MAXQDA/NVivo como documento primario.",
+    "pro.status.transcriptError": "Error al generar la transcripción: ",
   },
 
   en: {
@@ -375,6 +383,14 @@ const SK_I18N = {
     "pro.historial.sinCoincidencias": "No problem in your history matches “{q}”.",
     "pro.status.invalidStructure": "Reformulate the initial problem: it doesn't yet meet SOCIOKAIROS's minimum structure.",
     "pro.status.reformulateFirst": "Reformulate the problem first (it must pass SOCIOKAIROS validation).",
+    "pro.h.transcripcion": "Qualitative transcript (pre-CAQDAS)",
+    "pro.h.transcripcion.tutor": "Paste here a transcript you've already collected from an interview or focus group. SOCIOKAIROS detects the speaker turns and annotates them, with native Word comments, using your current analysis's codebook — it produces a .docx ready to import as a primary document into Atlas.ti, MAXQDA, or NVivo (not a native project file for those programs).",
+    "pro.transcripcion.placeholder": "Paste the transcript here, with the speaker at the start of each line (e.g. \"Maria: ...\", \"Interviewer: ...\")...",
+    "pro.btn.formatearTranscripcion": "Format for Atlas.ti / MAXQDA / NVivo",
+    "pro.status.writeTranscriptFirst": "Paste a transcript first so it can be formatted.",
+    "pro.status.generatingTranscript": "Generating the annotated transcript...",
+    "pro.status.transcriptDone": "Annotated transcript generated. Import it into Atlas.ti/MAXQDA/NVivo as a primary document.",
+    "pro.status.transcriptError": "Error generating the transcript: ",
   },
 
   pt: {
@@ -551,6 +567,14 @@ const SK_I18N = {
     "pro.historial.sinCoincidencias": "Nenhum problema do histórico corresponde a “{q}”.",
     "pro.status.invalidStructure": "Reformule o problema inicial: ele ainda não atende à estrutura mínima do SOCIOKAIROS.",
     "pro.status.reformulateFirst": "Reformule o problema primeiro (ele precisa passar pela validação do SOCIOKAIROS).",
+    "pro.h.transcripcion": "Transcrição qualitativa (pré-CAQDAS)",
+    "pro.h.transcripcion.tutor": "Cole aqui a transcrição já coletada de uma entrevista ou grupo focal. O SOCIOKAIROS detecta os turnos de fala e os anota, com comentários nativos do Word, usando o livro de códigos da sua análise atual — gera um .docx pronto para ser importado como documento primário no Atlas.ti, MAXQDA ou NVivo (não um arquivo de projeto nativo desses programas).",
+    "pro.transcripcion.placeholder": "Cole aqui a transcrição, com o interlocutor no início de cada linha (ex.: «Maria: ...», «Entrevistador: ...»)...",
+    "pro.btn.formatearTranscripcion": "Formatar para Atlas.ti / MAXQDA / NVivo",
+    "pro.status.writeTranscriptFirst": "Cole primeiro uma transcrição para poder formatá-la.",
+    "pro.status.generatingTranscript": "Gerando a transcrição anotada...",
+    "pro.status.transcriptDone": "Transcrição anotada gerada. Importe-a no Atlas.ti/MAXQDA/NVivo como documento primário.",
+    "pro.status.transcriptError": "Erro ao gerar a transcrição: ",
   },
 };
 

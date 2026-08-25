@@ -41,11 +41,12 @@ def main() -> None:
     engine = strip_module_exports((SRC / "engine.js").read_text(encoding="utf-8"))
     docxwriter = strip_module_exports((SRC / "docxwriter.js").read_text(encoding="utf-8"))
     informe_word = (SRC / "informe-word.js").read_text(encoding="utf-8")
+    transcripcion_word = (SRC / "transcripcion-word.js").read_text(encoding="utf-8")
     wiring = (PRO_SRC / "wiring.js").read_text(encoding="utf-8")
 
     # El LOGO_BASE64 no pasa por terser: es un blob de datos, no código —
     # minificarlo no ahorra nada y solo alarga el tiempo de build.
-    codigo = i18n + "\n" + geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + wiring
+    codigo = i18n + "\n" + geo_data + "\n" + engine + "\n" + docxwriter + "\n" + informe_word + "\n" + transcripcion_word + "\n" + wiring
     script = f'const LOGO_BASE64 = "{logo_b64}";\n\n' + minify_js(ROOT, codigo)
 
     if "/*__SCRIPT__*/" not in body:

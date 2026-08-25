@@ -230,16 +230,85 @@ function buildStylesXml() {
     `</w:pPr></w:pPrDefault>` +
     `</w:docDefaults>` +
     `<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>` +
+    // Estilo de carácter mínimo para la marca de referencia de comentario
+    // (el numerito/globo que Word inserta en el texto) — sin esta
+    // definición, el <w:commentReference> sigue funcionando, pero Word lo
+    // regenera con su propio estilo por defecto en vez del habitual (más
+    // pequeño y semioculto); se declara igual que lo hace el propio Word.
+    `<w:style w:type="character" w:styleId="CommentReference"><w:name w:val="annotation reference"/><w:semiHidden/><w:rPr><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr></w:style>` +
     `</w:styles>`;
+}
+
+/** Marca de referencia de comentario (el numerito clicable en el texto),
+ * SIEMPRE justo después de w:commentRangeEnd del mismo id. */
+function commentReferenceRunXml(id) {
+  return `<w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="${id}"/></w:r>`;
+}
+
+/**
+ * Igual que runXml(), pero devuelve un ARRAY de runs con uno o varios
+ * fragmentos marcados como comentario nativo de Word (el globo al margen),
+ * sin envolverlos todavía en un <w:p> — para poder anteponer otros runs
+ * (p. ej. el nombre del interlocutor en negrita) en el mismo párrafo antes
+ * de pasarlo todo junto a multiRunParagraphXml(). `spans`: array de
+ * {inicio, fin, id} con posiciones de carácter dentro de `texto` —
+ * ORDENADAS y SIN SOLAPARSE (responsabilidad de quien llama); cada `id`
+ * debe existir también en el array `comentarios` que se pase a
+ * buildDocx().
+ */
+function comentarioRunsXml(texto, spans, opts) {
+  const runs = [];
+  let cursor = 0;
+  for (const s of (spans || [])) {
+    if (s.inicio > cursor) runs.push(runXml(texto.slice(cursor, s.inicio), opts));
+    runs.push(`<w:commentRangeStart w:id="${s.id}"/>`);
+    runs.push(runXml(texto.slice(s.inicio, s.fin), opts));
+    runs.push(`<w:commentRangeEnd w:id="${s.id}"/>`);
+    runs.push(commentReferenceRunXml(s.id));
+    cursor = s.fin;
+  }
+  if (cursor < texto.length) runs.push(runXml(texto.slice(cursor), opts));
+  if (runs.length === 0) runs.push(runXml(texto, opts));
+  return runs;
+}
+
+/**
+ * Párrafo con uno o varios fragmentos marcados como comentario nativo de
+ * Word — ver comentarioRunsXml() para el significado de `spans`.
+ */
+function paragraphConComentariosXml(texto, spans, opts) {
+  opts = opts || {};
+  const ppr = [];
+  if (opts.spacingBefore || opts.spacingAfter) {
+    ppr.push(`<w:spacing w:before="${opts.spacingBefore || 0}" w:after="${opts.spacingAfter || 120}" ${LINEA_1_5}/>`);
+  }
+  if (!opts.sinSangria) ppr.push(`<w:ind w:firstLine="708"/>`);
+  const pprXml = ppr.length ? `<w:pPr>${ppr.join("")}</w:pPr>` : "";
+  return `<w:p>${pprXml}${comentarioRunsXml(texto, spans, opts).join("")}</w:p>`;
+}
+
+/** word/comments.xml: un <w:comment> por cada {id, texto} de `comentarios`. */
+function buildCommentsXml(comentarios) {
+  const nowIso = new Date().toISOString();
+  const items = (comentarios || []).map(c =>
+    `<w:comment w:id="${c.id}" w:author="SOCIOKAIROS" w:date="${nowIso}" w:initials="SK">` +
+    `<w:p>${runXml(c.texto)}</w:p>` +
+    `</w:comment>`
+  ).join("");
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+    `<w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">${items}</w:comments>`;
 }
 
 /**
  * bodyParts: array of XML paragraph/table strings
  * logoPngBytes: Uint8Array | null
+ * comentarios: array de {id, texto} | null — comentarios nativos de Word
+ * referenciados desde bodyParts vía paragraphConComentariosXml().
  */
-function buildDocx(bodyParts, logoPngBytes) {
+function buildDocx(bodyParts, logoPngBytes, comentarios) {
   const encoder = new TextEncoder();
   const hasLogo = !!logoPngBytes;
+  const hasComments = !!(comentarios && comentarios.length);
 
   const documentXml =
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
@@ -261,6 +330,7 @@ function buildDocx(bodyParts, logoPngBytes) {
     (hasLogo ? `<Default Extension="png" ContentType="image/png"/>` : "") +
     `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
     `<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>` +
+    (hasComments ? `<Override PartName="/word/comments.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"/>` : "") +
     `<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>` +
     `</Types>`;
 
@@ -276,6 +346,7 @@ function buildDocx(bodyParts, logoPngBytes) {
     `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
     `<Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
     (hasLogo ? `<Relationship Id="rIdLogo" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/>` : "") +
+    (hasComments ? `<Relationship Id="rIdComments" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="comments.xml"/>` : "") +
     `</Relationships>`;
 
   const nowIso = new Date().toISOString();
@@ -300,6 +371,9 @@ function buildDocx(bodyParts, logoPngBytes) {
   if (hasLogo) {
     files.push({ name: "word/media/image1.png", data: logoPngBytes });
   }
+  if (hasComments) {
+    files.push({ name: "word/comments.xml", data: encoder.encode(buildCommentsXml(comentarios)) });
+  }
 
   return buildZip(files);
 }
@@ -308,5 +382,6 @@ if (typeof module !== "undefined") {
   module.exports = {
     buildZip, buildDocx, headingXml, paragraphXml, tableXml, imageParagraphXml, xmlEscape,
     runXml, imageRunXml, dashedRuleXml, multiRunParagraphXml,
+    paragraphConComentariosXml, commentReferenceRunXml, buildCommentsXml, comentarioRunsXml,
   };
 }

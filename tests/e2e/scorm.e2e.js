@@ -57,6 +57,9 @@ async function main() {
   const lessonStatus = await page.evaluate(() => window.__scormData["cmi.core.lesson_status"]);
   assert(lessonStatus === "completed", `SCORM no marcó completed: "${lessonStatus}"`);
 
+  assert((await page.$("#txt_transcripcion")) === null, "el SCORM no carga el formateador de transcripciones pre-CAQDAS (exclusivo Pro)");
+  assert((await page.$("#btn_formatear_transcripcion")) === null, "el SCORM no carga el botón de formatear transcripción (exclusivo Pro)");
+
   const [downloadWord] = await Promise.all([
     page.waitForEvent("download"),
     page.click("#btn_export_word"),

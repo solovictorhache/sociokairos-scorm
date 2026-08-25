@@ -245,6 +245,14 @@
             <button id="btn_export_word" class="secondary" data-i18n="common.btn.exportWord">Exportar informe Word</button>
             <button id="btn_export_csv" class="secondary" data-i18n="common.btn.exportCsv">Exportar operacionalización (CSV)</button>
           </div>
+
+          <h3 data-i18n="pro.h.transcripcion" style="margin-top:22px; padding-top:18px; border-top:1px solid var(--sk-border);">Transcripción cualitativa (pre-CAQDAS)</h3>
+          <p data-i18n="pro.h.transcripcion.tutor" class="meta sk-tutor" style="font-size:0.78rem;">Pega aquí la transcripción ya recogida de una entrevista o grupo focal. SOCIOKAIROS detecta los turnos de habla y los anota, con comentarios nativos de Word, con el libro de códigos de tu análisis actual — genera un .docx listo para importar como documento primario en Atlas.ti, MAXQDA o NVivo (no un archivo de proyecto nativo de esos programas).</p>
+          <textarea id="txt_transcripcion" data-i18n-placeholder="pro.transcripcion.placeholder" placeholder="Pega aquí la transcripción, con el interlocutor al inicio de cada línea (p. ej. «María: ...», «Entrevistador: ...»)..."></textarea>
+          <div>
+            <button id="btn_formatear_transcripcion" class="secondary" data-i18n="pro.btn.formatearTranscripcion">Formatear para Atlas.ti / MAXQDA / NVivo</button>
+          </div>
+          <pre id="out_transcripcion_preview"></pre>
         </div>
       </section>
 

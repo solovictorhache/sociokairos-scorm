@@ -2692,6 +2692,93 @@ function generarTamanoMuestralPotencia(resultado) {
   return lineas.join("\n");
 }
 
+/* ================= transcripción pre-CAQDAS (exclusivo Profesional) =====
+   Formatea una transcripción de entrevista o grupo focal en turnos de
+   habla y la anota con el libro de códigos ya generado — pensada para
+   importarse como documento primario en Atlas.ti/MAXQDA/NVivo. No genera
+   proyectos nativos de esos programas (.atlproj/.mx24: formatos binarios
+   cerrados, sin especificación pública); solo el documento fuente ya
+   formateado y pre-anotado que el investigador importa desde ellos. */
+
+// Marca de tiempo opcional al inicio de línea, típica de transcripciones
+// automáticas ("[00:12:34]" o "00:12:34 -"): se descarta antes de buscar
+// el patrón de interlocutor.
+const SK_PATRON_TIMESTAMP = /^\[?\d{1,2}:\d{2}(:\d{2})?\]?\s*[-–]?\s*/;
+// Interlocutor + dos puntos al inicio de línea ("María:", "Entrevistador:",
+// "P1:"...); hasta 40 caracteres para no confundir una frase completa
+// terminada en dos puntos con una etiqueta de interlocutor.
+const SK_PATRON_TURNO = /^([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ0-9 ._'-]{0,40}):\s*(.*)$/;
+
+/**
+ * Divide el texto pegado por el usuario en turnos de habla por
+ * interlocutor. Determinista: busca líneas con el patrón "Interlocutor:
+ * texto"; las líneas siguientes que no encajan con el patrón se añaden al
+ * turno en curso (para transcripciones con saltos de línea dentro de una
+ * misma intervención). Si no se detecta NINGÚN interlocutor en todo el
+ * texto, lo devuelve como un único turno sin etiquetar y `detectado:
+ * false`, para que la interfaz avise de que no se reconoció el formato.
+ */
+function detectarTurnosHabla(texto) {
+  const lineas = (texto || "").split(/\r?\n/);
+  const turnos = [];
+  for (const lineaOriginal of lineas) {
+    const linea = lineaOriginal.replace(SK_PATRON_TIMESTAMP, "");
+    const m = linea.match(SK_PATRON_TURNO);
+    if (m) {
+      turnos.push({ interlocutor: m[1].trim(), texto: m[2].trim() });
+    } else if (turnos.length && lineaOriginal.trim()) {
+      const ultimo = turnos[turnos.length - 1];
+      ultimo.texto += (ultimo.texto ? " " : "") + lineaOriginal.trim();
+    }
+    // Líneas antes del primer interlocutor detectado (cabeceras, líneas en
+    // blanco) se ignoran: no pertenecen a ningún turno todavía.
+  }
+  if (turnos.length) return { turnos, detectado: true };
+  const todo = (texto || "").trim();
+  return { turnos: todo ? [{ interlocutor: null, texto: todo }] : [], detectado: false };
+}
+
+// El libro de códigos etiqueta los conceptos sensibilizadores como "Micro
+// · Trabajo", "Meso · Familia"... — para buscarlos dentro de la
+// transcripción se compara solo la etiqueta de concepto, sin el prefijo de
+// nivel (que no es texto que vaya a aparecer dicho por nadie).
+function skLimpiarEtiquetaCodigo(categoria) {
+  return (categoria || "").replace(/^(Micro|Meso|Macro)\s*·\s*/, "");
+}
+
+/**
+ * Busca, dentro del texto de cada turno, coincidencias LITERALES (no
+ * tolerantes a erratas, a diferencia del resto del motor) con las
+ * categorías del libro de códigos ya generado — sirve para anclar
+ * comentarios nativos de Word en esos fragmentos exactos. Es
+ * deliberadamente conservador: solo marca lo que aparece tal cual, para no
+ * anclar un comentario en el lugar equivocado por una coincidencia
+ * aproximada. Devuelve los turnos con un array `anotaciones` de
+ * {inicio, fin, categoria, definicion} (posiciones de carácter dentro del
+ * propio `turno.texto`, ordenadas y sin solaparse).
+ */
+function anotarTurnosConCodigos(turnos, codigos) {
+  const lista = codigos || [];
+  return (turnos || []).map(turno => {
+    const textoNorm = skNormalizar(turno.texto || "");
+    const spans = [];
+    for (const c of lista) {
+      const etiquetaNorm = skNormalizar(skLimpiarEtiquetaCodigo(c.categoria));
+      if (!etiquetaNorm) continue;
+      const idx = textoNorm.indexOf(etiquetaNorm);
+      if (idx === -1) continue;
+      const fin = idx + etiquetaNorm.length;
+      const solapa = spans.some(s => idx < s.fin && fin > s.inicio);
+      if (solapa) continue;
+      spans.push({ inicio: idx, fin, categoria: c.categoria, definicion: c.definicion });
+    }
+    spans.sort((a, b) => a.inicio - b.inicio);
+    return { interlocutor: turno.interlocutor, texto: turno.texto, anotaciones: spans };
+  });
+}
+
+const NOTA_TRANSCRIPCION_CAQDAS = "SOCIOKAIROS detecta interlocutores por el patrón «Nombre:» al inicio de línea (admite una marca de tiempo delante, p. ej. «[00:12:34] María:») y marca, con comentarios nativos de Word, los fragmentos que coinciden literalmente con alguna categoría de tu libro de códigos. Es una anotación deductiva de partida, no una codificación completa: revisa, amplía y corrige en Atlas.ti/MAXQDA/NVivo a partir del material real. SOCIOKAIROS no genera archivos de proyecto nativos de esos programas (.atlproj/.mx24) — este documento se importa como fuente primaria dentro de ellos.";
+
 /* ================= visualización SVG heurística ================= */
 
 function skSvgEscape(value) {
@@ -2870,5 +2957,6 @@ if (typeof module !== "undefined") {
     generarMediacionModeracion, generarConsentimientoInformado,
     generarCronogramaFactibilidad, generarPreregistroCienciaAbierta,
     generarUnidadAnalisisObservacion, generarTamanoMuestralPotencia,
+    detectarTurnosHabla, anotarTurnosConCodigos, NOTA_TRANSCRIPCION_CAQDAS,
   };
 }

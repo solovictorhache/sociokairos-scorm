@@ -473,7 +473,7 @@ function inicializarNavegacion() {
 }
 
 function limpiarSalidasPorErrorEdu() {
-  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos", "out_mediacion_moderacion", "out_unidad_analisis_observacion", "out_tamano_muestral", "out_consentimiento_informado", "out_cronograma_factibilidad", "out_preregistro_ciencia_abierta"];
+  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos", "out_mediacion_moderacion", "out_unidad_analisis_observacion", "out_tamano_muestral", "out_consentimiento_informado", "out_cronograma_factibilidad", "out_preregistro_ciencia_abierta", "out_transcripcion_preview"];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) el.textContent = "—";
@@ -588,6 +588,7 @@ window.addEventListener("load", function () {
   const btnSwapViVd = document.getElementById("btn_swap_vivd");
   const btnExportWord = document.getElementById("btn_export_word");
   const btnExportCsv = document.getElementById("btn_export_csv");
+  const btnFormatearTranscripcion = document.getElementById("btn_formatear_transcripcion");
   const btnVisualCausal = document.getElementById("btn_visual_causal");
   const btnVisualRed = document.getElementById("btn_visual_red");
   const btnVisualCapas = document.getElementById("btn_visual_capas");
@@ -660,7 +661,7 @@ window.addEventListener("load", function () {
 
   if (btnClear) {
     btnClear.addEventListener("click", function () {
-      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos", "out_mediacion_moderacion", "out_unidad_analisis_observacion", "out_tamano_muestral", "out_consentimiento_informado", "out_cronograma_factibilidad", "out_preregistro_ciencia_abierta"];
+      const ids = ["txt_problema", "txt_justificacion_marco", "txt_transcripcion", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos", "out_mediacion_moderacion", "out_unidad_analisis_observacion", "out_tamano_muestral", "out_consentimiento_informado", "out_cronograma_factibilidad", "out_preregistro_ciencia_abierta", "out_transcripcion_preview"];
       ids.forEach(function (id) {
         const e = document.getElementById(id);
         if (!e) return;
@@ -759,6 +760,53 @@ window.addEventListener("load", function () {
         if (statusEl) statusEl.textContent = guardado ? skT("common.status.csvDone") : skT("common.status.saveCancelled");
       } catch (e) {
         if (statusEl) statusEl.textContent = skT("common.status.csvError") + e.message;
+      }
+    });
+  }
+
+  if (btnFormatearTranscripcion) {
+    btnFormatearTranscripcion.addEventListener("click", async function () {
+      const txtTranscripcionEl = document.getElementById("txt_transcripcion");
+      const outPreview = document.getElementById("out_transcripcion_preview");
+      const texto = txtTranscripcionEl ? txtTranscripcionEl.value.trim() : "";
+      if (!texto) {
+        if (statusEl) statusEl.textContent = skT("pro.status.writeTranscriptFirst");
+        return;
+      }
+      if (!ultimoResultado) {
+        if (statusEl) statusEl.textContent = skT("pro.status.reformulateFirst");
+        return;
+      }
+      if (statusEl) statusEl.textContent = skT("pro.status.generatingTranscript");
+      try {
+        const { turnos, detectado } = detectarTurnosHabla(texto);
+        const codigos = (ultimoResultado.guiaCualitativa || {}).codigos || [];
+        const anotados = anotarTurnosConCodigos(turnos, codigos);
+        const totalAnotaciones = anotados.reduce((acc, t) => acc + (t.anotaciones ? t.anotaciones.length : 0), 0);
+
+        if (outPreview) {
+          const lineas = [];
+          lineas.push(detectado
+            ? `${turnos.length} turno(s) de habla detectado(s).`
+            : "No se reconoció ningún interlocutor con el formato «Nombre:» al inicio de línea — se ha tratado todo el texto como un único turno sin etiquetar. Revisa el formato si esperabas turnos separados.");
+          lineas.push(`${totalAnotaciones} fragmento(s) anotado(s) con comentarios de Word, de ${codigos.length} categoría(s) disponibles en el libro de códigos actual.`);
+          outPreview.textContent = lineas.join("\n");
+        }
+
+        const { problemaTrabajo } = obtenerVersionSeleccionada(ultimoResultado, txtEl ? txtEl.value.trim() : "");
+        const zipBytes = construirTranscripcionWord(anotados, {
+          piePagina: "Heuristic software developed by Victor Hugo Pérez Gallo, PhD\ncontacto@sociokairos.com",
+          tituloInforme: "Transcripción anotada",
+          subtituloInforme: "PRE-CAQDAS · DOCUMENTO FUENTE",
+          disenoCabeceraPie: true,
+          problemaAsociado: problemaTrabajo
+        });
+        const blob = new Blob([zipBytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+        const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12);
+        const guardado = await descargarBlob(blob, `Transcripcion_SOCIOKAIROS_${ts}.docx`);
+        if (statusEl) statusEl.textContent = guardado ? skT("pro.status.transcriptDone") : skT("common.status.saveCancelled");
+      } catch (e) {
+        if (statusEl) statusEl.textContent = skT("pro.status.transcriptError") + e.message;
       }
     });
   }
