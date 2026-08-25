@@ -63,6 +63,10 @@ async function main() {
   const guiaBiblio = await page.textContent("#out_guia_bibliografica");
   assert(guiaBiblio.includes("Google Scholar"), "guía de búsqueda bibliográfica presente tras el análisis");
 
+  // --- Validez/confiabilidad y sesgos metodológicos NO deben existir en el SCORM: son exclusivos de la línea Profesional ---
+  assert((await page.$("#out_validez_confiabilidad")) === null, "el SCORM no carga el panel de validez/confiabilidad (exclusivo Pro)");
+  assert((await page.$("#out_sesgos_metodologicos")) === null, "el SCORM no carga el panel de sesgos metodológicos (exclusivo Pro)");
+
   // --- Historial local ---
   const historialItems = await page.$$("#sk_historial_lista .sk-historial-item");
   assert(historialItems.length === 1, "historial tiene 1 entrada tras el primer análisis");
@@ -128,6 +132,7 @@ async function main() {
   assert(xml.includes("19. Consejos de tu director de tesis"), "el docx contiene la nueva sección de consejos de director de tesis");
   assert(xml.includes("Google Scholar"), "el docx contiene la guía de búsqueda bibliográfica");
   assert(xml.includes("Revisión de coherencia"), "el docx contiene la sección de revisión de coherencia");
+  assert(!xml.includes("Validez, confiabilidad y sesgos metodológicos"), "el docx del SCORM no incluye la sección exclusiva Pro de validez/confiabilidad/sesgos");
 
   console.log("OK: informe con justificación en", docxPath);
 }

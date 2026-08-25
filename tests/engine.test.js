@@ -511,3 +511,43 @@ describe("revisión de coherencia entre enfoque detectado y justificación teór
     assert.match(rev, /no ha detectado incoherencias/);
   });
 });
+
+describe("validez, confiabilidad y sesgos metodológicos (solo motor; el wiring de UI/Word es exclusivo de la línea Profesional)", () => {
+  const textoCualitativo = "¿Cómo viven y qué sentido dan las mujeres migrantes a su experiencia de precariedad laboral en Zaragoza en 2025?";
+  const textoMixto = "cuales son las causas familiares del alto indice de delincuencia en zaragoza en el 2025?";
+
+  test("un problema cualitativo recibe los 4 criterios de Lincoln y Guba, no validez/confiabilidad estadística", () => {
+    const r = eng.analizarProblema(textoCualitativo);
+    const v = eng.generarValidezConfiabilidad(r);
+    assert.match(v, /Credibilidad/);
+    assert.match(v, /Transferibilidad/);
+    assert.match(v, /Dependencia/);
+    assert.match(v, /Confirmabilidad/);
+    assert.doesNotMatch(v, /Validez interna/);
+    assert.doesNotMatch(v, /alfa de Cronbach/);
+  });
+
+  test("un problema mixto/cuantitativo recibe validez interna/externa y confiabilidad, no criterios cualitativos", () => {
+    const r = eng.analizarProblema(textoMixto);
+    const v = eng.generarValidezConfiabilidad(r);
+    assert.match(v, /Validez interna/);
+    assert.match(v, /Validez externa/);
+    assert.match(v, /Confiabilidad/);
+    assert.doesNotMatch(v, /^Credibilidad/m);
+  });
+
+  test("los sesgos metodológicos se adaptan al tema (deseabilidad social solo si el tema es sensible)", () => {
+    const rSensible = eng.analizarProblema(textoMixto); // delincuencia: tema sensible
+    assert.match(eng.generarSesgosMetodologicos(rSensible, textoMixto), /Deseabilidad social/);
+
+    const rNoSensible = eng.analizarProblema("¿cómo influye el uso de redes sociales en el rendimiento académico de los estudiantes en zaragoza en 2025?");
+    assert.doesNotMatch(eng.generarSesgosMetodologicos(rNoSensible, "¿cómo influye el uso de redes sociales en el rendimiento académico de los estudiantes en zaragoza en 2025?"), /Deseabilidad social/);
+  });
+
+  test("los sesgos metodológicos distinguen reflexividad (cualitativo) de sesgo de no respuesta (cuantitativo/mixto)", () => {
+    const rCuali = eng.analizarProblema(textoCualitativo);
+    assert.match(eng.generarSesgosMetodologicos(rCuali, textoCualitativo), /Reflexividad/);
+    const rMixto = eng.analizarProblema(textoMixto);
+    assert.match(eng.generarSesgosMetodologicos(rMixto, textoMixto), /Sesgo de no respuesta/);
+  });
+});

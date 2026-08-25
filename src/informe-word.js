@@ -22,6 +22,10 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
   // informe de la línea SCORM/EDU, que sigue usando el diseño anterior.
   const disenoCabeceraPie = !!opciones.disenoCabeceraPie;
   const subtituloInforme = opciones.subtituloInforme || "";
+  // Secciones extra (validez/confiabilidad, sesgos metodológicos) — opt-in
+  // explícito, solo la línea Profesional las pasa: la línea SCORM/EDU no
+  // debe cargar contenido adicional que no ha pedido.
+  const seccionesAmpliadas = !!opciones.seccionesAmpliadas;
   const et = resultado.etiquetas || {};
 
   const now = new Date();
@@ -197,6 +201,15 @@ function construirInformeWord(resultado, problema, versionLabel, textoOriginal, 
     coherencia.split("\n").slice(1).forEach(l => parts.push(paragraphXml(l, { bullet: true })));
   } else {
     parts.push(paragraphXml(coherencia, { italic: true }));
+  }
+
+  if (seccionesAmpliadas) {
+    parts.push(headingXml("20. Validez, confiabilidad y sesgos metodológicos", 2));
+    parts.push(paragraphXml("Lo que un director de tesis pregunta después de aceptar el planteamiento: ¿por qué deberíamos creer estos hallazgos? Adaptado a tu enfoque y diseño concretos, no un texto genérico.", { italic: true }));
+    parts.push(paragraphXml("Validez y confiabilidad:", { bold: true }));
+    generarValidezConfiabilidad(resultado).split("\n").forEach(l => parts.push(paragraphXml(l, { sinSangria: true })));
+    parts.push(paragraphXml("Sesgos metodológicos a vigilar:", { bold: true }));
+    generarSesgosMetodologicos(resultado, txtBase).split("\n").forEach(l => parts.push(paragraphXml(l, { sinSangria: true })));
   }
 
   if (disenoCabeceraPie) {

@@ -109,6 +109,12 @@ async function main() {
   const guiaBiblio = await page.textContent("#out_guia_bibliografica");
   assert(guiaBiblio.includes("Google Scholar"), "guía de búsqueda bibliográfica presente en la etapa Ejecutar");
 
+  // --- Validez, confiabilidad y sesgos metodológicos (exclusivo de la línea Profesional) ---
+  const validezConfiabilidad = await page.textContent("#out_validez_confiabilidad");
+  assert(validezConfiabilidad.trim().length > 0, "validez y confiabilidad presentes en la etapa Ejecutar (exclusivo Pro)");
+  const sesgosMetodologicos = await page.textContent("#out_sesgos_metodologicos");
+  assert(sesgosMetodologicos.includes("Sesgo de selección"), "sesgos metodológicos presentes en la etapa Ejecutar (exclusivo Pro)");
+
   // --- Historial: buscador filtra de verdad ---
   await page.click('.sk-sidebar-item[data-scrollto="sk_historial_panel"]');
   await page.waitForTimeout(150);
@@ -148,6 +154,7 @@ async function main() {
   assert(xml.includes("19. Consejos de tu director de tesis"), "docx contiene la nueva sección de consejos de director de tesis");
   assert(xml.includes("Google Scholar"), "docx contiene la guía de búsqueda bibliográfica");
   assert(xml.includes("Revisión de coherencia"), "docx contiene la sección de revisión de coherencia");
+  assert(xml.includes("20. Validez, confiabilidad y sesgos metodológicos"), "docx contiene la sección de validez/confiabilidad/sesgos (exclusivo Pro)");
   assert(!xml.includes("Universidad de Zaragoza: consulta"), "docx sin la nota específica de la Universidad de Zaragoza");
 
   console.log("OK: informe profesional en", docxPath);

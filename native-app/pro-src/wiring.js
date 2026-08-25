@@ -333,6 +333,12 @@ function actualizarInterfazConResultado(resultado) {
   const outGuiaBiblio = document.getElementById("out_guia_bibliografica");
   if (outGuiaBiblio) outGuiaBiblio.textContent = generarGuiaBusquedaBibliografica(resultado);
 
+  const outValidez = document.getElementById("out_validez_confiabilidad");
+  if (outValidez) outValidez.textContent = generarValidezConfiabilidad(resultado);
+
+  const outSesgos = document.getElementById("out_sesgos_metodologicos");
+  if (outSesgos) outSesgos.textContent = generarSesgosMetodologicos(resultado, document.getElementById("txt_problema").value);
+
   actualizarResumenReal(resultado);
   actualizarRevisionCoherencia();
 }
@@ -449,7 +455,7 @@ function inicializarNavegacion() {
 }
 
 function limpiarSalidasPorErrorEdu() {
-  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia"];
+  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos"];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) el.textContent = "—";
@@ -634,7 +640,7 @@ window.addEventListener("load", function () {
 
   if (btnClear) {
     btnClear.addEventListener("click", function () {
-      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia"];
+      const ids = ["txt_problema", "txt_justificacion_marco", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos"];
       ids.forEach(function (id) {
         const e = document.getElementById(id);
         if (!e) return;
@@ -701,7 +707,8 @@ window.addEventListener("load", function () {
           tituloInforme: "SOCIOKAIROS Research",
           subtituloInforme: "INFORME · RESEARCH SUITE",
           incluirNotaUnizar: false,
-          disenoCabeceraPie: true
+          disenoCabeceraPie: true,
+          seccionesAmpliadas: true
         });
         const blob = new Blob([zipBytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
         const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12);

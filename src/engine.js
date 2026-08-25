@@ -2410,6 +2410,74 @@ function generarRevisionCoherencia(resultado, justificacionMarcos) {
   return "Revisión de coherencia:\n" + avisos.join("\n");
 }
 
+/* ================= validez, confiabilidad y sesgos metodológicos ================= */
+/* Lo que un director de tesis pregunta después de aceptar el planteamiento:
+ * ¿por qué deberíamos creer estos hallazgos? Determinista: se deriva del
+ * enfoque y el diseño ya detectados, sin inventar datos del estudio
+ * concreto (no hay alfa de Cronbach ni tamaño muestral reales que reportar
+ * — solo la pauta de qué reportar y por qué). */
+function generarValidezConfiabilidad(resultado) {
+  resultado = resultado || {};
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
+  const diseno = (resultado.diseno || "").toLowerCase();
+  const lineas = [];
+
+  if (et.esCualitativo) {
+    lineas.push("Credibilidad (¿reflejan tus hallazgos la realidad de las personas participantes?):");
+    lineas.push("- Triangula fuentes, técnicas o investigadores siempre que sea posible.");
+    lineas.push("- Si el diseño lo permite, contrasta tus interpretaciones con las propias personas participantes (member checking).");
+    lineas.push("Transferibilidad (¿podría alguien aplicar tus hallazgos a otro contexto similar?):");
+    lineas.push("- Describe el contexto, las personas participantes y el proceso con suficiente detalle (descripción densa) para que el lector juzgue la transferibilidad.");
+    lineas.push("Dependencia (¿serían consistentes tus hallazgos si otra persona investigadora repitiera el proceso?):");
+    lineas.push("- Documenta tus decisiones metodológicas en un diario de campo o pista de auditoría.");
+    lineas.push("Confirmabilidad (¿reflejan los hallazgos a las personas participantes y no solo tus propios supuestos?):");
+    lineas.push("- Practica la reflexividad: explicita tu posición como investigador/a y cómo puede influir en la interpretación.");
+  } else {
+    lineas.push("Validez interna (¿mide realmente tu diseño lo que dice medir, sin explicaciones alternativas?):");
+    lineas.push(`- Identifica posibles variables de confusión no controladas${(resultado.vi || []).length ? `, además de ${skJoin(resultado.vi)}` : ""}.`);
+    if (diseno.includes("transversal")) {
+      lineas.push("- Un diseño transversal no permite establecer secuencia temporal: no la des por sentada al interpretar los resultados.");
+    }
+    lineas.push("Validez externa (¿pueden generalizarse tus resultados más allá de tu muestra?):");
+    lineas.push("- Especifica los criterios de selección de la muestra y compáralos con la población de referencia para valorar la representatividad.");
+    lineas.push("Confiabilidad (¿producirían mediciones repetidas resultados consistentes?):");
+    lineas.push("- Si usas escalas o cuestionarios, reporta su consistencia interna (p. ej. alfa de Cronbach) o su fiabilidad test-retest si aplica.");
+    if ((resultado.enfoque || "") === "mixto") {
+      lineas.push("En la fase cualitativa de tu diseño mixto, aplica también los criterios de credibilidad, transferibilidad, dependencia y confirmabilidad propios de esa tradición.");
+    }
+  }
+
+  return lineas.join("\n");
+}
+
+function generarSesgosMetodologicos(resultado, txt) {
+  resultado = resultado || {};
+  const t = (txt || "").toLowerCase();
+  const et = resultado.etiquetas || etiquetasEnfoque(resultado.enfoque);
+  const diseno = (resultado.diseno || "").toLowerCase();
+  const sesgos = [];
+
+  sesgos.push("• Sesgo de selección: revisa cómo se elige a las personas o casos participantes — una muestra por conveniencia puede sobrerrepresentar a quienes son más accesibles o están más dispuestos a participar.");
+
+  if (skHas(t, ["violencia", "salud mental", "ansiedad", "depres", "delincuencia", "discriminación", "discriminacion", "sexual", "abuso", "consumo", "adicción", "adiccion", "pobreza", "estigma"])) {
+    sesgos.push("• Deseabilidad social: al tratar un tema sensible, las personas participantes pueden responder lo que consideran socialmente aceptable en vez de su experiencia real — valora técnicas que reduzcan esta presión (anonimato, formulación indirecta de preguntas).");
+  }
+
+  if (diseno.includes("transversal")) {
+    sesgos.push("• Causalidad inversa: un diseño transversal no puede descartar que sea el efecto el que preceda a la causa que propones — evita el lenguaje causal fuerte en tus conclusiones.");
+  }
+
+  sesgos.push("• Sesgo de confirmación: revisa si tu marco teórico o tus hipótesis de partida están condicionando qué datos buscas o cómo los interpretas — busca activamente evidencia que las contradiga.");
+
+  if (et.esCualitativo) {
+    sesgos.push("• Reflexividad de quien investiga: tu posición social, tus supuestos y tu relación con las personas participantes forman parte del proceso de producción de datos — hazlos explícitos, no los des por neutros.");
+  } else {
+    sesgos.push("• Sesgo de no respuesta: quienes no participan o abandonan el estudio pueden diferir sistemáticamente de quienes sí lo hacen — valora si esto compromete la representatividad.");
+  }
+
+  return sesgos.join("\n");
+}
+
 /* ================= visualización SVG heurística ================= */
 
 function skSvgEscape(value) {
@@ -2584,5 +2652,6 @@ if (typeof module !== "undefined") {
     generarPreguntasSocraticas, generarPuntosDebilesADefender, generarGuiaBusquedaBibliografica,
     construirPreguntasCualitativas, construirRelacionesCualitativas, construirProposicionesCualitativas,
     etiquetasEnfoque, generarRevisionCoherencia,
+    generarValidezConfiabilidad, generarSesgosMetodologicos,
   };
 }
