@@ -285,7 +285,7 @@ async function main() {
   assert(transparenciaPt.includes("VARIABLE DEPENDIENTE"), "el contenido generado por el motor sigue en español con la interfaz en portugués (no se retraduce el resultado)");
 
   await page2.reload();
-  await page2.waitForTimeout(150);
+  await page2.waitForSelector('.sk-lang-btn.active[data-lang="pt"]', { timeout: 5000 }).catch(() => {});
   const activeLangTrasReload = await page2.getAttribute(".sk-lang-btn.active", "data-lang");
   assert(activeLangTrasReload === "pt", `el idioma persiste en localStorage tras recargar: "${activeLangTrasReload}"`);
 
@@ -314,7 +314,7 @@ async function main() {
   await page3.fill('#skRegistroModal input[name="institucion"]', "Universidad de Prueba");
   await page3.fill('#skRegistroModal input[name="email"]', "prueba@example.com");
   await page3.click("#skRegistroBtnEnviar");
-  await page3.waitForTimeout(3000);
+  await page3.waitForSelector("#skRegistroModal", { state: "hidden", timeout: 10000 });
 
   assert(!(await page3.isVisible("#skRegistroModal")), "el modal se cierra tras enviar, incluso si el envío de red falla (best-effort, no bloquea la app)");
   const flagRegistro = await page3.evaluate(() => localStorage.getItem("sk_registro_enviado"));

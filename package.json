@@ -9,6 +9,7 @@
   },
   "license": "SEE LICENSE IN scorm_plugin/LICENCIA.txt",
   "devDependencies": {
+    "playwright": "^1.55.1",
     "terser": "^5.50.0"
   }
 }
