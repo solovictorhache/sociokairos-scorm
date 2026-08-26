@@ -21,6 +21,35 @@
   </div>
 </div>
 
+<div id="skRegistroModal" style="display:none;position:fixed;inset:0;z-index:999999;background:rgba(10,20,15,.72);align-items:center;justify-content:center;padding:20px;">
+  <div style="max-width:480px;width:100%;background:var(--sk-card-solid);color:var(--sk-text);border-radius:22px;padding:30px 28px;box-shadow:0 25px 60px rgba(0,0,0,.4);text-align:left;border:1px solid var(--sk-border);max-height:90vh;overflow-y:auto;">
+    <h3 style="margin:0 0 6px;font-size:19px;">Antes de empezar</h3>
+    <p style="margin:0 0 18px;font-size:13.5px;line-height:1.5;color:var(--sk-muted);">SOCIOKAIROS Research te pide unos datos breves con fines estadísticos de uso. Se envían una única vez a contacto@sociokairos.com; el resto de la aplicación funciona sin conexión.</p>
+    <form id="skRegistroForm">
+      <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:4px;">Nombre completo</label>
+      <input name="nombre" type="text" required style="width:100%;padding:10px 12px;margin-bottom:12px;border-radius:12px;border:1px solid var(--sk-border);background:rgba(0,0,0,.03);color:var(--sk-text);font-size:14px;">
+
+      <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:4px;">Título académico o «Estudiante»</label>
+      <input name="titulo" type="text" required placeholder="p. ej. Estudiante de Grado, Doctor/a en Sociología..." style="width:100%;padding:10px 12px;margin-bottom:12px;border-radius:12px;border:1px solid var(--sk-border);background:rgba(0,0,0,.03);color:var(--sk-text);font-size:14px;">
+
+      <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:4px;">Especialidad / área</label>
+      <input name="especialidad" type="text" required style="width:100%;padding:10px 12px;margin-bottom:12px;border-radius:12px;border:1px solid var(--sk-border);background:rgba(0,0,0,.03);color:var(--sk-text);font-size:14px;">
+
+      <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:4px;">Institución</label>
+      <input name="institucion" type="text" required style="width:100%;padding:10px 12px;margin-bottom:12px;border-radius:12px;border:1px solid var(--sk-border);background:rgba(0,0,0,.03);color:var(--sk-text);font-size:14px;">
+
+      <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:4px;">Correo electrónico</label>
+      <input name="email" type="email" required style="width:100%;padding:10px 12px;margin-bottom:16px;border-radius:12px;border:1px solid var(--sk-border);background:rgba(0,0,0,.03);color:var(--sk-text);font-size:14px;">
+
+      <p style="margin:0 0 14px;font-size:11.5px;color:var(--sk-muted);">Estos datos se usan solo con fines estadísticos de uso de SOCIOKAIROS y se envían a contacto@sociokairos.com.</p>
+
+      <div id="skRegistroEstado" style="font-size:12.5px;margin-bottom:10px;min-height:16px;"></div>
+
+      <button id="skRegistroBtnEnviar" type="submit" style="width:100%;">Enviar y continuar</button>
+    </form>
+  </div>
+</div>
+
 <div class="sk-mesh-bg" aria-hidden="true"></div>
 <div class="sk-app">
 
@@ -244,6 +273,14 @@
           <div>
             <button id="btn_export_word" class="secondary" data-i18n="common.btn.exportWord">Exportar informe Word</button>
             <button id="btn_export_csv" class="secondary" data-i18n="common.btn.exportCsv">Exportar operacionalización (CSV)</button>
+          </div>
+
+          <h3 style="margin-top:22px; padding-top:18px; border-top:1px solid var(--sk-border);">Proyecto SOCIOKAIROS (.json)</h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Guarda el proyecto completo (problema, justificación teórica, transcripción y análisis) en un único archivo para continuarlo en otro equipo, o cárgalo aquí para retomarlo.</p>
+          <div>
+            <button id="btn_export_proyecto" class="secondary" type="button">Exportar proyecto (.json)</button>
+            <button id="btn_import_proyecto" class="secondary" type="button">Importar proyecto (.json)</button>
+            <input id="input_import_proyecto" type="file" accept="application/json" style="display:none;">
           </div>
 
           <h3 data-i18n="pro.h.transcripcion" style="margin-top:22px; padding-top:18px; border-top:1px solid var(--sk-border);">Transcripción cualitativa (pre-CAQDAS)</h3>

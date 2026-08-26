@@ -26,6 +26,12 @@ async function main() {
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
 
+  // El resto de este archivo prueba el flujo normal de la app, que el modal
+  // de registro obligatorio (primer arranque) bloquearía por completo; se
+  // simula un dispositivo que ya lo completó. El modal en sí se cubre en su
+  // propia sección más abajo, con un navegador aparte y sin este flag.
+  await page.addInitScript(() => localStorage.setItem("sk_registro_enviado", "1"));
+
   await page.goto("file://" + DIST_PRO);
 
   assert((await page.$("#sociokairosStartOverlay")) === null, "no existe el overlay de arranque (quitado en pro)");
@@ -153,6 +159,39 @@ async function main() {
   const docxPath = path.join(OUT_DIR, "informe_pro.docx");
   await downloadWord.saveAs(docxPath);
 
+  // --- Exportar / importar proyecto (.json): guarda el estado del análisis
+  // actual y lo recupera en la propia página, comprobando que el motor se
+  // vuelve a ejecutar con el mismo texto (exclusivo Pro) ---
+  const [downloadProyecto] = await Promise.all([
+    page.waitForEvent("download"),
+    page.click("#btn_export_proyecto"),
+  ]);
+  const proyectoPath = path.join(OUT_DIR, "proyecto_pro.json");
+  await downloadProyecto.saveAs(proyectoPath);
+  const proyectoJson = JSON.parse(fs.readFileSync(proyectoPath, "utf-8"));
+  assert(proyectoJson.formato === "sociokairos-proyecto", "el .json exportado declara el formato de proyecto SOCIOKAIROS");
+  assert(proyectoJson.problema === PROBLEMA, "el .json exportado conserva el texto exacto del problema");
+
+  await page.click('.sk-step[data-stage="definir"]');
+  await page.click("#btn_clear");
+  await page.waitForTimeout(150);
+  const outVariablesTrasLimpiar = await page.textContent("#out_variables");
+  assert(outVariablesTrasLimpiar.trim() === "—", "borrar problema deja las variables en blanco antes de importar");
+
+  await page.click('.sk-step[data-stage="comunicar"]');
+  await page.waitForTimeout(150);
+  const inputImportProyecto = await page.$("#input_import_proyecto");
+  await inputImportProyecto.setInputFiles(proyectoPath);
+  await page.waitForTimeout(500);
+  assert((await page.textContent("#status")).includes("Proyecto importado"), "importar proyecto confirma el estado en la barra de estado");
+  assert((await page.inputValue("#txt_problema")) === PROBLEMA, "importar proyecto restaura el texto del problema");
+  assert(await page.isVisible('.sk-step[data-stage="analizar"].active'), "importar proyecto vuelve a analizar y activa la etapa 'Analizar'");
+  const outVariablesTrasImportar = await page.textContent("#out_variables");
+  assert(outVariablesTrasImportar.trim() !== "—" && outVariablesTrasImportar.trim().length > 0, "importar proyecto reconstruye las variables con el mismo motor");
+
+  await page.click('.sk-step[data-stage="comunicar"]');
+  await page.waitForTimeout(150);
+
   // --- Transcripción cualitativa (pre-CAQDAS): formatea una transcripción
   // pegada por el usuario en un .docx con comentarios nativos de Word,
   // anclados a las categorías del libro de códigos del análisis actual
@@ -220,6 +259,7 @@ async function main() {
   const page2 = await browser2.newPage();
   const errors2 = [];
   page2.on("pageerror", (e) => errors2.push(String(e)));
+  await page2.addInitScript(() => localStorage.setItem("sk_registro_enviado", "1"));
   await page2.goto("file://" + DIST_PRO);
 
   const langButtons = await page2.$$(".sk-lang-btn");
@@ -251,6 +291,46 @@ async function main() {
 
   await browser2.close();
   if (errors2.length) throw new Error("Errores de página durante la prueba de idioma:\n" + errors2.join("\n"));
+
+  // --- Registro obligatorio de primer uso (estadísticas), exclusivo Pro:
+  // sin el flag de localStorage sembrado arriba, así que aquí se prueba el
+  // arranque real de un dispositivo nuevo. ---
+  const browser3 = await chromium.launch();
+  const page3 = await browser3.newPage();
+  const errors3 = [];
+  page3.on("pageerror", (e) => errors3.push(String(e)));
+  await page3.goto("file://" + DIST_PRO);
+  await page3.waitForTimeout(200);
+
+  assert(await page3.isVisible("#skRegistroModal"), "el modal de registro se muestra en el primer arranque");
+
+  await page3.click("#skRegistroBtnEnviar");
+  await page3.waitForTimeout(200);
+  assert(await page3.isVisible("#skRegistroModal"), "el envío vacío no cierra el modal (campos requeridos por HTML5)");
+
+  await page3.fill('#skRegistroModal input[name="nombre"]', "Nombre de prueba");
+  await page3.fill('#skRegistroModal input[name="titulo"]', "Estudiante de Grado");
+  await page3.fill('#skRegistroModal input[name="especialidad"]', "Sociología");
+  await page3.fill('#skRegistroModal input[name="institucion"]', "Universidad de Prueba");
+  await page3.fill('#skRegistroModal input[name="email"]', "prueba@example.com");
+  await page3.click("#skRegistroBtnEnviar");
+  await page3.waitForTimeout(3000);
+
+  assert(!(await page3.isVisible("#skRegistroModal")), "el modal se cierra tras enviar, incluso si el envío de red falla (best-effort, no bloquea la app)");
+  const flagRegistro = await page3.evaluate(() => localStorage.getItem("sk_registro_enviado"));
+  assert(flagRegistro === "1", "se marca localStorage tras el intento de envío, para no volver a pedirlo en este dispositivo");
+
+  await page3.reload();
+  await page3.waitForTimeout(300);
+  assert(!(await page3.isVisible("#skRegistroModal")), "tras recargar, no se vuelve a mostrar el modal en el mismo dispositivo");
+
+  await page3.fill("#txt_problema", PROBLEMA);
+  await page3.click("#btn_reformular");
+  await page3.waitForTimeout(500);
+  assert((await page3.textContent("#status")).includes("Análisis completado"), "el resto de la app funciona con normalidad tras completar el registro");
+
+  await browser3.close();
+  if (errors3.length) throw new Error("Errores de página durante la prueba de registro:\n" + errors3.join("\n"));
 }
 
 main().catch((e) => {

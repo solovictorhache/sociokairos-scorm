@@ -9,6 +9,58 @@ function salirPantallaCompleta() {
   try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { /* no disponible */ }
 }
 
+/* ================= registro inicial (estadísticas de uso) =================
+ * Único punto de conexión a internet de toda la línea Profesional: el resto
+ * de la herramienta funciona sin red. Se pide una vez por dispositivo
+ * (marca sk_registro_enviado en localStorage) y se envía a Formspree, que
+ * reenvía el formulario a contacto@sociokairos.com sin necesidad de
+ * servidor propio. Si el envío falla (sin conexión, Formspree caído...) no
+ * se bloquea el uso de la aplicación: se avisa y se deja continuar, sin
+ * reintento automático — es una estadística de mejor esfuerzo, no una
+ * puerta de acceso real. */
+// TODO: sustituir por el endpoint real de Formspree (https://formspree.io/f/XXXXXXXX)
+const SK_REGISTRO_ENDPOINT = "https://formspree.io/f/PLACEHOLDER";
+
+function skMostrarRegistroSiHaceFalta() {
+  let yaRegistrado = false;
+  try { yaRegistrado = localStorage.getItem("sk_registro_enviado") === "1"; } catch (e) { /* localStorage no disponible */ }
+  if (yaRegistrado) return;
+  const modal = document.getElementById("skRegistroModal");
+  if (modal) modal.style.display = "flex";
+}
+
+function skInicializarFormularioRegistro() {
+  const form = document.getElementById("skRegistroForm");
+  if (!form) return;
+  form.addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    const estadoEl = document.getElementById("skRegistroEstado");
+    const btn = document.getElementById("skRegistroBtnEnviar");
+    const modal = document.getElementById("skRegistroModal");
+    if (btn) btn.disabled = true;
+    if (estadoEl) { estadoEl.textContent = "Enviando..."; estadoEl.style.color = "var(--sk-muted)"; }
+    try {
+      const resp = await fetch(SK_REGISTRO_ENDPOINT, {
+        method: "POST",
+        body: new FormData(form),
+        headers: { "Accept": "application/json" },
+      });
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      try { localStorage.setItem("sk_registro_enviado", "1"); } catch (e) { /* localStorage no disponible */ }
+      if (modal) modal.style.display = "none";
+    } catch (e) {
+      if (estadoEl) {
+        estadoEl.textContent = "No se pudo enviar (¿sin conexión?). Puedes continuar igualmente; no volveremos a pedírtelo en este dispositivo.";
+        estadoEl.style.color = "#c9762b";
+      }
+      try { localStorage.setItem("sk_registro_enviado", "1"); } catch (e2) { /* localStorage no disponible */ }
+      setTimeout(() => { if (modal) modal.style.display = "none"; }, 2600);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  });
+}
+
 /* ================= pop-up de corrección de erratas ================= */
 /**
  * Muestra el pop-up para UNA errata sospechosa (ver detectarErratasSospechosas
@@ -558,8 +610,72 @@ function obtenerVersionSeleccionada(resultado, txtOriginal) {
   return { problemaTrabajo, versionLabel };
 }
 
+/* ================= Exportar / importar proyecto (.json) ================= */
+/**
+ * Serializa lo mínimo necesario para retomar un análisis en otra máquina:
+ * el motor es determinista a partir del texto del problema, así que en vez
+ * de guardar el `resultado` completo (derivado), se re-ejecuta
+ * analizarProblema() al importar con el mismo texto y la misma dirección
+ * VI/VD manual, evitando desincronías si el motor cambia entre versiones.
+ */
+function construirProyectoJSON() {
+  const txtEl = document.getElementById("txt_problema");
+  const txtJustificacion = document.getElementById("txt_justificacion_marco");
+  const txtTranscripcion = document.getElementById("txt_transcripcion");
+  const selVersion = document.querySelector('input[name="vers_sel"]:checked');
+  return {
+    formato: "sociokairos-proyecto",
+    version: 1,
+    fecha: new Date().toISOString(),
+    problema: txtEl ? txtEl.value : "",
+    justificacionMarco: txtJustificacion ? txtJustificacion.value : "",
+    transcripcion: txtTranscripcion ? txtTranscripcion.value : "",
+    viVdIntercambiado: viVdIntercambiado,
+    versionSeleccionada: selVersion ? selVersion.value : null
+  };
+}
+
+async function aplicarProyectoImportado(datos, statusEl) {
+  if (!datos || datos.formato !== "sociokairos-proyecto" || typeof datos.problema !== "string") {
+    throw new Error("el archivo no tiene el formato de proyecto SOCIOKAIROS esperado.");
+  }
+  const txtEl = document.getElementById("txt_problema");
+  const txtJustificacion = document.getElementById("txt_justificacion_marco");
+  const txtTranscripcion = document.getElementById("txt_transcripcion");
+  if (txtEl) txtEl.value = datos.problema || "";
+  if (txtJustificacion) txtJustificacion.value = datos.justificacionMarco || "";
+  if (txtTranscripcion) txtTranscripcion.value = datos.transcripcion || "";
+
+  const txt = datos.problema || "";
+  if (!txt.trim()) return;
+
+  const validacion = validarProblemaEdu(txt);
+  if (!validacion.valido) {
+    limpiarSalidasPorErrorEdu();
+    if (statusEl) statusEl.textContent = "El problema importado no pasa la validación de estructura.";
+    return;
+  }
+  activarSalidasValidasEdu();
+  ultimoTextoAnalizado = txt;
+  viVdIntercambiado = !!datos.viVdIntercambiado;
+  const resultado = analizarProblema(txt, { intercambiarViVd: viVdIntercambiado });
+  actualizarInterfazConResultado(resultado);
+  guardarEnHistorial(txt, resultado);
+  const buscadorActivo = document.getElementById("sk_historial_buscar");
+  renderizarHistorial(buscadorActivo ? buscadorActivo.value : "");
+
+  if (datos.versionSeleccionada) {
+    const radio = document.querySelector('input[name="vers_sel"][value="' + datos.versionSeleccionada + '"]');
+    if (radio) radio.checked = true;
+  }
+  actualizarRevisionCoherencia();
+  activarEtapa("analizar");
+}
+
 window.addEventListener("load", function () {
   skInitIdioma();
+  skInicializarFormularioRegistro();
+  skMostrarRegistroSiHaceFalta();
 
   try {
     if (localStorage.getItem("sk_theme") === "dark") document.body.classList.add("sk-dark");
@@ -807,6 +923,46 @@ window.addEventListener("load", function () {
         if (statusEl) statusEl.textContent = guardado ? skT("pro.status.transcriptDone") : skT("common.status.saveCancelled");
       } catch (e) {
         if (statusEl) statusEl.textContent = skT("pro.status.transcriptError") + e.message;
+      }
+    });
+  }
+
+  const btnExportProyecto = document.getElementById("btn_export_proyecto");
+  const btnImportProyecto = document.getElementById("btn_import_proyecto");
+  const inputImportProyecto = document.getElementById("input_import_proyecto");
+
+  if (btnExportProyecto) {
+    btnExportProyecto.addEventListener("click", async function () {
+      try {
+        const datos = construirProyectoJSON();
+        if (!datos.problema.trim()) {
+          if (statusEl) statusEl.textContent = "Escribe o carga un problema antes de exportar el proyecto.";
+          return;
+        }
+        const blob = new Blob([JSON.stringify(datos, null, 2)], { type: "application/json" });
+        const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12);
+        const guardado = await descargarBlob(blob, `Proyecto_SOCIOKAIROS_${ts}.json`);
+        if (statusEl) statusEl.textContent = guardado ? "Proyecto exportado." : "Guardado cancelado.";
+      } catch (e) {
+        if (statusEl) statusEl.textContent = "Error al exportar el proyecto: " + e.message;
+      }
+    });
+  }
+
+  if (btnImportProyecto && inputImportProyecto) {
+    btnImportProyecto.addEventListener("click", function () { inputImportProyecto.click(); });
+    inputImportProyecto.addEventListener("change", async function () {
+      const file = inputImportProyecto.files && inputImportProyecto.files[0];
+      inputImportProyecto.value = "";
+      if (!file) return;
+      if (statusEl) statusEl.textContent = "Importando proyecto...";
+      try {
+        const texto = await file.text();
+        const datos = JSON.parse(texto);
+        await aplicarProyectoImportado(datos, statusEl);
+        if (statusEl) statusEl.textContent = "Proyecto importado.";
+      } catch (e) {
+        if (statusEl) statusEl.textContent = "Error al importar el proyecto: " + e.message;
       }
     });
   }
