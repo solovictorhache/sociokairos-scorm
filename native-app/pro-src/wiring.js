@@ -61,6 +61,35 @@ function skInicializarFormularioRegistro() {
   });
 }
 
+/* ================= ping de uso anónimo (Cloudflare D1) =================
+ * Segundo y último punto de conexión a internet, independiente del
+ * registro: un contador de dispositivos activos sin ningún dato personal
+ * (solo un id aleatorio por dispositivo). No sustituye al registro — es
+ * más barato de mantener a largo plazo porque no depende de los límites de
+ * envíos de Formspree. Igual que el registro, es de mejor esfuerzo: si
+ * falla, no se reintenta ni se avisa al usuario. */
+// TODO: sustituir por la URL real tras desplegar cloudflare/stats-worker (ver su README.md)
+const SK_STATS_PING_ENDPOINT = "https://sociokairos-stats-worker.PLACEHOLDER.workers.dev";
+
+function skEnviarPingDeUso() {
+  let deviceId;
+  try {
+    deviceId = localStorage.getItem("sk_device_id");
+    if (!deviceId) {
+      deviceId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random();
+      localStorage.setItem("sk_device_id", deviceId);
+    }
+  } catch (e) {
+    return; // sin localStorage no hay forma fiable de contar una sola vez por dispositivo
+  }
+
+  fetch(SK_STATS_PING_ENDPOINT + "/ping", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ device_id: deviceId, app_version: "1.0", platform: navigator.platform || "" }),
+  }).catch(() => { /* sin conexión o Worker no desplegado aún: se ignora, no bloquea nada */ });
+}
+
 /* ================= pop-up de corrección de erratas ================= */
 /**
  * Muestra el pop-up para UNA errata sospechosa (ver detectarErratasSospechosas
@@ -676,6 +705,7 @@ window.addEventListener("load", function () {
   skInitIdioma();
   skInicializarFormularioRegistro();
   skMostrarRegistroSiHaceFalta();
+  skEnviarPingDeUso();
 
   try {
     if (localStorage.getItem("sk_theme") === "dark") document.body.classList.add("sk-dark");

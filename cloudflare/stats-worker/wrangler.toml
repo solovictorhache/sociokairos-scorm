@@ -1,0 +1,12 @@
+name = "sociokairos-stats-worker"
+main = "src/index.js"
+compatibility_date = "2026-08-26"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sociokairos-stats"
+database_id = "57069264-576f-4518-b338-2dccf75e91a0"
+
+# Clave secreta para consultar GET /count?key=... — no la pongas aquí en
+# texto plano; configúrala tras el primer deploy con:
+#   npx wrangler secret put ADMIN_KEY
