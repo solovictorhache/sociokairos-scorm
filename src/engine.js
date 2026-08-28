@@ -2934,6 +2934,222 @@ function generarSvgVisual(resultado, modo) {
   return parts.join("");
 }
 
+/* ================= funciones Premium (exclusivas de la línea Profesional,
+   gratuitas durante el lanzamiento — ver skPremiumBadge en wiring.js) ===== */
+
+/**
+ * Aproximación racional de Peter Acklam para la inversa de la función de
+ * distribución normal estándar (percentil z dado un cuantil p). Evita
+ * depender de una librería estadística externa para la calculadora de
+ * tamaño muestral; precisión de sobra (~1e-9) para los valores de alfa y
+ * potencia habituales en ciencias sociales.
+ */
+function skInvNorm(p) {
+  if (!(p > 0) || !(p < 1)) return NaN;
+  const a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02, 1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00];
+  const b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02, 6.680131188771972e+01, -1.328068155288572e+01];
+  const c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00, -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00];
+  const d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00, 3.754408661907416e+00];
+  const plow = 0.02425;
+  const phigh = 1 - plow;
+  if (p < plow) {
+    const q = Math.sqrt(-2 * Math.log(p));
+    return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+      ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+  }
+  if (p <= phigh) {
+    const q = p - 0.5;
+    const r = q * q;
+    return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q /
+      (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
+  }
+  const q = Math.sqrt(-2 * Math.log(1 - p));
+  return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+    ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+}
+
+/**
+ * Calculadora de tamaño muestral con las aproximaciones estándar de Cohen
+ * (1988) para tres escenarios habituales en ciencias sociales: comparación
+ * de dos medias independientes (d de Cohen), correlación (transformación z
+ * de Fisher) y comparación de dos proporciones. Fórmulas orientativas, no
+ * sustituyen un análisis de potencia hecho con software especializado
+ * (G*Power) para diseños más complejos (ANOVA, regresión multivariante...).
+ */
+function calcularTamanoMuestral(opciones) {
+  const o = opciones || {};
+  const alfa = Number(o.alfa) > 0 && Number(o.alfa) < 1 ? Number(o.alfa) : 0.05;
+  const potencia = Number(o.potencia) > 0 && Number(o.potencia) < 1 ? Number(o.potencia) : 0.80;
+  const zAlfa = skInvNorm(1 - alfa / 2);
+  const zBeta = skInvNorm(potencia);
+  const tipo = o.tipo || "medias";
+
+  if (tipo === "correlacion") {
+    const r = Math.max(-0.99, Math.min(0.99, Number(o.r) || 0.3));
+    const C = 0.5 * Math.log((1 + r) / (1 - r));
+    const n = Math.ceil(Math.pow((zAlfa + zBeta) / C, 2) + 3);
+    return {
+      n,
+      formula: "n = ((z_(α/2) + z_β) / C)² + 3, con C = 0.5·ln((1+r)/(1−r)) (transformación z de Fisher)",
+      detalle: `r esperado = ${r}, α = ${alfa}, potencia = ${potencia} (z_(α/2) = ${zAlfa.toFixed(3)}, z_β = ${zBeta.toFixed(3)})`,
+    };
+  }
+
+  if (tipo === "proporciones") {
+    const p1 = Math.min(0.99, Math.max(0.01, Number(o.p1) || 0.5));
+    const p2 = Math.min(0.99, Math.max(0.01, Number(o.p2) || 0.3));
+    const pBar = (p1 + p2) / 2;
+    const n = Math.ceil(
+      Math.pow(zAlfa * Math.sqrt(2 * pBar * (1 - pBar)) + zBeta * Math.sqrt(p1 * (1 - p1) + p2 * (1 - p2)), 2) /
+      Math.pow(p1 - p2, 2)
+    );
+    return {
+      n,
+      formula: "n por grupo = (z_(α/2)·√(2·p̄·(1−p̄)) + z_β·√(p1(1−p1)+p2(1−p2)))² / (p1−p2)²",
+      detalle: `p1 = ${p1}, p2 = ${p2}, α = ${alfa}, potencia = ${potencia} (z_(α/2) = ${zAlfa.toFixed(3)}, z_β = ${zBeta.toFixed(3)})`,
+    };
+  }
+
+  const d = Math.max(0.01, Number(o.d) || 0.5);
+  const n = Math.ceil(2 * Math.pow((zAlfa + zBeta) / d, 2));
+  return {
+    n,
+    formula: "n por grupo = 2 × ((z_(α/2) + z_β) / d)²  (d de Cohen)",
+    detalle: `d de Cohen = ${d}, α = ${alfa}, potencia = ${potencia} (z_(α/2) = ${zAlfa.toFixed(3)}, z_β = ${zBeta.toFixed(3)})`,
+  };
+}
+
+/**
+ * Banco de instrumentos validados reales, indexados por concepto. Cubre
+ * solo los conceptos catalogados aquí — no es exhaustivo. Cuando no
+ * reconoce ningún concepto del problema, remite a repositorios reales
+ * (PsycTESTS, banco de instrumentos del CIS) en vez de inventar un
+ * instrumento. Todas las citas corresponden a instrumentos reales y
+ * ampliamente usados en ciencias sociales; aun así, el texto pide siempre
+ * verificar la fuente primaria y la licencia de uso antes de aplicarlos.
+ */
+const BANCO_ESCALAS_VALIDADAS = [
+  { claves: ["autoestima"], nombre: "Escala de Autoestima de Rosenberg (RSES)", autores: "Rosenberg, M.", anio: 1965, items: 10, nota: "10 ítems tipo Likert; muy usada en estudios de juventud y salud mental. Verifica la versión validada al español que vayas a citar." },
+  { claves: ["anomia"], nombre: "Escala de Anomia de Srole", autores: "Srole, L.", anio: 1956, items: 5, nota: "Instrumento clásico de anomia social; revisa validaciones posteriores en población hispanohablante antes de aplicarla." },
+  { claves: ["apoyo social"], nombre: "Cuestionario MOS de Apoyo Social", autores: "Sherbourne, C. D. y Stewart, A. L.", anio: 1991, items: 20, nota: "Mide apoyo emocional, instrumental y afectivo; existen validaciones al español publicadas en revistas de atención primaria." },
+  { claves: ["violencia de género", "violencia de genero", "violencia de pareja", "maltrato"], nombre: "Conflict Tactics Scales (CTS2)", autores: "Straus, M. A. et al.", anio: 1996, items: 78, nota: "Mide negociación, agresión psicológica/física y coerción sexual en la pareja; su aplicación exige formación ética y protocolo de seguridad específicos." },
+  { claves: ["satisfacción vital", "satisfaccion vital", "bienestar subjetivo"], nombre: "Satisfaction With Life Scale (SWLS)", autores: "Diener, E. et al.", anio: 1985, items: 5, nota: "5 ítems, muy usada en estudios de bienestar subjetivo; hay versiones validadas al español." },
+  { claves: ["cohesión social", "cohesion social", "confianza social", "capital social"], nombre: "Módulos de confianza y capital social del European Social Survey (ESS)", autores: "European Social Survey", anio: null, items: null, nota: "El ESS publica cuestionarios e ítems ya probados en decenas de países; consulta su repositorio antes de redactar ítems propios." },
+  { claves: ["precariedad laboral", "calidad del empleo"], nombre: "Employment Precariousness Scale (EPRES)", autores: "Vives, A. et al. (grupo GREDS-EMCONET, Universitat Pompeu Fabra)", anio: 2010, items: 26, nota: "Diseñada y validada en población española y latinoamericana; mide seis dimensiones de precariedad laboral." },
+  { claves: ["discriminación", "discriminacion", "estigma"], nombre: "Everyday Discrimination Scale", autores: "Williams, D. R. et al.", anio: 1997, items: 9, nota: "Mide experiencias cotidianas de discriminación percibida; adaptada a distintos grupos y contextos en estudios posteriores." },
+];
+
+function generarBancoEscalasValidadas(resultado, txt) {
+  resultado = resultado || {};
+  const total = ((txt || "") + " " + (resultado.vi || []).concat(resultado.vd || []).join(" ") + " " + (resultado.areas || [resultado.area || ""]).join(" ")).toLowerCase();
+  const encontradas = BANCO_ESCALAS_VALIDADAS.filter(e => e.claves.some(c => total.includes(c)));
+  if (!encontradas.length) {
+    return "SOCIOKAIROS no ha reconocido en tu problema ningún concepto con un instrumento validado catalogado aquí (este banco cubre solo un puñado de conceptos frecuentes, no es exhaustivo). Busca en repositorios reales como PsycTESTS (APA) o el banco de instrumentos del CIS, o revisa qué escalas ya se usaron en tu área en artículos indexados, antes de construir ítems desde cero.";
+  }
+  const lineas = encontradas.map(e => `- ${e.nombre} (${e.autores}${e.anio ? ", " + e.anio : ""})${e.items ? " — " + e.items + " ítems" : ""}: ${e.nota}`);
+  lineas.push("");
+  lineas.push("Verifica siempre la fuente primaria, la versión validada en tu idioma/población y si el instrumento exige permiso o licencia de uso antes de aplicarlo.");
+  return lineas.join("\n");
+}
+
+/**
+ * Borrador de ítems de cuestionario a partir de la propia tabla de
+ * operacionalización ya generada: un ítem candidato por indicador, con el
+ * formato (Likert/numérico/categórico) sugerido por el nivel de medición.
+ * Es un borrador para reescribir, no un cuestionario validado — mismo
+ * principio que el resto del motor: propone, el investigador decide.
+ */
+function generarBorradorCuestionario(resultado) {
+  resultado = resultado || {};
+  const filas = resultado.operacionalizacion || [];
+  if (!filas.length) {
+    return "Reformula primero un problema con variables identificadas: el borrador de cuestionario se construye a partir de tu tabla de operacionalización.";
+  }
+  const bloques = filas.map((fila, i) => {
+    const nivel = (fila.nivel || "").toLowerCase();
+    let item;
+    if (nivel.includes("nominal")) {
+      item = `Seleccione la categoría que mejor describe: "${fila.indicador}".`;
+    } else if (nivel.includes("razón") || nivel.includes("razon")) {
+      item = `Indique el valor numérico correspondiente a: "${fila.indicador}" (unidad: ${fila.unidad}).`;
+    } else {
+      item = `En una escala del 1 (nada / nunca) al 5 (mucho / siempre), valore: "${fila.indicador}"`;
+    }
+    return `${i + 1}. [${fila.variable} — ${fila.tipo}]\n   ${item}`;
+  });
+  return "Borrador de ítems, uno por indicador de tu tabla de operacionalización — reescribe la redacción, decide el número real de opciones de respuesta y el orden de las preguntas antes de aplicarlo:\n\n" + bloques.join("\n\n");
+}
+
+// Dimensiones sociales que suelen combinarse (no sumarse por separado) en
+// fenómenos de desigualdad — la lista es orientativa, no exhaustiva.
+const SK_DIMENSIONES_INTERSECCIONALES = {
+  "género/sexo": ["género", "genero", "mujer", "mujeres", "hombre", "hombres", "sexo"],
+  "clase/nivel socioeconómico": ["clase social", "nivel socioeconómico", "nivel socioeconomico", "renta", "ingresos", "pobreza", "precariedad"],
+  "etnia/origen": ["étnia", "etnia", "raza", "racial", "migrante", "inmigra", "origen nacional", "minoría étnica", "minoria etnica"],
+  "edad/generación": ["edad", "generación", "generacion", "joven", "jóvenes", "jovenes", "mayor", "mayores", "envejecimiento"],
+  "discapacidad": ["discapacidad", "diversidad funcional"],
+  "orientación sexual": ["orientación sexual", "orientacion sexual", "lgbt", "lgtbi"],
+};
+
+const SK_TEMAS_SENSIBLES_INTERSECCIONALIDAD = ["violencia", "pobreza", "precariedad", "discriminación", "discriminacion", "exclusión", "exclusion", "desigualdad", "vulnerabilidad", "acoso", "segregación", "segregacion"];
+
+/**
+ * Alerta si el problema toca un fenómeno donde distintos grupos sociales
+ * suelen verse afectados de forma distinta según cómo se combinen varias
+ * dimensiones sociales a la vez (género, clase, etnia, edad...), y avisa de
+ * cuáles ya aparecen en el planteamiento y cuáles podrías considerar cruzar
+ * — nunca decide por el investigador cuáles son realmente pertinentes.
+ */
+function generarAlertaInterseccionalidad(resultado, txt) {
+  resultado = resultado || {};
+  const total = ((txt || "") + " " + (resultado.vi || []).concat(resultado.vd || []).join(" ") + " " + (resultado.areas || [resultado.area || ""]).join(" ")).toLowerCase();
+  const esTemaSensible = SK_TEMAS_SENSIBLES_INTERSECCIONALIDAD.some(t => total.includes(t));
+  if (!esTemaSensible) {
+    return "Tu problema no toca, según el vocabulario detectado, un tema donde la interseccionalidad suela ser especialmente relevante. Si de todos modos comparas grupos sociales, revisa igualmente si género, clase, etnia, edad u otras dimensiones se combinan entre sí en tu población.";
+  }
+  const presentes = [];
+  const ausentes = [];
+  for (const dimension in SK_DIMENSIONES_INTERSECCIONALES) {
+    const claves = SK_DIMENSIONES_INTERSECCIONALES[dimension];
+    (claves.some(c => total.includes(c)) ? presentes : ausentes).push(dimension);
+  }
+  const lineas = [];
+  lineas.push("Tu problema trata un fenómeno donde distintos grupos sociales suelen verse afectados de forma distinta según cómo se combinen varias dimensiones a la vez, no cada una por separado.");
+  if (presentes.length) lineas.push(`Dimensiones que ya aparecen en tu planteamiento: ${presentes.join(", ")}.`);
+  if (ausentes.length) {
+    lineas.push(`Dimensiones que no aparecen y podrías considerar cruzar con las anteriores: ${ausentes.join(", ")}.`);
+    lineas.push("No se trata de añadirlas todas: revisa la literatura de tu área para decidir cuáles son teóricamente relevantes en tu caso y, si vas a analizarlas, plantea desde el diseño cómo vas a operacionalizar su intersección (por ejemplo, submuestras o un término de interacción estadística), no solo mencionarlas.");
+  } else {
+    lineas.push("Ya recoges varias dimensiones sociales relevantes — revisa si tu análisis las cruza entre sí (interacción), o si las trata como categorías separadas cuando el fenómeno pide justamente lo contrario.");
+  }
+  return lineas.join("\n");
+}
+
+/**
+ * Plantilla de matriz de triangulación para diseños mixtos: solo tiene
+ * sentido cuando el problema se clasificó como "mixto" (ver
+ * clasificarEnfoqueMetodologico); en cualquier otro caso lo explica en vez
+ * de generar una plantilla que no aplica.
+ */
+function generarMatrizTriangulacion(resultado) {
+  resultado = resultado || {};
+  if (resultado.enfoque !== "mixto") {
+    return `La matriz de triangulación solo aplica a diseños mixtos (tu problema se clasificó como "${resultado.enfoque || "no determinado"}"). Si de todos modos vas a combinar técnicas cualitativas y cuantitativas, indícalo explícitamente en el problema (p. ej. "triangulación", "métodos mixtos") para que SOCIOKAIROS lo reconozca como diseño mixto.`;
+  }
+  const vd = (resultado.vd && resultado.vd[0]) || "el fenómeno central";
+  const lineas = [];
+  lineas.push("Plantilla de matriz de triangulación — rellena cada línea con lo que de verdad esperas encontrar, y compárala después con los resultados reales:");
+  lineas.push("");
+  lineas.push(`1. Resultado cuantitativo esperado sobre «${vd}»: _____________________`);
+  lineas.push(`2. Resultado cualitativo esperado sobre «${vd}»: _____________________`);
+  lineas.push("3. Convergencia: si ambos apuntan en la misma dirección, ¿qué añade lo cualitativo que el número por sí solo no explica? _____________________");
+  lineas.push("4. Complementariedad: ¿qué aspecto del fenómeno solo puede capturar una de las dos técnicas? _____________________");
+  lineas.push("5. Divergencia: si los resultados cuali y cuanti se contradicen, ¿qué harías? (revisar el diseño, dar más peso a uno de los dos con justificación, o tratar la propia divergencia como un hallazgo) _____________________");
+  lineas.push("");
+  lineas.push("Decide y documenta ANTES de recoger datos si el diseño es secuencial (una fase después de otra) o concurrente (ambas a la vez), y con qué peso relativo (p. ej. QUAL+quan o QUAN+qual) — es una de las primeras preguntas que hará un tribunal sobre un diseño mixto.");
+  return lineas.join("\n");
+}
+
 if (typeof module !== "undefined") {
   module.exports = {
     analizarProblema, exportarCSV, detectarContextoYPoblacion, sugerirFuentesDatos,
@@ -2958,5 +3174,7 @@ if (typeof module !== "undefined") {
     generarCronogramaFactibilidad, generarPreregistroCienciaAbierta,
     generarUnidadAnalisisObservacion, generarTamanoMuestralPotencia,
     detectarTurnosHabla, anotarTurnosConCodigos, NOTA_TRANSCRIPCION_CAQDAS,
+    skInvNorm, calcularTamanoMuestral, generarBancoEscalasValidadas,
+    generarBorradorCuestionario, generarAlertaInterseccionalidad, generarMatrizTriangulacion,
   };
 }

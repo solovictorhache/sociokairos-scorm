@@ -713,3 +713,67 @@ describe("transcripción pre-CAQDAS: detección de turnos, anotación con el lib
     assert.match(zipText, /commentReference/);
   });
 });
+
+describe("funciones Premium (exclusivas de la línea Profesional)", () => {
+  test("skInvNorm reproduce los cuantiles normales de referencia", () => {
+    assert.ok(Math.abs(eng.skInvNorm(0.975) - 1.959964) < 1e-4);
+    assert.ok(Math.abs(eng.skInvNorm(0.95) - 1.644854) < 1e-4);
+    assert.ok(Math.abs(eng.skInvNorm(0.80) - 0.841621) < 1e-4);
+  });
+
+  test("calcularTamanoMuestral para dos medias reproduce la aproximación de Cohen (d=0.5 -> n≈63/grupo)", () => {
+    const r = eng.calcularTamanoMuestral({ tipo: "medias", d: 0.5, alfa: 0.05, potencia: 0.8 });
+    assert.equal(r.n, 63);
+  });
+
+  test("calcularTamanoMuestral para correlación crece cuando el efecto esperado (r) es más pequeño", () => {
+    const rGrande = eng.calcularTamanoMuestral({ tipo: "correlacion", r: 0.5, alfa: 0.05, potencia: 0.8 });
+    const rPequena = eng.calcularTamanoMuestral({ tipo: "correlacion", r: 0.1, alfa: 0.05, potencia: 0.8 });
+    assert.ok(rPequena.n > rGrande.n, "un efecto esperado más pequeño exige más muestra");
+  });
+
+  test("calcularTamanoMuestral para proporciones calcula n coherente con las fórmulas estándar", () => {
+    const r = eng.calcularTamanoMuestral({ tipo: "proporciones", p1: 0.5, p2: 0.3, alfa: 0.05, potencia: 0.8 });
+    assert.equal(r.n, 93);
+  });
+
+  test("generarBancoEscalasValidadas reconoce un concepto catalogado y remite a un repositorio real si no reconoce ninguno", () => {
+    const txtAutoestima = "¿Cómo influye la autoestima en el rendimiento académico de adolescentes en Zaragoza en 2024?";
+    const conAutoestima = eng.analizarProblema(txtAutoestima, {});
+    assert.match(eng.generarBancoEscalasValidadas(conAutoestima, txtAutoestima), /Rosenberg/);
+
+    const txtSinConcepto = "¿Cómo afecta la localización de una fábrica al tráfico del barrio en 2024?";
+    const sinConcepto = eng.analizarProblema(txtSinConcepto, {});
+    const texto = eng.generarBancoEscalasValidadas(sinConcepto, txtSinConcepto);
+    assert.doesNotMatch(texto, /Rosenberg/);
+    assert.match(texto, /PsycTESTS|CIS/);
+  });
+
+  test("generarBorradorCuestionario propone un ítem por cada fila de la operacionalización", () => {
+    const resultado = eng.analizarProblema("¿Cómo influye la precariedad laboral en la salud mental de jóvenes en Zaragoza en 2024?", {});
+    const texto = eng.generarBorradorCuestionario(resultado);
+    for (const fila of resultado.operacionalizacion) {
+      assert.ok(texto.includes(fila.variable), `el borrador menciona la variable "${fila.variable}"`);
+    }
+  });
+
+  test("generarAlertaInterseccionalidad avisa de dimensiones ausentes en un tema sensible, y no avisa fuera de esos temas", () => {
+    const sensible = eng.analizarProblema("¿Cómo afecta la violencia en el barrio a la cohesión vecinal en Zaragoza en 2024?", {});
+    const textoSensible = eng.generarAlertaInterseccionalidad(sensible, "violencia en el barrio");
+    assert.match(textoSensible, /Dimensiones que no aparecen/);
+
+    const neutro = eng.analizarProblema("¿Qué relación hay entre el horario de apertura de las bibliotecas y su uso en Zaragoza en 2024?", {});
+    const textoNeutro = eng.generarAlertaInterseccionalidad(neutro, "horario de bibliotecas");
+    assert.match(textoNeutro, /no toca, según el vocabulario detectado/);
+  });
+
+  test("generarMatrizTriangulacion solo genera la plantilla real para diseños clasificados como mixtos", () => {
+    const mixto = eng.analizarProblema("¿Cómo se relaciona la precariedad laboral con la salud mental, combinando encuesta y entrevistas en un diseño de métodos mixtos en Zaragoza en 2024?", {});
+    assert.equal(mixto.enfoque, "mixto");
+    assert.match(eng.generarMatrizTriangulacion(mixto), /Convergencia/);
+
+    const cuantitativo = eng.analizarProblema("¿Cuál es la tasa de desempleo juvenil asociada al nivel de estudios en Zaragoza en 2024?", {});
+    assert.notEqual(cuantitativo.enfoque, "mixto");
+    assert.doesNotMatch(eng.generarMatrizTriangulacion(cuantitativo), /Convergencia/);
+  });
+});

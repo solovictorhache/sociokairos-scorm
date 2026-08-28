@@ -103,10 +103,38 @@ async function main() {
   assert(await page.isVisible('.sk-step[data-stage="disenar"].active'), "clic en 'Fuentes' del sidebar cambia a la etapa 'Diseñar'");
   assert(await page.isVisible("#out_fuentes"), "la sección de fuentes es visible tras la navegación");
 
+  // --- Funciones Premium en "Diseñar" (exclusivas de la línea Profesional,
+  // gratuitas por ahora): banco de escalas, borrador de cuestionario,
+  // calculadora de tamaño muestral y matriz de triangulación ---
+  assert(await page.isVisible(".sk-premium-banner"), "el aviso de que las funciones Premium son gratuitas por ahora es visible");
+  assert((await page.$$(".sk-premium-badge")).length >= 5, "hay al menos 5 insignias 'Premium' (una por función nueva)");
+
+  const outBancoEscalas = await page.textContent("#out_banco_escalas");
+  assert(outBancoEscalas.trim().length > 0 && outBancoEscalas.trim() !== "—", "el banco de escalas validadas produce contenido");
+
+  const outBorrador = await page.textContent("#out_borrador_cuestionario");
+  assert(outBorrador.includes("1. ["), "el borrador de cuestionario numera al menos un ítem por indicador");
+
+  const outMatriz = await page.textContent("#out_matriz_triangulacion");
+  assert(outMatriz.includes("Convergencia"), "la matriz de triangulación genera la plantilla real para un problema clasificado como mixto: " + outMatriz.slice(0, 80));
+
+  await page.selectOption("#sk_calc_tipo", "correlacion");
+  await page.waitForTimeout(100);
+  assert(!(await page.isVisible("#sk_calc_field_d")), "al elegir 'correlación' se oculta el campo de la d de Cohen");
+  assert(await page.isVisible("#sk_calc_field_r"), "al elegir 'correlación' aparece el campo de r esperado");
+  await page.fill("#sk_calc_r", "0.3");
+  await page.click("#btn_calc_muestra");
+  await page.waitForTimeout(100);
+  const outCalc = await page.textContent("#out_calc_muestra");
+  assert(/^n = 85\b/.test(outCalc.trim()), `la calculadora de tamaño muestral da n=85 para r=0.3, α=.05, potencia=.80: "${outCalc.slice(0, 40)}"`);
+
   // --- La campana de alertas es funcional ---
   await page.click("#sk_btn_alertas");
   await page.waitForTimeout(200);
   assert(await page.isVisible('.sk-step[data-stage="ejecutar"].active'), "clic en la campana de alertas cambia a la etapa 'Ejecutar'");
+
+  const outAlertaInterseccional = await page.textContent("#out_alerta_interseccionalidad");
+  assert(outAlertaInterseccional.trim().length > 0 && outAlertaInterseccional.trim() !== "—", "la alerta de interseccionalidad (Premium) produce contenido en la etapa Ejecutar");
 
   // --- Consejos de tu director de tesis (preguntas socráticas, puntos
   // débiles a defender, guía bibliográfica) ---

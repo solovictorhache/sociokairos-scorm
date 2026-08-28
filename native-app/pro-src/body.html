@@ -214,6 +214,41 @@
 
           <h3 data-i18n="pro.h.disenosSugeridos">Diseños metodológicos sugeridos</h3>
           <pre id="out_disenos_plus"></pre>
+
+          <div class="sk-premium-banner">🌟 <b>Funciones Premium</b> — de momento gratuitas para todos los usuarios de SOCIOKAIROS Research; podrían pasar a formar parte de un plan de pago en el futuro.</div>
+
+          <h3>Banco de escalas validadas <span class="sk-premium-badge">🌟 Premium</span></h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Instrumentos ya validados y publicados, cuando el concepto de tu problema coincide con alguno catalogado aquí — evita reinventar una escala que ya existe.</p>
+          <pre id="out_banco_escalas"></pre>
+
+          <h3>Borrador de cuestionario <span class="sk-premium-badge">🌟 Premium</span></h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Un ítem candidato por cada indicador de tu tabla de operacionalización — punto de partida para reescribir, no un cuestionario listo para aplicar.</p>
+          <pre id="out_borrador_cuestionario"></pre>
+
+          <h3>Calculadora de tamaño muestral <span class="sk-premium-badge">🌟 Premium</span></h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Fórmulas orientativas de Cohen (1988). Para diseños más complejos (ANOVA, regresión múltiple, multinivel...) usa software especializado como G*Power.</p>
+          <div class="sk-calc-row">
+            <div class="sk-calc-field">
+              <label for="sk_calc_tipo">Tipo de comparación</label>
+              <select id="sk_calc_tipo">
+                <option value="medias">Dos medias independientes</option>
+                <option value="correlacion">Correlación</option>
+                <option value="proporciones">Dos proporciones</option>
+              </select>
+            </div>
+            <div class="sk-calc-field"><label for="sk_calc_alfa">Alfa (α)</label><input id="sk_calc_alfa" type="number" step="0.01" min="0.001" max="0.5" value="0.05"></div>
+            <div class="sk-calc-field"><label for="sk_calc_potencia">Potencia</label><input id="sk_calc_potencia" type="number" step="0.05" min="0.5" max="0.99" value="0.80"></div>
+            <div class="sk-calc-field" id="sk_calc_field_d"><label for="sk_calc_d">d de Cohen</label><input id="sk_calc_d" type="number" step="0.05" min="0.01" value="0.5"></div>
+            <div class="sk-calc-field" id="sk_calc_field_r" style="display:none;"><label for="sk_calc_r">r esperado</label><input id="sk_calc_r" type="number" step="0.05" min="-0.99" max="0.99" value="0.3"></div>
+            <div class="sk-calc-field" id="sk_calc_field_p1" style="display:none;"><label for="sk_calc_p1">p1</label><input id="sk_calc_p1" type="number" step="0.05" min="0.01" max="0.99" value="0.5"></div>
+            <div class="sk-calc-field" id="sk_calc_field_p2" style="display:none;"><label for="sk_calc_p2">p2</label><input id="sk_calc_p2" type="number" step="0.05" min="0.01" max="0.99" value="0.3"></div>
+            <button id="btn_calc_muestra" class="secondary" type="button">Calcular</button>
+          </div>
+          <pre id="out_calc_muestra">—</pre>
+
+          <h3>Matriz de triangulación <span class="sk-premium-badge">🌟 Premium</span></h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Solo aplica a diseños mixtos: cómo vas a comparar lo que encuentres en la parte cuantitativa con lo que encuentres en la parte cualitativa.</p>
+          <pre id="out_matriz_triangulacion"></pre>
         </div>
       </section>
 
@@ -223,6 +258,10 @@
 
           <h3 data-i18n="pro.h.alertas">Alertas metodológicas</h3>
           <pre id="out_alertas"></pre>
+
+          <h3>Alerta de interseccionalidad <span class="sk-premium-badge">🌟 Premium</span></h3>
+          <p class="meta sk-tutor" style="font-size:0.78rem;">Si tu problema toca un fenómeno donde género, clase, etnia o edad suelen combinarse, avisa de qué dimensiones ya cubres y cuáles podrías considerar cruzar.</p>
+          <pre id="out_alerta_interseccionalidad"></pre>
 
           <h3 data-i18n="pro.h.tradiciones">Tradiciones sociológicas compatibles</h3>
           <pre id="out_tradiciones"></pre>

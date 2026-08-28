@@ -438,6 +438,21 @@ function actualizarInterfazConResultado(resultado) {
   const outPreregistro = document.getElementById("out_preregistro_ciencia_abierta");
   if (outPreregistro) outPreregistro.textContent = generarPreregistroCienciaAbierta(resultado);
 
+  const outBancoEscalas = document.getElementById("out_banco_escalas");
+  if (outBancoEscalas) outBancoEscalas.textContent = generarBancoEscalasValidadas(resultado, document.getElementById("txt_problema").value);
+
+  const outBorradorCuestionario = document.getElementById("out_borrador_cuestionario");
+  if (outBorradorCuestionario) outBorradorCuestionario.textContent = generarBorradorCuestionario(resultado);
+
+  const outMatrizTriangulacion = document.getElementById("out_matriz_triangulacion");
+  if (outMatrizTriangulacion) outMatrizTriangulacion.textContent = generarMatrizTriangulacion(resultado);
+
+  const outAlertaInterseccionalidad = document.getElementById("out_alerta_interseccionalidad");
+  if (outAlertaInterseccionalidad) outAlertaInterseccionalidad.textContent = generarAlertaInterseccionalidad(resultado, document.getElementById("txt_problema").value);
+
+  const outCalcMuestra = document.getElementById("out_calc_muestra");
+  if (outCalcMuestra) outCalcMuestra.textContent = "—";
+
   actualizarResumenReal(resultado);
   actualizarRevisionCoherencia();
 }
@@ -554,7 +569,7 @@ function inicializarNavegacion() {
 }
 
 function limpiarSalidasPorErrorEdu() {
-  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos", "out_mediacion_moderacion", "out_unidad_analisis_observacion", "out_tamano_muestral", "out_consentimiento_informado", "out_cronograma_factibilidad", "out_preregistro_ciencia_abierta", "out_transcripcion_preview"];
+  const ids = ["out_problema_perfecto", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos", "out_mediacion_moderacion", "out_unidad_analisis_observacion", "out_tamano_muestral", "out_consentimiento_informado", "out_cronograma_factibilidad", "out_preregistro_ciencia_abierta", "out_transcripcion_preview", "out_banco_escalas", "out_borrador_cuestionario", "out_matriz_triangulacion", "out_alerta_interseccionalidad", "out_calc_muestra"];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) el.textContent = "—";
@@ -807,7 +822,7 @@ window.addEventListener("load", function () {
 
   if (btnClear) {
     btnClear.addEventListener("click", function () {
-      const ids = ["txt_problema", "txt_justificacion_marco", "txt_transcripcion", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos", "out_mediacion_moderacion", "out_unidad_analisis_observacion", "out_tamano_muestral", "out_consentimiento_informado", "out_cronograma_factibilidad", "out_preregistro_ciencia_abierta", "out_transcripcion_preview"];
+      const ids = ["txt_problema", "txt_justificacion_marco", "txt_transcripcion", "badge_area", "out_problema_perfecto", "out_reformulacion", "out_variables", "out_notas", "out_transparencia", "out_diseno", "out_categorias_explicativas", "out_guia_codigos", "out_guia_preguntas", "out_fuentes", "out_alertas", "out_tradiciones", "out_mapa", "out_disenos_plus", "out_preguntas_socraticas", "out_puntos_debiles", "out_guia_bibliografica", "out_revision_coherencia", "out_validez_confiabilidad", "out_sesgos_metodologicos", "out_mediacion_moderacion", "out_unidad_analisis_observacion", "out_tamano_muestral", "out_consentimiento_informado", "out_cronograma_factibilidad", "out_preregistro_ciencia_abierta", "out_transcripcion_preview", "out_banco_escalas", "out_borrador_cuestionario", "out_matriz_triangulacion", "out_alerta_interseccionalidad", "out_calc_muestra"];
       ids.forEach(function (id) {
         const e = document.getElementById(id);
         if (!e) return;
@@ -953,6 +968,50 @@ window.addEventListener("load", function () {
         if (statusEl) statusEl.textContent = guardado ? skT("pro.status.transcriptDone") : skT("common.status.saveCancelled");
       } catch (e) {
         if (statusEl) statusEl.textContent = skT("pro.status.transcriptError") + e.message;
+      }
+    });
+  }
+
+  const selCalcTipo = document.getElementById("sk_calc_tipo");
+  const btnCalcMuestra = document.getElementById("btn_calc_muestra");
+  function skActualizarCamposCalculadora() {
+    const tipo = selCalcTipo ? selCalcTipo.value : "medias";
+    const fieldD = document.getElementById("sk_calc_field_d");
+    const fieldR = document.getElementById("sk_calc_field_r");
+    const fieldP1 = document.getElementById("sk_calc_field_p1");
+    const fieldP2 = document.getElementById("sk_calc_field_p2");
+    if (fieldD) fieldD.style.display = tipo === "medias" ? "" : "none";
+    if (fieldR) fieldR.style.display = tipo === "correlacion" ? "" : "none";
+    if (fieldP1) fieldP1.style.display = tipo === "proporciones" ? "" : "none";
+    if (fieldP2) fieldP2.style.display = tipo === "proporciones" ? "" : "none";
+  }
+  if (selCalcTipo) {
+    selCalcTipo.addEventListener("change", skActualizarCamposCalculadora);
+    skActualizarCamposCalculadora();
+  }
+  if (btnCalcMuestra) {
+    btnCalcMuestra.addEventListener("click", function () {
+      const outCalcMuestra = document.getElementById("out_calc_muestra");
+      const tipo = selCalcTipo ? selCalcTipo.value : "medias";
+      try {
+        const resultadoCalc = calcularTamanoMuestral({
+          tipo,
+          alfa: document.getElementById("sk_calc_alfa").value,
+          potencia: document.getElementById("sk_calc_potencia").value,
+          d: document.getElementById("sk_calc_d").value,
+          r: document.getElementById("sk_calc_r").value,
+          p1: document.getElementById("sk_calc_p1").value,
+          p2: document.getElementById("sk_calc_p2").value,
+        });
+        if (!Number.isFinite(resultadoCalc.n)) throw new Error("valores fuera de rango");
+        const porGrupo = tipo === "medias" || tipo === "proporciones" ? " por grupo" : "";
+        if (outCalcMuestra) {
+          outCalcMuestra.textContent =
+            `n = ${resultadoCalc.n}${porGrupo}\n\nFórmula: ${resultadoCalc.formula}\n${resultadoCalc.detalle}\n\n` +
+            "Orientativo (aproximación de Cohen, 1988). Para diseños más complejos (ANOVA, regresión múltiple, modelos multinivel...) usa software especializado como G*Power.";
+        }
+      } catch (e) {
+        if (outCalcMuestra) outCalcMuestra.textContent = "Revisa los valores introducidos: deben ser números dentro de los rangos indicados.";
       }
     });
   }
